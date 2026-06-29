@@ -33,22 +33,22 @@
       "aberta": "Nao"
     },
     {
+      "nome": "modules",
+      "id": "{845489CC-0C62-4708-A00D-9B6BF7A4D399}",
+      "pastaId": "{7CCDCDB7-993B-4E03-8B4C-A234716EADB4}",
+      "aberta": "Sim"
+    },
+    {
       "nome": "helpers",
-      "id": "{DEC7E642-8C17-40C8-8AB0-D76C259A7438}",
+      "id": "{D43529F9-6D0E-4201-A0B8-E3FBBA3C9811}",
       "pastaId": "{F8DA6E9D-43E8-4132-AA56-A061D9918912}",
       "aberta": "Nao"
     },
     {
       "nome": "helpers",
-      "id": "{42894A71-85E4-44F4-AE51-CD2839BD065B}",
-      "pastaId": "{DEC7E642-8C17-40C8-8AB0-D76C259A7438}",
+      "id": "{58A4D345-9BB7-45E7-A0BB-7EC64803ED02}",
+      "pastaId": "{D43529F9-6D0E-4201-A0B8-E3FBBA3C9811}",
       "aberta": "Nao"
-    },
-    {
-      "nome": "modules",
-      "id": "{845489CC-0C62-4708-A00D-9B6BF7A4D399}",
-      "pastaId": "{7CCDCDB7-993B-4E03-8B4C-A234716EADB4}",
-      "aberta": "Sim"
     }
   ],
   "modulesMetadata": {
@@ -108,6 +108,6 @@
     }
   },
   "dependencies": {
-    "helpers": "latest"
+    "helpers": "1.0.0.0"
   }
 }
