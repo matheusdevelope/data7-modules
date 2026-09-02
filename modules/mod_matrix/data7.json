@@ -1,0 +1,90 @@
+{
+  "nome": "mod_matrix",
+  "language": "Basic",
+  "version": "1.0.0.3",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.4",
+    "informacoes": "Projeto mod_matrix criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "6B3204FB-3574-45D3-84F1-57F413F10C4E"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": false,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (6)",
+      "id": "{1099F6C6-C236-46B5-9982-D5F0B5B1570C}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{BA193735-AA82-4BBE-A974-8835EEAA3859}",
+      "pastaId": "{1099F6C6-C236-46B5-9982-D5F0B5B1570C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{1E253CF7-62FC-442C-BC0F-6C95E7DD3930}",
+      "pastaId": "{BA193735-AA82-4BBE-A974-8835EEAA3859}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_tmatrix": {
+      "nome": "mod_tmatrix",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{1099F6C6-C236-46B5-9982-D5F0B5B1570C}"
+    },
+    "mod_ttmatrix": {
+      "nome": "mod_ttmatrix",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{1099F6C6-C236-46B5-9982-D5F0B5B1570C}"
+    }
+  },
+  "dependencies": {},
+  "module": {
+    "enabled": true,
+    "name": "mod_matrix",
+    "publisher": "matheusdevelope"
+  }
+}
