@@ -8,11 +8,42 @@ Imports TablesSequence
 
 Namespace TablesDdl
 
+   Private Dim _ddlReady As Boolean
+   Private Dim _ddlCreateTable As TDdlOpKind
+   Private Dim _ddlDropTable As TDdlOpKind
+   Private Dim _ddlAddColumn As TDdlOpKind
+   Private Dim _ddlDropColumn As TDdlOpKind
+   Private Dim _ddlRenameColumn As TDdlOpKind
+   Private Dim _ddlAlterColumn As TDdlOpKind
+   Private Dim _ddlEnsureSequence As TDdlOpKind
+   Private Dim _ddlDropSequence As TDdlOpKind
+   Private Dim _ddlCustomSql As TDdlOpKind
+   Private Dim _alterRebuild As TAlterColumnMode
+   Private Dim _alterAutomatic As TAlterColumnMode
+
    Class TDdl
       Inherits TTObject
 
       Sub New()
          MyBase.New()
+         TDdl.EnsureKinds()
+      End Sub
+
+      Shared Sub EnsureKinds()
+         If Not _ddlReady Then
+            _ddlCreateTable = TFieldCache.DdlCreateTable()
+            _ddlDropTable = TFieldCache.DdlDropTable()
+            _ddlAddColumn = TFieldCache.DdlAddColumn()
+            _ddlDropColumn = TFieldCache.DdlDropColumn()
+            _ddlRenameColumn = TFieldCache.DdlRenameColumn()
+            _ddlAlterColumn = TFieldCache.DdlAlterColumn()
+            _ddlEnsureSequence = TFieldCache.DdlEnsureSequence()
+            _ddlDropSequence = TFieldCache.DdlDropSequence()
+            _ddlCustomSql = TFieldCache.DdlCustomSql()
+            _alterRebuild = TFieldCache.AlterRebuild()
+            _alterAutomatic = TFieldCache.AlterAutomatic()
+            _ddlReady = True
+         End If
       End Sub
 
       Function TableExists(pTable As String) As Boolean
@@ -86,8 +117,8 @@ Namespace TablesDdl
             me.AddColumn(pTable, pField)
             Exit Sub
          End If
-         Dim useRebuild As Boolean = pMode.IsValue(TAlterColumnMode.Rebuild())
-         If pMode.IsValue(TAlterColumnMode.Automatic()) Then
+         Dim useRebuild As Boolean = pMode = _alterRebuild
+         If pMode = _alterAutomatic Then
             useRebuild = Not TSql.Dialect().SupportsInPlaceAlterType(pField, pField)
          End If
          If useRebuild Then
@@ -126,20 +157,20 @@ Namespace TablesDdl
       End Sub
 
       Function OpCreateTable(pSchema As TTableSchema) As TDdlOp
-         Dim op As New TDdlOp(TDdlOpKind.CreateTable())
+         Dim op As New TDdlOp(_ddlCreateTable)
          op.TableName = pSchema.TableName
          op.SqlText = TSql.Dialect().SqlCreateTable(pSchema)
          OpCreateTable = op
       End Function
 
       Function OpDropTable(pTable As String) As TDdlOp
-         Dim op As New TDdlOp(TDdlOpKind.DropTable())
+         Dim op As New TDdlOp(_ddlDropTable)
          op.TableName = pTable
          OpDropTable = op
       End Function
 
       Function OpAddColumn(pTable As String, pField As TFieldDef) As TDdlOp
-         Dim op As New TDdlOp(TDdlOpKind.AddColumn())
+         Dim op As New TDdlOp(_ddlAddColumn)
          op.TableName = pTable
          op.ColumnName = pField.DbName
          op.FieldDef = pField
@@ -147,14 +178,14 @@ Namespace TablesDdl
       End Function
 
       Function OpDropColumn(pTable As String, pCol As String) As TDdlOp
-         Dim op As New TDdlOp(TDdlOpKind.DropColumn())
+         Dim op As New TDdlOp(_ddlDropColumn)
          op.TableName = pTable
          op.ColumnName = pCol
          OpDropColumn = op
       End Function
 
       Function OpAlterColumn(pTable As String, pField As TFieldDef) As TDdlOp
-         Dim op As New TDdlOp(TDdlOpKind.AlterColumn())
+         Dim op As New TDdlOp(_ddlAlterColumn)
          op.TableName = pTable
          op.ColumnName = pField.DbName
          op.FieldDef = pField
@@ -162,7 +193,7 @@ Namespace TablesDdl
       End Function
 
       Function OpEnsureSequence(pName As String) As TDdlOp
-         Dim op As New TDdlOp(TDdlOpKind.EnsureSequence())
+         Dim op As New TDdlOp(_ddlEnsureSequence)
          op.SequenceName = pName
          OpEnsureSequence = op
       End Function
@@ -194,25 +225,25 @@ Namespace TablesDdl
       End Function
 
       Sub ApplyOp(pOp As TDdlOp)
-         If pOp.Kind.IsValue(TDdlOpKind.CreateTable()) Then
+         If pOp.Kind = _ddlCreateTable Then
             If Trim(pOp.SqlText) <> "" Then
                TSql.ExecScript(pOp.SqlText)
             End If
-         ElseIf pOp.Kind.IsValue(TDdlOpKind.DropTable()) Then
+         ElseIf pOp.Kind = _ddlDropTable Then
             me.DropTable(pOp.TableName)
-         ElseIf pOp.Kind.IsValue(TDdlOpKind.AddColumn()) Then
+         ElseIf pOp.Kind = _ddlAddColumn Then
             TSql.ExecScript(TSql.Dialect().SqlAddColumn(pOp.TableName, pOp.FieldDef))
-         ElseIf pOp.Kind.IsValue(TDdlOpKind.DropColumn()) Then
+         ElseIf pOp.Kind = _ddlDropColumn Then
             me.DropColumn(pOp.TableName, pOp.ColumnName)
-         ElseIf pOp.Kind.IsValue(TDdlOpKind.RenameColumn()) Then
+         ElseIf pOp.Kind = _ddlRenameColumn Then
             me.RenameColumn(pOp.TableName, pOp.ColumnName, pOp.ColumnNameTo)
-         ElseIf pOp.Kind.IsValue(TDdlOpKind.AlterColumn()) Then
+         ElseIf pOp.Kind = _ddlAlterColumn Then
             me.AlterColumn(pOp.TableName, pOp.FieldDef, pOp.AlterMode)
-         ElseIf pOp.Kind.IsValue(TDdlOpKind.EnsureSequence()) Then
+         ElseIf pOp.Kind = _ddlEnsureSequence Then
             TSql.ExecScript(TSql.Dialect().SqlCreateSequence(pOp.SequenceName))
-         ElseIf pOp.Kind.IsValue(TDdlOpKind.DropSequence()) Then
+         ElseIf pOp.Kind = _ddlDropSequence Then
             me.DropSequence(pOp.SequenceName)
-         ElseIf pOp.Kind.IsValue(TDdlOpKind.CustomSql()) Then
+         ElseIf pOp.Kind = _ddlCustomSql Then
             TSql.ExecScript(pOp.SqlText)
          End If
       End Sub

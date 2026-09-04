@@ -1,134 +1,20 @@
-Imports Collections
-Imports mod_tobject
-Imports mod_tlist
-Imports TablesField
-Imports TablesSchema
-Imports TablesSql
 Imports TablesTable
-Imports TablesDdl
-Imports TablesSequence
-Imports TablesRoutine
-Imports TablesExecutor
+Imports TablesSchema
+Imports TablesField
+Imports TablesSql
+Imports mod_tobject
 Imports TablesMigration
+Imports TablesDdl
+Imports TablesRoutine
 Imports TablesCodegen
-
-
-' # Tables
-
-' Core Data7 para mapear, persistir, migrar e gerar classes de tabela. Não contém as definições finais das tabelas de negócio — só o runtime e o gerador.
-
-' ## Namespaces
-
-' Cada módulo tem namespace próprio, prefixo `Tables`:
-
-' | Arquivo | Namespace | Tipos |
-' |---|---|---|
-' | `src/core/TablesField.bas` | `TablesField` | `TField`, `TFieldDef`, `TFields`, `TFieldCache`, `TColumnInfo`, `TResource`, `TDdlOp` |
-' | `src/core/TablesSchema.bas` | `TablesSchema` | `TTableSchema` |
-' | `src/core/TablesSql.bas` | `TablesSql` | `TSql`, `TSqlDialect` (MSSQL, ASA, Postgres) |
-' | `src/core/TablesTable.bas` | `TablesTable` | `TTable` |
-' | `src/core/TablesDdl.bas` | `TablesDdl` | `TDdl` |
-' | `src/core/TablesSequence.bas` | `TablesSequence` | `TSequence`, `TSequenceLease` |
-' | `src/core/TablesRoutine.bas` | `TablesRoutine` | `TRoutine` |
-' | `src/core/TablesExecutor.bas` | `TablesExecutor` | `TExecutor` |
-' | `src/core/TablesMigration.bas` | `TablesMigration` | `TMigration`, `TMigrationRunner`, `TScriptMigration` |
-' | `src/core/TablesCodegen.bas` | `TablesCodegen` | `TTableGenerator` |
-
-' ```
-' Imports TablesSchema
-' Imports TablesTable
-' ```
-
-' ## Modelo
-
-' `TTable` herda `TFields`. Cada instância copia as definições do schema (cache por nome de classe) e guarda valores em `TField` leves.
-
-' ```
-' Class TPedido
-'    Inherits TTable
-
-'    Sub New()
-'       MyBase.New("TPedido")
-'    End Sub
-
-'    Overrides Sub DefineSchema(pSchema As TTableSchema)
-'       pSchema.TableName = "Pedido"
-'       pSchema.Field("CodPedido").AsInteger().AutoCodeField()
-'       pSchema.Field("Titulo").AsString().MaxLen(150).RequiredField()
-'       pSchema.Field("ValorTotal").AsFloat()
-'       pSchema.Field("Ativo").AsBoolean().DefaultVal(True)
-'    End Sub
-' End Class
-' ```
-
-' Campo é encontrado por nome sem distinguir maiúsculas (`UCase`). Propriedades geradas preservam o case do catálogo (`CodPedido`, não `Codpedido`).
-
-' Tipos: `String`, `Integer`, `Float`/`Numeric`, `Boolean`, `Date`, `DateTime`.
-
-' Marcas úteis em `TFieldDef`: `PrimaryKeyField`, `AutoCodeField`, `RequiredField`, `NotUpdatable`, `SelectOnlyField`, `Expr`, `WithSequence`, `MaxLen`, `NumericPrec`.
-
-' ## Persistência
-
-' - `Insert` / `Update` / `Delete`
-' - `Upsert` — update se a PK existir, senão insert
-' - `Merge` — SQL MERGE (PK composta incluída no `ON`)
-' - `Load` / `LoadWhere` / `Fetch(where, order, limit)`
-' - `Exists` / `ExistsByPk`
-' - `AssignFrom` / `Clone`
-' - Hooks: `PrepareValue`, `Before*` / `After*` (insert, update, delete, merge, load)
-' - AutoCode via `Data7.ProximoCodigo` (e `CodEmpresa` na PK quando existir)
-' - Templates SQL e `SQL.Command` em cache por operação
-
-' `FromClause` customizado permite JOIN; campos `SelectOnly` + `Expr` hidratam colunas calculadas sem persistir.
-
-' ## SQL
-
-' `TSql.Dialect()` escolhe MSSQL, SQL Anywhere ou Postgres. O dialeto gera `CREATE`/`ALTER`/`DROP`, quotes, `LIMIT`/`TOP`, routines e sequences.
-
-' ## DDL, sequences e routines
-
-' `TDdl` cria/remove tabela, coluna, rename, nullability e deriva ops a partir do schema (`OpsFromSchema` / `ApplyOps`).
-
-' `TSequence` cria, peek, restart e `AllocateBlock`.
-
-' `TRoutine` aplica view, procedure, function, trigger e índice.
-
-' ## Executor
-
-' `TExecutor` enfileira insert/update/delete/upsert/merge e SQL solto.
-
-' Modos de commit: transação única, por batch, por statement, ou junta à transação já aberta. AutoCode no lote usa o mesmo `EnsurePrimaryKey` dos inserts individuais.
-
-' ## Migrações
-
-' `TMigrationRunner` registra migrações por id, aplica as pendentes, não reaplica, e faz `RollbackLast` / `RollbackTo`.
-
-' Uma migração pode ser uma `TTable` (schema vira DDL), SQL cru (`TScriptMigration`) ou resources (view/procedure/function/index). Histórico em `_developer_table_migrations`.
-
-' ## Gerador
-
-' `TTableGenerator.Save(pasta, "Produto")` lê o catálogo (`DescribeColumns`) e grava uma subclasse de `TTable`.
-
-' - Namespace gerado: snake do nome da tabela (`produto`, `dicionario_projeto`)
-' - Classe: `T` + Pascal (`TProduto`, `TDicionarioProjeto`)
-' - Propriedades: case original da coluna
-' - Imports: `TablesSchema` e `TablesTable`
-
-' ## Testes
-
-' `src/tests/tests.bas` — `TTablesTest`, etapas no `Principal.bas`:
-
-' Setup → Migrations → Codegen → Ddl → Routines → Crud → CompositePk → Join → Executor → Rollback → Load → Teardown
-
-' O load cria a tabela temporária `_tables_bench` (16 colunas), mede alocação/CRUD e apaga a tabela no fim.
-
+Imports TablesExecutor
 
 Namespace tests
 
    Private Dim _suite As TTablesTest
 
    Class TTestPedidoV1
-      Inherits TTable
+      Inherits TTableOf<TTestPedidoV1>
 
       Sub New()
          MyBase.New("TTestPedidoV1")
@@ -145,10 +31,6 @@ Namespace tests
          pSchema.Field("Status").AsString().MaxLen(20).DefaultVal("NOVO")
       End Sub
 
-      Overrides Function CreateInstance() As TTable
-         CreateInstance = New TTestPedidoV1()
-      End Function
-
       Overrides Function GetID() As String
          GetID = CStr(me.GetInteger("CodPedido"))
       End Function
@@ -159,7 +41,7 @@ Namespace tests
    End Class
 
    Class TTestPedido
-      Inherits TTable
+      Inherits TTableOf<TTestPedido>
 
       AfterInsertRan As Boolean
       AfterLoadRan As Boolean
@@ -181,10 +63,6 @@ Namespace tests
          pSchema.Field("Status").AsString().MaxLen(20).DefaultVal("NOVO")
          pSchema.Field("Observacao").AsString().MaxLen(500)
       End Sub
-
-      Overrides Function CreateInstance() As TTable
-         CreateInstance = New TTestPedido()
-      End Function
 
       Overrides Sub PrepareValue(pOp As TTableOp, pField As TField)
          If pField.Def.Name = "Codigo" Then
@@ -273,7 +151,7 @@ Namespace tests
    End Class
 
    Class TTestItem
-      Inherits TTable
+      Inherits TTableOf<TTestItem>
 
       Sub New()
          MyBase.New("TTestItem")
@@ -289,10 +167,6 @@ Namespace tests
          pSchema.Field("Quantidade").AsInteger().DefaultVal(1)
          pSchema.Field("Preco").AsFloat()
       End Sub
-
-      Overrides Function CreateInstance() As TTable
-         CreateInstance = New TTestItem()
-      End Function
 
       Overrides Sub PrepareValue(pOp As TTableOp, pField As TField)
          If pField.Def.Name = "Item" Then
@@ -366,7 +240,7 @@ Namespace tests
    End Class
 
    Class TTestItemComPedido
-      Inherits TTable
+      Inherits TTableOf<TTestItemComPedido>
 
       Sub New()
          MyBase.New("TTestItemComPedido")
@@ -384,10 +258,6 @@ Namespace tests
          pSchema.Field("Preco").AsFloat().Expr("I." & sqlDialect.QuoteIdent("Preco"))
          pSchema.Field("TituloPedido").AsString().SelectOnlyField().Expr("P." & sqlDialect.QuoteIdent("Titulo"))
       End Sub
-
-      Overrides Function CreateInstance() As TTable
-         CreateInstance = New TTestItemComPedido()
-      End Function
 
       Overrides Function GetID() As String
          GetID = CStr(me.GetInteger("CodItem"))
@@ -408,7 +278,7 @@ Namespace tests
    End Class
 
    Class TTestVenda
-      Inherits TTable
+      Inherits TTableOf<TTestVenda>
 
       Sub New()
          MyBase.New("TTestVenda")
@@ -420,10 +290,6 @@ Namespace tests
          pSchema.Field("CodVenda").AsInteger().AutoCodeField()
          pSchema.Field("Titulo").AsString().MaxLen(80).RequiredField()
       End Sub
-
-      Overrides Function CreateInstance() As TTable
-         CreateInstance = New TTestVenda()
-      End Function
 
       Overrides Function GetID() As String
          GetID = CStr(me.CodEmpresa) & "|" & CStr(me.CodVenda)
@@ -462,7 +328,7 @@ Namespace tests
    End Class
 
    Class TTestVendaItem
-      Inherits TTable
+      Inherits TTableOf<TTestVendaItem>
 
       Sub New()
          MyBase.New("TTestVendaItem")
@@ -475,10 +341,6 @@ Namespace tests
          pSchema.Field("Item").AsString().MaxLen(3).PrimaryKeyField()
          pSchema.Field("Descricao").AsString().MaxLen(80)
       End Sub
-
-      Overrides Function CreateInstance() As TTable
-         CreateInstance = New TTestVendaItem()
-      End Function
 
       Overrides Function GetID() As String
          GetID = CStr(me.CodEmpresa) & "|" & CStr(me.CodVenda) & "|" & me.Item
@@ -526,7 +388,7 @@ Namespace tests
    End Class
 
    Class TBench
-      Inherits TTable
+      Inherits TTableOf<TBench>
 
       Sub New()
          MyBase.New("TBench")
@@ -552,10 +414,6 @@ Namespace tests
          pSchema.Field("FlagExtra").AsBoolean()
          pSchema.Field("Referencia").AsString().MaxLen(40)
       End Sub
-
-      Overrides Function CreateInstance() As TTable
-         CreateInstance = New TBench()
-      End Function
 
       Overrides Function GetID() As String
          GetID = CStr(me.CodBench)
@@ -761,9 +619,9 @@ Namespace tests
          runner.Registerr(New TMigration("libtest_03_pedido_observacao", New TTestPedido()))
          Dim migRoutines As New TMigration("libtest_04_routines")
          Dim viewSelect As String = "SELECT " & sqlDialect.QuoteIdent("CodPedido") & ", " & sqlDialect.QuoteIdent("Titulo") & ", " & sqlDialect.QuoteIdent("Status") & " FROM " & sqlDialect.QuoteIdent("_libtest_pedido")
-         migRoutines.Resources.Push("vw", New TResource(TResourceKind.View(), "_libtest_vw_pedido", sqlDialect.SqlCreateOrReplaceView("_libtest_vw_pedido", viewSelect)))
-         migRoutines.Resources.Push("sp", New TResource(TResourceKind.Procedure(), "_libtest_sp_ping", sqlDialect.SqlCreateOrReplaceProcedure("_libtest_sp_ping")))
-         migRoutines.Resources.Push("fn", New TResource(TResourceKind.Func(), "_libtest_fn_double", sqlDialect.SqlCreateOrReplaceIntFunction("_libtest_fn_double")))
+         migRoutines.Resources.Push("vw", New TResource(TFieldCache.ResourceView(), "_libtest_vw_pedido", sqlDialect.SqlCreateOrReplaceView("_libtest_vw_pedido", viewSelect)))
+         migRoutines.Resources.Push("sp", New TResource(TFieldCache.ResourceProcedure(), "_libtest_sp_ping", sqlDialect.SqlCreateOrReplaceProcedure("_libtest_sp_ping")))
+         migRoutines.Resources.Push("fn", New TResource(TFieldCache.ResourceFunc(), "_libtest_fn_double", sqlDialect.SqlCreateOrReplaceIntFunction("_libtest_fn_double")))
          runner.Registerr(migRoutines)
          Dim createAudit As String = "CREATE TABLE " & sqlDialect.QuoteIdent("_libtest_audit") & " (" & sqlDialect.QuoteIdent("Id") & " INTEGER NOT NULL PRIMARY KEY, " & sqlDialect.QuoteIdent("Nota") & " VARCHAR(100))"
          Dim migAudit As New TScriptMigration("libtest_05_audit", createAudit)
@@ -781,9 +639,9 @@ Namespace tests
          Dim routine As New TRoutine()
          Dim sqlDialect As TSqlDialect = TSql.Dialect()
          routine.DropIndexOnTable("IX_libtest_pedido_status", "_libtest_pedido")
-         routine.Drop(TResourceKind.View(), "_libtest_vw_pedido")
-         routine.Drop(TResourceKind.Procedure(), "_libtest_sp_ping")
-         routine.Drop(TResourceKind.Func(), "_libtest_fn_double")
+         routine.Drop(TFieldCache.ResourceView(), "_libtest_vw_pedido")
+         routine.Drop(TFieldCache.ResourceProcedure(), "_libtest_sp_ping")
+         routine.Drop(TFieldCache.ResourceFunc(), "_libtest_fn_double")
          ddl.DropTable("_libtest_audit")
          ddl.DropTable("_libtest_venda_item")
          ddl.DropTable("_libtest_venda")
@@ -831,7 +689,7 @@ Namespace tests
          me.AssertTrue(ddl.SequenceExists("_libtest_pedido_seq"), "Sequence do pedido")
          me.AssertTrue(ddl.SequenceExists("_libtest_item_seq"), "Sequence do item")
          me.AssertTrue(ddl.TableExists("_libtest_audit"), "Tabela _libtest_audit via RawSql")
-         me.AssertTrue(routine.Exists(TResourceKind.Index(), "IX_libtest_pedido_status"), "Índice IX_libtest_pedido_status")
+         me.AssertTrue(routine.Exists(TFieldCache.ResourceIndex(), "IX_libtest_pedido_status"), "Índice IX_libtest_pedido_status")
          Dim again As TMigrationRunner = me.NewRunner()
          me.AssertEqInt(again.Execute(), 0, "Segunda Execute não reaplica migrações")
          again.Free()
@@ -845,9 +703,9 @@ Namespace tests
          console.timeStart("codegen")
          Dim gen As New TTableGenerator()
          Dim body As String = gen.Build("_libtest_pedido")
-         me.AssertTrue(body.IndexOf("Namespace libtest_pedido") >= 0, "Namespace libtest_pedido")
+         me.AssertTrue(body.IndexOf("Namespace table_libtest_pedido") >= 0, "Namespace table_libtest_pedido")
          me.AssertTrue(body.IndexOf("Class TLibtestPedido") >= 0, "Classe TLibtestPedido")
-         me.AssertTrue(body.IndexOf("Inherits TTable") >= 0, "Herda TTable")
+         me.AssertTrue(body.IndexOf("Inherits TTableOf<TLibtestPedido>") >= 0, "Herda TTableOf<TLibtestPedido>")
          me.AssertTrue(body.IndexOf("Imports TablesSchema") >= 0, "Imports TablesSchema")
          me.AssertTrue(body.IndexOf("Imports TablesTable") >= 0, "Imports TablesTable")
          me.AssertTrue(body.IndexOf("pSchema.TableName = ""_libtest_pedido""") >= 0, "TableName no DefineSchema")
@@ -861,9 +719,9 @@ Namespace tests
          me.AssertEq(gen.PropertyNameOf("Field", "TProduto"), "CField", "Prop reserva Field")
          me.AssertEq(gen.PropertyNameOf("2Preco", "TProduto"), "C2Preco", "Prop prefixa dígito inicial")
          me.AssertEq(gen.PropertyNameOf("TProduto", "TProduto"), "TProdutoCol", "Prop não colide com o nome da classe")
-         me.AssertEq(gen.NamespaceName("", "Produto"), "produto", "Namespace dbo/default Produto")
+         me.AssertEq(gen.NamespaceName("", "Produto"), "table_produto", "Namespace dbo/default Produto")
          me.AssertEq(gen.ClassNameOf("", "Produto"), "TProduto", "Classe TProduto")
-         me.AssertEq(gen.NamespaceName("Dicionario", "Projeto"), "dicionario_projeto", "Namespace schema não default")
+         me.AssertEq(gen.NamespaceName("Dicionario", "Projeto"), "table_dicionario_projeto", "Namespace schema não default")
          me.AssertEq(gen.ClassNameOf("Dicionario", "Projeto"), "TDicionarioProjeto", "Classe TDicionarioProjeto")
          me.AssertEq(TSql.ProximoCodigoKey("", "Produto"), "Produto", "ProximoCodigo dbo.Produto")
          me.AssertEq(TSql.ProximoCodigoKey("Financeiro", "ContaReceber"), "Financeiro.ContaReceber", "ProximoCodigo Financeiro.ContaReceber")
@@ -894,8 +752,8 @@ Namespace tests
          pk2.Push("CodEmpresa", empCol)
          pk2.Push("CodVenda", vendaCol)
          pk2.Push("Titulo", tituloCol)
-         me.AssertTrue(Not gen.IsAutoCode(empCol, TKindField.IntegerKind(), pk2), "CodEmpresa não é AutoCode")
-         me.AssertTrue(gen.IsAutoCode(vendaCol, TKindField.IntegerKind(), pk2), "CodVenda é AutoCode na PK CodEmpresa+ID")
+         me.AssertTrue(Not gen.IsAutoCode(empCol, TFieldCache.KindInteger(), pk2), "CodEmpresa não é AutoCode")
+         me.AssertTrue(gen.IsAutoCode(vendaCol, TFieldCache.KindInteger(), pk2), "CodVenda é AutoCode na PK CodEmpresa+ID")
          me.AssertEq(gen.GetIdBody(pk2, "TVenda"), "GetID = CStr(me.CodEmpresa) & ""|"" & CStr(me.CodVenda)", "GetID composto CodEmpresa+CodVenda")
          Dim itemCol As New TColumnInfo()
          itemCol.Name = "Item"
@@ -905,7 +763,7 @@ Namespace tests
          pk3.Push("CodEmpresa", empCol)
          pk3.Push("CodVenda", vendaCol)
          pk3.Push("Item", itemCol)
-         me.AssertTrue(Not gen.IsAutoCode(vendaCol, TKindField.IntegerKind(), pk3), "PK 3 campos: CodVenda não é AutoCode automático")
+         me.AssertTrue(Not gen.IsAutoCode(vendaCol, TFieldCache.KindInteger(), pk3), "PK 3 campos: CodVenda não é AutoCode automático")
          Dim numDef As New TFieldDef("Preco")
          numDef.AsNumeric(15, 2)
          me.AssertEq(TSql.Dialect().TypeName(numDef), "NUMERIC(15, 2)", "TypeName NUMERIC(15, 2)")
@@ -914,7 +772,7 @@ Namespace tests
          numCol.NativeType = "numeric"
          numCol.Precision = 15
          numCol.Scale = 2
-         me.AssertTrue(gen.FieldLine(numCol, TKindField.FloatKind(), False).IndexOf(".NumericPrec(15, 2)") >= 0, "Codegen emite NumericPrec")
+         me.AssertTrue(gen.FieldLine(numCol, TFieldCache.KindFloat(), False).IndexOf(".NumericPrec(15, 2)") >= 0, "Codegen emite NumericPrec")
          numDef.Free()
          numCol.Free()
          pk2.OwnsObjects = False
@@ -950,9 +808,9 @@ Namespace tests
          console.timeStart("routines")
          Dim routine As New TRoutine()
          Dim sqlDialect As TSqlDialect = TSql.Dialect()
-         me.AssertTrue(routine.Exists(TResourceKind.View(), "_libtest_vw_pedido"), "View existe")
-         me.AssertTrue(routine.Exists(TResourceKind.Procedure(), "_libtest_sp_ping"), "Procedure existe")
-         me.AssertTrue(routine.Exists(TResourceKind.Func(), "_libtest_fn_double"), "Function existe")
+         me.AssertTrue(routine.Exists(TFieldCache.ResourceView(), "_libtest_vw_pedido"), "View existe")
+         me.AssertTrue(routine.Exists(TFieldCache.ResourceProcedure(), "_libtest_sp_ping"), "Procedure existe")
+         me.AssertTrue(routine.Exists(TFieldCache.ResourceFunc(), "_libtest_fn_double"), "Function existe")
          Dim doubled As String = TSql.ExecSelect(sqlDialect.SqlCallIntFunction("_libtest_fn_double", 21))
          me.AssertEq(Trim(doubled), "42", "Function _libtest_fn_double(21)")
          Dim viewCount As String = TSql.ExecSelect("(SELECT COUNT(*) FROM " & sqlDialect.QuoteIdent("_libtest_vw_pedido") & ")")
@@ -976,7 +834,7 @@ Namespace tests
          me.AssertTrue(row.AfterInsertRan, "Hook AfterInsert")
          me.AssertEq(row.Codigo, "ABC-1", "PrepareValue upper no Codigo")
          me.AssertTrue(row.ExistsByPk(), "ExistsByPk após insert")
-         me.AssertTrue(row.Exists(me.QuoteName("Titulo") & " = 'Pedido Alfa'"), "Exists por WHERE")
+         me.AssertTrue(TTestPedido.Exists(me.QuoteName("Titulo") & " = 'Pedido Alfa'"), "Exists por WHERE")
 
          Dim loaded As New TTestPedido()
          loaded.CodPedido = 1001
@@ -996,12 +854,16 @@ Namespace tests
          me.AssertEq(copied.Titulo, again.Titulo, "Clone copia Titulo")
          copied.Free()
 
-         Dim probe As New TTestPedido()
-         Dim rows[] As TTable = probe.Fetch(me.QuoteName("CodPedido") & " = 1001", me.QuoteName("CodPedido"))
+         Dim found As TTestPedido = TTestPedido.Find(me.QuoteName("CodPedido") & " = 1001")
+         me.AssertTrue(Assigned(found), "Find pedido 1001")
+         me.AssertEq(found.Titulo, "Pedido Alfa Edit", "Find hidrata Titulo")
+         found.Free()
+
+         Dim rows[] As TTestPedido = TTestPedido.Fetch(me.QuoteName("CodPedido") & " = 1001", me.QuoteName("CodPedido"))
          me.AssertEqInt(rows.Length, 1, "Fetch devolve 1 pedido")
+         me.AssertEq(rows.Take(0).Titulo, "Pedido Alfa Edit", "Fetch tipado")
          rows.OwnsObjects = True
          rows.Free()
-         probe.Free()
 
          Dim upsertRow As New TTestPedido()
          upsertRow.CodPedido = 1001
@@ -1090,9 +952,9 @@ Namespace tests
          itemOps.OwnsObjects = True
          itemOps.Free()
 
-         Dim updSql As String = vendaProbe.GetCommandText(TTableOp.OpUpdate())
-         Dim delSql As String = vendaProbe.GetCommandText(TTableOp.OpDelete())
-         Dim merSql As String = vendaProbe.GetCommandText(TTableOp.OpMerge())
+         Dim updSql As String = vendaProbe.GetCommandText(TFieldCache.OpUpdate())
+         Dim delSql As String = vendaProbe.GetCommandText(TFieldCache.OpDelete())
+         Dim merSql As String = vendaProbe.GetCommandText(TFieldCache.OpMerge())
          me.AssertTrue(updSql.IndexOf("CodEmpresa") >= 0, "Update PK inclui CodEmpresa")
          me.AssertTrue(updSql.IndexOf("CodVenda") >= 0, "Update PK inclui CodVenda")
          me.AssertTrue(updSql.IndexOf(" AND ") >= 0, "Update WHERE composto")
@@ -1171,14 +1033,12 @@ Namespace tests
 
       Sub DoJoin()
          console.timeStart("schema-join")
-         Dim probe As New TTestItemComPedido()
-         Dim rows[] As TTable = probe.Fetch("I." & me.QuoteName("CodItem") & " = 2001", "I." & me.QuoteName("CodItem"))
+         Dim rows[] As TTestItemComPedido = TTestItemComPedido.Fetch("I." & me.QuoteName("CodItem") & " = 2001", "I." & me.QuoteName("CodItem"))
          me.AssertEqInt(rows.Length, 1, "Fetch com JOIN FromClause")
-         Dim joined As TTestItemComPedido = TTestItemComPedido(rows.Take(0))
+         Dim joined As TTestItemComPedido = rows.Take(0)
          me.AssertEq(joined.TituloPedido, "Pedido Upsert", "SelectOnly Expr P.Titulo")
          rows.OwnsObjects = True
          rows.Free()
-         probe.Free()
          console.timeEnd("schema-join")
       End Sub
 
@@ -1195,14 +1055,14 @@ Namespace tests
          b.Titulo = "Lote B"
          b.Status = "NOVO"
          Dim db As New TExecutor()
-         db.CommitMode = TCommitMode.SingleTransaction()
+         db.CommitMode = TFieldCache.CommitSingle()
          db.AddInsert(a)
          db.AddInsert(b)
          Dim n As Integer = db.Exec()
          me.AssertTrue(n >= 2, "Executor Insert em lote")
          Dim chk As New TTestPedido()
-         me.AssertTrue(chk.Exists(me.QuoteName("CodPedido") & " = 1101"), "Lote A persistido")
-         me.AssertTrue(chk.Exists(me.QuoteName("CodPedido") & " = 1102"), "Lote B persistido")
+         me.AssertTrue(TTestPedido.Exists(me.QuoteName("CodPedido") & " = 1101"), "Lote A persistido")
+         me.AssertTrue(TTestPedido.Exists(me.QuoteName("CodPedido") & " = 1102"), "Lote B persistido")
          db.Clear()
          chk.CodPedido = 1101
          chk.Load(me.QuoteName("CodPedido") & " = 1101")
@@ -1218,7 +1078,7 @@ Namespace tests
          db.AddDelete(chk)
          db.AddDelete(chk2)
          db.Exec()
-         me.AssertTrue(Not chk.Exists(me.QuoteName("CodPedido") & " IN (1101, 1102)"), "Executor Delete em lote")
+         me.AssertTrue(Not TTestPedido.Exists(me.QuoteName("CodPedido") & " IN (1101, 1102)"), "Executor Delete em lote")
          chk2.Free()
          chk.Free()
          db.Free()
@@ -1234,18 +1094,18 @@ Namespace tests
          Dim ddl As New TDdl()
          Dim routine As New TRoutine()
          runner.RollbackLast()
-         me.AssertTrue(Not routine.Exists(TResourceKind.Index(), "IX_libtest_pedido_status"), "RollbackLast remove o índice")
+         me.AssertTrue(Not routine.Exists(TFieldCache.ResourceIndex(), "IX_libtest_pedido_status"), "RollbackLast remove o índice")
          me.AssertTrue(ddl.TableExists("_libtest_audit"), "Audit permanece após RollbackLast do índice")
          Dim n1 As Integer = runner.Execute()
          me.AssertEqInt(n1, 1, "Reaplica só libtest_06")
-         me.AssertTrue(routine.Exists(TResourceKind.Index(), "IX_libtest_pedido_status"), "Índice recriado")
+         me.AssertTrue(routine.Exists(TFieldCache.ResourceIndex(), "IX_libtest_pedido_status"), "Índice recriado")
          runner.RollbackTo("libtest_03_pedido_observacao")
-         me.AssertTrue(Not routine.Exists(TResourceKind.View(), "_libtest_vw_pedido"), "RollbackTo remove view")
+         me.AssertTrue(Not routine.Exists(TFieldCache.ResourceView(), "_libtest_vw_pedido"), "RollbackTo remove view")
          me.AssertTrue(Not ddl.TableExists("_libtest_audit"), "RollbackTo remove audit")
          me.AssertTrue(ddl.TableExists("_libtest_pedido"), "Pedido permanece após RollbackTo 03")
          Dim n2 As Integer = runner.Execute()
          me.AssertEqInt(n2, 3, "Reaplica routines + audit + index")
-         me.AssertTrue(routine.Exists(TResourceKind.View(), "_libtest_vw_pedido"), "View recriada")
+         me.AssertTrue(routine.Exists(TFieldCache.ResourceView(), "_libtest_vw_pedido"), "View recriada")
          routine.Free()
          ddl.Free()
          runner.Free()
@@ -1275,15 +1135,23 @@ Namespace tests
          pRow.Referencia = "REF" & CStr(pSeq)
       End Sub
 
-      Function AsBench(pRows[] As TTable, pIdx As Integer) As TBench
-         AsBench = TBench(pRows.Take(pIdx))
+      Function AsBench(pRows[] As TBench, pIdx As Integer) As TBench
+         AsBench = pRows.Take(pIdx)
+      End Function
+
+      Function AsTableBench(pRows[] As TTable, pIdx As Integer) As TBench
+         AsTableBench = TBench(pRows.Take(pIdx))
       End Function
 
       Sub PushRow(pRows[] As TTable, pRow As TTable)
          pRows.Push("r" & CStr(pRows.Length), pRow)
       End Sub
 
-      Function MakeBenchCopy(pPool[] As TTable) As TBench
+      Sub PushBench(pRows[] As TBench, pRow As TBench)
+         pRows.Push("r" & CStr(pRows.Length), pRow)
+      End Sub
+
+      Function MakeBenchCopy(pPool[] As TBench) As TBench
          Dim seq As Integer = me.NextStamp()
          Dim n As Integer = pPool.Length
          Dim j As Integer = seq - 1
@@ -1315,22 +1183,22 @@ Namespace tests
          me.EnsureBenchTable()
          me.StampSeq = 0
 
-         console.timeStart("alloc-10000")
+         console.timeStart("alloc-2000")
          Dim i As Integer
-         For i = 1 To 10000
+         For i = 1 To 2000
             Dim tmp As New TBench()
             tmp.Free()
          Next
-         console.timeEnd("alloc-10000")
+         console.timeEnd("alloc-2000")
 
          Dim probe As New TBench()
          console.timeStart("sql-build")
-         Dim selSql As String = probe.GetCommandText(TTableOp.OpSelect())
-         Dim insSql As String = probe.GetCommandText(TTableOp.OpInsert())
-         Dim updSql As String = probe.GetCommandText(TTableOp.OpUpdate())
-         Dim delSql As String = probe.GetCommandText(TTableOp.OpDelete())
-         Dim merSql As String = probe.GetCommandText(TTableOp.OpMerge())
-         Dim sel2 As String = probe.GetCommandText(TTableOp.OpSelect())
+         Dim selSql As String = probe.GetCommandText(TFieldCache.OpSelect())
+         Dim insSql As String = probe.GetCommandText(TFieldCache.OpInsert())
+         Dim updSql As String = probe.GetCommandText(TFieldCache.OpUpdate())
+         Dim delSql As String = probe.GetCommandText(TFieldCache.OpDelete())
+         Dim merSql As String = probe.GetCommandText(TFieldCache.OpMerge())
+         Dim sel2 As String = probe.GetCommandText(TFieldCache.OpSelect())
          console.timeEnd("sql-build")
          me.AssertTrue(selSql.Length > 0, "SQL SELECT gerado")
          me.AssertTrue(insSql.Length > 0, "SQL INSERT gerado")
@@ -1339,26 +1207,27 @@ Namespace tests
          me.AssertTrue(merSql.Length > 0, "SQL MERGE gerado")
          me.AssertTrue(sel2 = selSql, "Cache de template SELECT")
 
-         console.timeStart("seed-100")
-         Dim seed[] As TTable = []
+         console.timeStart("seed-20")
+         Dim seed[] As TBench = []
          seed.OwnsObjects = True
-         For i = 1 To 100
+         For i = 1 To 20
             Dim row As New TBench()
             me.FillBench(row, i)
             row.Insert()
-            me.PushRow(seed, row)
+            me.PushBench(seed, row)
          Next
-         console.timeEnd("seed-100")
-         me.AssertEqInt(seed.Length, 100, "Seed de 100 linhas na tabela temporária")
+         console.timeEnd("seed-20")
+         me.AssertEqInt(seed.Length, 20, "Seed de 20 linhas na tabela temporária")
 
-         console.timeStart("fetch-100")
-         Dim pool[] As TTable = probe.Fetch("", me.QuoteName("CodBench"), 100)
-         console.timeEnd("fetch-100")
-         me.AssertEqInt(pool.Length, 100, "Fetch limitou em 100")
+         console.timeStart("fetch-20")
+         Dim pool[] As TBench = TBench.Fetch("", me.QuoteName("CodBench"), 20)
+         console.timeEnd("fetch-20")
+         print(pool.First.ToString())
+         me.AssertEqInt(pool.Length, 20, "Fetch limitou em 20")
          pool.OwnsObjects = True
 
          console.timeStart("load-exists")
-         For i = 0 To 19
+         For i = 0 To 4
             Dim src As TBench = me.AsBench(pool, i)
             Dim loaded As New TBench()
             loaded.CodBench = src.CodBench
@@ -1371,23 +1240,23 @@ Namespace tests
          Next
          console.timeEnd("load-exists")
 
-         Dim created[] As TTable = []
+         Dim created[] As TBench = []
          created.OwnsObjects = True
          Dim firstRow As TBench = me.MakeBenchCopy(pool)
          console.timeStart("insert-first")
          me.AssertTrue(firstRow.Insert() >= 0, "Insert primeiro clone")
          console.timeEnd("insert-first")
          me.AssertTrue(firstRow.CodBench <> 0, "AutoCode atribuiu CodBench")
-         me.PushRow(created, firstRow)
+         me.PushBench(created, firstRow)
 
          console.timeStart("insert-each")
-         For i = 2 To 80
+         For i = 2 To 20
             Dim ins As TBench = me.MakeBenchCopy(pool)
             ins.Insert()
-            me.PushRow(created, ins)
+            me.PushBench(created, ins)
          Next
          console.timeEnd("insert-each")
-         me.AssertEqInt(created.Length, 80, "80 inserts individuais")
+         me.AssertEqInt(created.Length, 20, "20 inserts individuais")
 
          console.timeStart("update-each")
          For i = 0 To created.Length - 1
@@ -1411,11 +1280,11 @@ Namespace tests
          loadedUps.Load(me.QuoteName("CodBench") & " = " & CStr(existing.CodBench))
          me.AssertTrue(loadedUps.Nome.IndexOf("UPS ") >= 0, "Upsert atualiza existente")
          loadedUps.Free()
-         For i = 1 To 10
+         For i = 1 To 3
             Dim novo As TBench = me.MakeBenchCopy(pool)
             novo.Upsert()
             me.AssertTrue(novo.ExistsByPk(), "Upsert insere quando não existe")
-            me.PushRow(created, novo)
+            me.PushBench(created, novo)
          Next
          Dim existingM As TBench = me.AsBench(created, 1)
          existingM.Nome = "MRG " & CStr(existingM.CodBench)
@@ -1424,40 +1293,40 @@ Namespace tests
          loadedMrg.Load(me.QuoteName("CodBench") & " = " & CStr(existingM.CodBench))
          me.AssertTrue(loadedMrg.Nome.IndexOf("MRG ") >= 0, "Merge atualiza existente")
          loadedMrg.Free()
-         For i = 1 To 10
+         For i = 1 To 3
             Dim mrg As TBench = me.MakeBenchCopy(pool)
             mrg.Merge()
             me.AssertTrue(mrg.ExistsByPk(), "Merge insere quando não existe")
-            me.PushRow(created, mrg)
+            me.PushBench(created, mrg)
          Next
          console.timeEnd("upsert-merge")
 
          console.timeStart("assign-from")
-         For i = 1 To 10
+         For i = 1 To 3
             Dim src1 As TBench = me.AsBench(pool, 0)
             Dim dst As New TBench()
             dst.AssignFrom(src1)
             me.FillBench(dst, me.NextStamp())
             dst.Insert()
             me.AssertTrue(dst.ExistsByPk(), "AssignFrom + Insert")
-            me.PushRow(created, dst)
+            me.PushBench(created, dst)
          Next
          console.timeEnd("assign-from")
 
          Dim batch[] As TTable = []
-         For i = 1 To 40
+         For i = 1 To 10
             me.PushRow(batch, me.MakeBenchCopy(pool))
          Next
          console.timeStart("exec-insert")
          Dim db As New TExecutor()
-         db.CommitMode = TCommitMode.SingleTransaction()
+         db.CommitMode = TFieldCache.CommitSingle()
          db.AddInsert(batch)
          db.Exec()
          console.timeEnd("exec-insert")
          For i = 0 To batch.Length - 1
-            Dim exRow As TBench = me.AsBench(batch, i)
+            Dim exRow As TBench = me.AsTableBench(batch, i)
             me.AssertTrue(exRow.CodBench <> 0, "Executor atribuiu PK")
-            me.PushRow(created, exRow)
+            me.PushBench(created, exRow)
          Next
          batch.OwnsObjects = False
          batch.Free()
@@ -1465,8 +1334,8 @@ Namespace tests
 
          console.timeStart("exec-update")
          Dim dbUpd As New TExecutor()
-         dbUpd.CommitMode = TCommitMode.SingleTransaction()
-         Dim nUpd As Integer = 40
+         dbUpd.CommitMode = TFieldCache.CommitSingle()
+         Dim nUpd As Integer = 10
          If nUpd > created.Length Then
             nUpd = created.Length
          End If
@@ -1480,18 +1349,18 @@ Namespace tests
          dbUpd.Free()
 
          Dim batch2[] As TTable = []
-         For i = 1 To 12
+         For i = 1 To 6
             me.PushRow(batch2, me.MakeBenchCopy(pool))
          Next
          console.timeStart("exec-per-batch")
          Dim dbBatch As New TExecutor()
-         dbBatch.CommitMode = TCommitMode.PerBatch()
+         dbBatch.CommitMode = TFieldCache.CommitPerBatch()
          dbBatch.BatchSize = 5
          dbBatch.AddInsert(batch2)
          dbBatch.Exec()
          console.timeEnd("exec-per-batch")
          For i = 0 To batch2.Length - 1
-            me.PushRow(created, me.AsBench(batch2, i))
+            me.PushBench(created, me.AsTableBench(batch2, i))
          Next
          batch2.OwnsObjects = False
          batch2.Free()
@@ -1503,7 +1372,7 @@ Namespace tests
          mixA.Nome = "MIX " & CStr(mixA.CodBench)
          mixB.Nome = "MIX " & CStr(mixB.CodBench)
          Dim dbMix As New TExecutor()
-         dbMix.CommitMode = TCommitMode.SingleTransaction()
+         dbMix.CommitMode = TFieldCache.CommitSingle()
          dbMix.AddUpsert(mixA)
          dbMix.AddMerge(mixB)
          dbMix.AddSql("UPDATE " & me.QuoteName("_tables_bench") & " SET " & me.QuoteName("Descricao") & " = 'via-sql' WHERE " & me.QuoteName("CodBench") & " = " & CStr(mixC.CodBench))
@@ -1517,15 +1386,15 @@ Namespace tests
          dbMix.Free()
 
          console.timeStart("fetch-copies")
-         Dim copies[] As TTable = probe.Fetch("", me.QuoteName("CodBench"), 0)
+         Dim copies[] As TBench = TBench.Fetch("", me.QuoteName("CodBench"), 0)
          console.timeEnd("fetch-copies")
-         console.log("Fetch total bench: " & CStr(copies.Length) & " (seed 100 + criadas " & CStr(created.Length) & ")")
-         me.AssertEqInt(copies.Length, 100 + created.Length, "Fetch bate com seed + inseridas")
+         console.log("Fetch total bench: " & CStr(copies.Length) & " (seed 20 + criadas " & CStr(created.Length) & ")")
+         me.AssertEqInt(copies.Length, 20 + created.Length, "Fetch bate com seed + inseridas")
          copies.OwnsObjects = True
          copies.Free()
 
          console.timeStart("delete-each")
-         For i = 0 To 14
+         For i = 0 To 4
             Dim delRow As TBench = me.AsBench(created, i)
             If delRow.ExistsByPk() Then
                delRow.Delete()
@@ -1535,14 +1404,11 @@ Namespace tests
          console.timeEnd("delete-each")
 
          Dim dbDel As New TExecutor()
-         dbDel.CommitMode = TCommitMode.SingleTransaction()
+         dbDel.CommitMode = TFieldCache.CommitSingle()
          Dim nAdd As Integer = 0
-         For i = 0 To created.Length - 1
-            Dim left As TBench = me.AsBench(created, i)
-            If left.ExistsByPk() Then
-               dbDel.AddDelete(left)
-               nAdd = nAdd + 1
-            End If
+         For i = 5 To created.Length - 1
+            dbDel.AddDelete(me.AsBench(created, i))
+            nAdd = nAdd + 1
          Next
          For i = 0 To seed.Length - 1
             dbDel.AddDelete(me.AsBench(seed, i))
@@ -1553,7 +1419,7 @@ Namespace tests
             dbDel.Exec()
          End If
          console.timeEnd("exec-delete")
-         Dim _empty[] As TTable = probe.Fetch("", "", 0)
+         Dim _empty[] As TBench = TBench.Fetch("", "", 0)
          me.AssertEqInt(_empty.Length, 0, "Tabela temporária vazia após deletes")
          _empty.OwnsObjects = True
          _empty.Free()

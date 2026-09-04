@@ -489,7 +489,7 @@ Namespace TablesTable
          LoadWhere = me.Load(pWhere)
       End Function
 
-      Function Fetch(pWhere As String, pOrder As String = "", pLimit As Integer = 0) As TTList<TTable>
+      Function FetchRows(pWhere As String, pOrder As String = "", pLimit As Integer = 0) As TTList<TTable>
          Dim query As SQL.Command
          Dim rows[] As TTable = []
          Dim sqlDialect As TSqlDialect = _sqlDialect
@@ -507,19 +507,18 @@ Namespace TablesTable
          query.Close()
          query.Free()
          rows.OwnsObjects = False
-         Fetch = rows
+         FetchRows = rows
       End Function
 
-      Function Exists(pWhere As String) As Boolean
+      Function RowExists(pWhere As String) As Boolean
          Dim sqlText As String = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM " & me.BuildFromClause() & _sqlDialect.NormalizeWhere(pWhere)
-         Exists = TSql.ExistsFlag(sqlText)
+         RowExists = TSql.ExistsFlag(sqlText)
       End Function
 
       Function ExistsByPk() As Boolean
          Dim sqlDialect As TSqlDialect = _sqlDialect
          Dim sqlText As String = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM " & sqlDialect.QuoteTable(me.Schema.SchemaName, me.Schema.TableName) & me.BuildPkWhereSql()
-         Dim query As SQL.Command = New SQL.Command()
-         query.CommandText = sqlText
+         Dim query As SQL.Command = TSql.CommandFor(me.IncludedFieldKey(_opDelete) & "|exists", sqlText)
          me.Bind(query, _opDelete)
          query.Open()
          Dim n As Integer = 0
@@ -527,7 +526,6 @@ Namespace TablesTable
             n = query.Field("ok").AsInteger
          End If
          query.Close()
-         query.Free()
          ExistsByPk = (n <> 0)
       End Function
 
@@ -665,6 +663,91 @@ Namespace TablesTable
             n.GetField(i).Value = me.GetField(i).Value
          Next
          Clone = n
+      End Function
+
+      Overrides Function ToString() As String
+          With me.BuildLogger(me.Schema.SchemaName & "." & me.Schema.TableName)
+            Dim i As Integer
+            Dim count As Integer = me.Fields.Count
+            For i = 0 To count - 1
+               Dim f As TField = me.GetField(i)
+               .Prop(f.Def.Name, CStr(f.Value))
+            Next
+            ToString = .Text
+            .Free()
+          End With
+      End Function
+
+      Sub Free()
+         MyBase.Free()
+      End Sub
+   End Class
+
+   MustInherit Class TTableOf<T As TTable>
+      Inherits TTable
+
+      Sub New(pName As String)
+         MyBase.New(pName)
+      End Sub
+
+      Overrides Function CreateInstance() As TTable
+         CreateInstance = New T()
+      End Function
+
+      MustOverride Overridable Sub DefineSchema(pSchema As TTableSchema)
+      End Sub
+
+      Shared Function Fetch(pWhere As String, pOrder As String = "", pLimit As Integer = 0) As TTList<T>
+         Dim probe As New T()
+         Dim raw[] As TTable = probe.FetchRows(pWhere, pOrder, pLimit)
+         probe.Free()
+         Dim rows[] As T = []
+         Dim i As Integer
+         Dim count As Integer = raw.Length
+         For i = 0 To count - 1
+            rows.Push(T(raw.Take(i)))
+         Next
+         raw.OwnsObjects = False
+         raw.Free()
+         rows.OwnsObjects = False
+         Fetch = rows
+      End Function
+
+      Shared Function Find(pWhere As String) As T
+         Dim row As New T()
+         If row.Load(pWhere) Then
+            Find = row
+         Else
+            row.Free()
+            Find = Null
+         End If
+      End Function
+
+      Shared Function Exists(pWhere As String) As Boolean
+         Dim probe As New T()
+         Dim ok As Boolean = probe.RowExists(pWhere)
+         probe.Free()
+         Exists = ok
+      End Function
+
+      Shared Function Insert(pRow As T) As Integer
+         Insert = pRow.Insert()
+      End Function
+
+      Shared Function Update(pRow As T) As Integer
+         Update = pRow.Update()
+      End Function
+
+      Shared Function Delete(pRow As T) As Integer
+         Delete = pRow.Delete()
+      End Function
+
+      Shared Function Upsert(pRow As T) As Integer
+         Upsert = pRow.Upsert()
+      End Function
+
+      Shared Function Merge(pRow As T) As Integer
+         Merge = pRow.Merge()
       End Function
 
       Sub Free()

@@ -6,11 +6,42 @@ Imports TablesSchema
 
 Namespace TablesSql
 
+   Private Dim _resReady As Boolean
+   Private Dim _resTrigger As TResourceKind
+   Private Dim _resProcedure As TResourceKind
+   Private Dim _resFunc As TResourceKind
+   Private Dim _resView As TResourceKind
+   Private Dim _resIndex As TResourceKind
+   Private Dim _kindString As TKindField
+   Private Dim _kindInteger As TKindField
+   Private Dim _kindFloat As TKindField
+   Private Dim _kindBoolean As TKindField
+   Private Dim _kindDate As TKindField
+   Private Dim _kindDateTime As TKindField
+
    MustInherit Class TSqlDialect
       Inherits TTObject
 
       Sub New()
          MyBase.New()
+         TSqlDialect.EnsureKinds()
+      End Sub
+
+      Shared Sub EnsureKinds()
+         If Not _resReady Then
+            _resTrigger = TFieldCache.ResourceTrigger()
+            _resProcedure = TFieldCache.ResourceProcedure()
+            _resFunc = TFieldCache.ResourceFunc()
+            _resView = TFieldCache.ResourceView()
+            _resIndex = TFieldCache.ResourceIndex()
+            _kindString = TFieldCache.KindString()
+            _kindInteger = TFieldCache.KindInteger()
+            _kindFloat = TFieldCache.KindFloat()
+            _kindBoolean = TFieldCache.KindBoolean()
+            _kindDate = TFieldCache.KindDate()
+            _kindDateTime = TFieldCache.KindDateTime()
+            _resReady = True
+         End If
       End Sub
 
       Function JoinComma(pParts As StringList) As String
@@ -113,17 +144,17 @@ Namespace TablesSql
       Overridable Function MapFieldKind(pNative As String) As TKindField
          Dim n As String = UCase(Trim(pNative))
          If n = "INT" Or n = "INTEGER" Or n = "SMALLINT" Or n = "TINYINT" Or n = "BIGINT" Or n = "INT2" Or n = "INT4" Or n = "INT8" Or n = "SERIAL" Or n = "BIGSERIAL" Or n = "SMALLSERIAL" Then
-            MapFieldKind = TFieldCache.KindInteger()
+            MapFieldKind = _kindInteger
          ElseIf n = "FLOAT" Or n = "REAL" Or n = "DOUBLE" Or n = "DOUBLE PRECISION" Or n = "NUMERIC" Or n = "DECIMAL" Or n = "MONEY" Or n = "NUMBER" Or n = "FLOAT4" Or n = "FLOAT8" Then
-            MapFieldKind = TFieldCache.KindFloat()
+            MapFieldKind = _kindFloat
          ElseIf n = "BIT" Or n = "BOOLEAN" Or n = "BOOL" Then
-            MapFieldKind = TFieldCache.KindBoolean()
+            MapFieldKind = _kindBoolean
          ElseIf n = "DATE" Then
-            MapFieldKind = TFieldCache.KindDate()
+            MapFieldKind = _kindDate
          ElseIf n = "DATETIME" Or n = "DATETIME2" Or n = "SMALLDATETIME" Or n = "TIMESTAMP" Or n = "TIMESTAMPTZ" Or n = "TIME" Or n = "TIMETZ" Then
-            MapFieldKind = TFieldCache.KindDateTime()
+            MapFieldKind = _kindDateTime
          Else
-            MapFieldKind = TFieldCache.KindString()
+            MapFieldKind = _kindString
          End If
       End Function
 
@@ -226,13 +257,13 @@ Namespace TablesSql
       End Function
 
       Overridable Function SqlDropRoutine(pKind As TResourceKind, pName As String) As String
-         If pKind.IsValue(TResourceKind.Trigger()) Then
+         If pKind = _resTrigger Then
             SqlDropRoutine = "DROP TRIGGER " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.Procedure()) Then
+         ElseIf pKind = _resProcedure Then
             SqlDropRoutine = "DROP PROCEDURE " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.Func()) Then
+         ElseIf pKind = _resFunc Then
             SqlDropRoutine = "DROP FUNCTION " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.View()) Then
+         ElseIf pKind = _resView Then
             SqlDropRoutine = "DROP VIEW " & me.QuoteIdent(pName)
          Else
             SqlDropRoutine = "DROP INDEX " & me.QuoteIdent(pName)
@@ -513,14 +544,14 @@ Namespace TablesSql
 
       Overrides Function SqlRoutineExists(pKind As TResourceKind, pName As String) As String
          Dim t As String = "P"
-         If pKind.IsValue(TResourceKind.Trigger()) Then
+         If pKind = _resTrigger Then
             t = "TR"
-         ElseIf pKind.IsValue(TResourceKind.Func()) Then
+         ElseIf pKind = _resFunc Then
             t = "FN"
-         ElseIf pKind.IsValue(TResourceKind.View()) Then
+         ElseIf pKind = _resView Then
             t = "V"
          End If
-         If pKind.IsValue(TResourceKind.Index()) Then
+         If pKind = _resIndex Then
             SqlRoutineExists = "SELECT CASE WHEN EXISTS(SELECT 1 FROM sys.indexes WHERE name = N'" & pName & "') THEN 1 ELSE 0 END AS ok"
          Else
             SqlRoutineExists = "SELECT CASE WHEN OBJECT_ID(N'" & pName & "', N'" & t & "') IS NULL THEN 0 ELSE 1 END AS ok"
@@ -584,13 +615,13 @@ Namespace TablesSql
       End Function
 
       Overrides Function SqlDropRoutine(pKind As TResourceKind, pName As String) As String
-         If pKind.IsValue(TResourceKind.Trigger()) Then
+         If pKind = _resTrigger Then
             SqlDropRoutine = "DROP TRIGGER IF EXISTS " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.Procedure()) Then
+         ElseIf pKind = _resProcedure Then
             SqlDropRoutine = "DROP PROCEDURE IF EXISTS " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.Func()) Then
+         ElseIf pKind = _resFunc Then
             SqlDropRoutine = "DROP FUNCTION IF EXISTS " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.View()) Then
+         ElseIf pKind = _resView Then
             SqlDropRoutine = "DROP VIEW IF EXISTS " & me.QuoteIdent(pName)
          Else
             SqlDropRoutine = "DROP INDEX IF EXISTS " & me.QuoteIdent(pName)
@@ -691,9 +722,9 @@ Namespace TablesSql
       End Function
 
       Overrides Function SqlRoutineExists(pKind As TResourceKind, pName As String) As String
-         If pKind.IsValue(TResourceKind.View()) Then
+         If pKind = _resView Then
             SqlRoutineExists = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM SYS.SYSTABLE WHERE UPPER(table_name) = UPPER('" & pName & "') AND table_type = 'VIEW'"
-         ElseIf pKind.IsValue(TResourceKind.Index()) Then
+         ElseIf pKind = _resIndex Then
             SqlRoutineExists = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM SYS.SYSIDX WHERE UPPER(index_name) = UPPER('" & pName & "')"
          Else
             SqlRoutineExists = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM SYS.SYSPROCEDURE WHERE UPPER(proc_name) = UPPER('" & pName & "')"
@@ -749,13 +780,13 @@ Namespace TablesSql
       End Function
 
       Overrides Function SqlDropRoutine(pKind As TResourceKind, pName As String) As String
-         If pKind.IsValue(TResourceKind.Trigger()) Then
+         If pKind = _resTrigger Then
             SqlDropRoutine = "DROP TRIGGER " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.Procedure()) Then
+         ElseIf pKind = _resProcedure Then
             SqlDropRoutine = "DROP PROCEDURE " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.Func()) Then
+         ElseIf pKind = _resFunc Then
             SqlDropRoutine = "DROP FUNCTION " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.View()) Then
+         ElseIf pKind = _resView Then
             SqlDropRoutine = "DROP VIEW " & me.QuoteIdent(pName)
          Else
             SqlDropRoutine = "DROP INDEX " & me.QuoteIdent(pName)
@@ -863,11 +894,11 @@ Namespace TablesSql
       End Function
 
       Overrides Function SqlRoutineExists(pKind As TResourceKind, pName As String) As String
-         If pKind.IsValue(TResourceKind.Trigger()) Then
+         If pKind = _resTrigger Then
             SqlRoutineExists = "SELECT CASE WHEN EXISTS(SELECT 1 FROM pg_trigger WHERE tgname = '" & LCase(pName) & "') THEN 1 ELSE 0 END AS ok"
-         ElseIf pKind.IsValue(TResourceKind.View()) Then
+         ElseIf pKind = _resView Then
             SqlRoutineExists = "SELECT CASE WHEN to_regclass('" & LCase(pName) & "') IS NULL THEN 0 ELSE 1 END AS ok"
-         ElseIf pKind.IsValue(TResourceKind.Index()) Then
+         ElseIf pKind = _resIndex Then
             SqlRoutineExists = "SELECT CASE WHEN EXISTS(SELECT 1 FROM pg_class WHERE relkind = 'i' AND relname IN ('" & pName & "', '" & LCase(pName) & "')) THEN 1 ELSE 0 END AS ok"
          Else
             SqlRoutineExists = "SELECT CASE WHEN EXISTS(SELECT 1 FROM pg_proc WHERE proname IN ('" & pName & "', '" & LCase(pName) & "')) THEN 1 ELSE 0 END AS ok"
@@ -903,13 +934,13 @@ Namespace TablesSql
       End Function
 
       Overrides Function SqlDropRoutine(pKind As TResourceKind, pName As String) As String
-         If pKind.IsValue(TResourceKind.Trigger()) Then
+         If pKind = _resTrigger Then
             SqlDropRoutine = "DROP TRIGGER IF EXISTS " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.Procedure()) Then
+         ElseIf pKind = _resProcedure Then
             SqlDropRoutine = "DROP PROCEDURE IF EXISTS " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.Func()) Then
+         ElseIf pKind = _resFunc Then
             SqlDropRoutine = "DROP FUNCTION IF EXISTS " & me.QuoteIdent(pName)
-         ElseIf pKind.IsValue(TResourceKind.View()) Then
+         ElseIf pKind = _resView Then
             SqlDropRoutine = "DROP VIEW IF EXISTS " & me.QuoteIdent(pName)
          Else
             SqlDropRoutine = "DROP INDEX IF EXISTS " & me.QuoteIdent(pName)

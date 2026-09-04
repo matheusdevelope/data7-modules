@@ -12,8 +12,12 @@ Imports TablesExecutor
 
 Namespace TablesMigration
 
+   Private Dim _migReady As Boolean
+   Private Dim _ddlCreateTable As TDdlOpKind
+   Private Dim _ddlAddColumn As TDdlOpKind
+
    Class TTableMigrations
-      Inherits TTable
+      Inherits TTableOf<TTableMigrations>
 
       Sub New()
          MyBase.New("TTableMigrations")
@@ -24,10 +28,6 @@ Namespace TablesMigration
          pSchema.Field("Id").AsString().MaxLen(150).PrimaryKeyField()
          pSchema.Field("AppliedAt").AsDateTime().RequiredField()
       End Sub
-
-      Overrides Function CreateInstance() As TTable
-         CreateInstance = New TTableMigrations()
-      End Function
 
       Property IdValue As String
          Get
@@ -113,14 +113,24 @@ Namespace TablesMigration
 
       Sub New(pId As String)
          MyBase.New()
+         TMigration.EnsureKinds()
          me._id = pId
          me.RawSql = ""
          me.RawSqlDown = ""
          me.Resources = []
       End Sub
 
+      Shared Sub EnsureKinds()
+         If Not _migReady Then
+            _ddlCreateTable = TFieldCache.DdlCreateTable()
+            _ddlAddColumn = TFieldCache.DdlAddColumn()
+            _migReady = True
+         End If
+      End Sub
+
       Sub New(pId As String, pTable As TTable)
          MyBase.New()
+         TMigration.EnsureKinds()
          me._id = pId
          me.Table = pTable
          me.RawSql = ""
@@ -130,6 +140,7 @@ Namespace TablesMigration
 
       Sub New(pId As String, pSql As String)
          MyBase.New()
+         TMigration.EnsureKinds()
          me._id = pId
          me.RawSql = pSql
          me.RawSqlDown = ""
@@ -154,9 +165,9 @@ Namespace TablesMigration
          Dim i As Integer = ups.Length - 1
          While i >= 0
             Dim op As TDdlOp = ups.Take(i)
-            If op.Kind.IsValue(TDdlOpKind.CreateTable()) Then
+            If op.Kind = _ddlCreateTable Then
                downs.Push(pCtx.Ddl.OpDropTable(op.TableName))
-            ElseIf op.Kind.IsValue(TDdlOpKind.AddColumn()) Then
+            ElseIf op.Kind = _ddlAddColumn Then
                downs.Push(pCtx.Ddl.OpDropColumn(op.TableName, op.ColumnName))
             End If
             i = i - 1
@@ -312,16 +323,14 @@ Namespace TablesMigration
          Else
             me._applied.Clear()
          End If
-         Dim probe As New TTableMigrations()
-         Dim rows[] As TTable = probe.Fetch("", "Id")
+         Dim rows[] As TTableMigrations = TTableMigrations.Fetch("", "Id")
          Dim i As Integer
          For i = 0 To rows.Length - 1
-            Dim rec As TTableMigrations = TTableMigrations(rows.Take(i))
+            Dim rec As TTableMigrations = rows.Take(i)
             me._applied.Add(rec.IdValue)
          Next
          rows.OwnsObjects = False
          rows.Free()
-         probe.Free()
          me._appliedReady = True
       End Sub
 

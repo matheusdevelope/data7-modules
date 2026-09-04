@@ -8,6 +8,18 @@ Imports TablesSql
 
 Namespace TablesExecutor
 
+   Private Dim _execReady As Boolean
+   Private Dim _opInsert As TTableOp
+   Private Dim _opUpdate As TTableOp
+   Private Dim _opDelete As TTableOp
+   Private Dim _opUpsert As TTableOp
+   Private Dim _opMerge As TTableOp
+   Private Dim _opCustom As TTableOp
+   Private Dim _commitSingle As TCommitMode
+   Private Dim _commitPerBatch As TCommitMode
+   Private Dim _commitPerStatement As TCommitMode
+   Private Dim _commitJoinExisting As TCommitMode
+
    Class TWorkItem
       Inherits TTObject
 
@@ -58,15 +70,32 @@ Namespace TablesExecutor
 
       Sub New()
          MyBase.New()
+         TExecutor.EnsureKinds()
          me.BatchSize = 50
          me.Queue = []
          me.Queue.OwnsObjects = True
          me.Leases = []
          me.Leases.OwnsObjects = True
-         me._commitMode = TFieldCache.CommitSingle()
+         me._commitMode = _commitSingle
          me._rewindOnError = True
          me._rewindSet = False
          me._keysAssigned = False
+      End Sub
+
+      Shared Sub EnsureKinds()
+         If Not _execReady Then
+            _opInsert = TFieldCache.OpInsert()
+            _opUpdate = TFieldCache.OpUpdate()
+            _opDelete = TFieldCache.OpDelete()
+            _opUpsert = TFieldCache.OpUpsert()
+            _opMerge = TFieldCache.OpMerge()
+            _opCustom = TFieldCache.OpCustom()
+            _commitSingle = TFieldCache.CommitSingle()
+            _commitPerBatch = TFieldCache.CommitPerBatch()
+            _commitPerStatement = TFieldCache.CommitPerStatement()
+            _commitJoinExisting = TFieldCache.CommitJoinExisting()
+            _execReady = True
+         End If
       End Sub
 
       Property CommitMode As TCommitMode
@@ -76,7 +105,7 @@ Namespace TablesExecutor
          Set(pValue As TCommitMode)
             me._commitMode = pValue
             If Not me._rewindSet Then
-               me._rewindOnError = pValue.IsValue(TFieldCache.CommitSingle()) Or pValue.IsValue(TFieldCache.CommitJoinExisting())
+               me._rewindOnError = (pValue = _commitSingle) Or (pValue = _commitJoinExisting)
             End If
          End Set
       End Property
@@ -92,37 +121,37 @@ Namespace TablesExecutor
       End Property
 
       Sub AddInsert(pRow As TTable)
-         Dim item As New TWorkItem(TFieldCache.OpInsert())
+         Dim item As New TWorkItem(_opInsert)
          item.Table = pRow
          me.Queue.Push(CStr(me.Queue.Length), item)
       End Sub
 
       Sub AddUpdate(pRow As TTable)
-         Dim item As New TWorkItem(TFieldCache.OpUpdate())
+         Dim item As New TWorkItem(_opUpdate)
          item.Table = pRow
          me.Queue.Push(CStr(me.Queue.Length), item)
       End Sub
 
       Sub AddDelete(pRow As TTable)
-         Dim item As New TWorkItem(TFieldCache.OpDelete())
+         Dim item As New TWorkItem(_opDelete)
          item.Table = pRow
          me.Queue.Push(CStr(me.Queue.Length), item)
       End Sub
 
       Sub AddUpsert(pRow As TTable)
-         Dim item As New TWorkItem(TFieldCache.OpUpsert())
+         Dim item As New TWorkItem(_opUpsert)
          item.Table = pRow
          me.Queue.Push(CStr(me.Queue.Length), item)
       End Sub
 
       Sub AddMerge(pRow As TTable)
-         Dim item As New TWorkItem(TFieldCache.OpMerge())
+         Dim item As New TWorkItem(_opMerge)
          item.Table = pRow
          me.Queue.Push(CStr(me.Queue.Length), item)
       End Sub
 
       Sub AddSql(pSql As String)
-         Dim item As New TWorkItem(TFieldCache.OpCustom())
+         Dim item As New TWorkItem(_opCustom)
          item.SqlText = pSql
          me.Queue.Push(CStr(me.Queue.Length), item)
       End Sub
@@ -146,7 +175,7 @@ Namespace TablesExecutor
       End Function
 
       Function IsInsertLike(pItem As TWorkItem) As Boolean
-         IsInsertLike = pItem.Op.IsValue(TFieldCache.OpInsert()) Or pItem.Op.IsValue(TFieldCache.OpUpsert()) Or pItem.Op.IsValue(TFieldCache.OpMerge())
+         IsInsertLike = (pItem.Op = _opInsert) Or (pItem.Op = _opUpsert) Or (pItem.Op = _opMerge)
       End Function
 
       Sub AssignKeys()
@@ -168,19 +197,19 @@ Namespace TablesExecutor
       End Sub
 
       Function ExecItem(pItem As TWorkItem) As Integer
-         If pItem.Op.IsValue(TFieldCache.OpCustom()) Then
+         If pItem.Op = _opCustom Then
             ExecItem = TSql.ExecScript(pItem.SqlText)
             Exit Function
          End If
          Dim op As TTableOp = pItem.Op
-         If op.IsValue(TFieldCache.OpUpsert()) Then
+         If op = _opUpsert Then
             If pItem.Table.ExistsByPk() Then
-               op = TFieldCache.OpUpdate()
+               op = _opUpdate
             Else
-               op = TFieldCache.OpInsert()
+               op = _opInsert
             End If
          End If
-         If op.IsValue(TFieldCache.OpMerge()) Then
+         If op = _opMerge Then
             pItem.Table.EnsurePrimaryKey()
          End If
          Dim query As SQL.Command = pItem.Table.PreparedCommand(op)
@@ -228,9 +257,9 @@ Namespace TablesExecutor
       Function Exec() As Integer
          Dim total As Integer = 0
          me.AssignKeys()
-         Dim ownTx As Boolean = Not me._commitMode.IsValue(TFieldCache.CommitJoinExisting())
-         Dim perStmt As Boolean = me._commitMode.IsValue(TFieldCache.CommitPerStatement())
-         Dim _perBatch As Boolean = me._commitMode.IsValue(TFieldCache.CommitPerBatch())
+         Dim ownTx As Boolean = me._commitMode <> _commitJoinExisting
+         Dim perStmt As Boolean = me._commitMode = _commitPerStatement
+         Dim _perBatch As Boolean = me._commitMode = _commitPerBatch
          Dim batchCount As Integer = 0
          Try
             If Not perStmt Then

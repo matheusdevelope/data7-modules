@@ -73,11 +73,29 @@ Namespace TablesField
    Private Dim _opUpsert As TTableOp
    Private Dim _opMerge As TTableOp
    Private Dim _opCustom As TTableOp
+   Private Dim _alterInPlace As TAlterColumnMode
+   Private Dim _alterRebuild As TAlterColumnMode
    Private Dim _alterAutomatic As TAlterColumnMode
    Private Dim _commitSingle As TCommitMode
    Private Dim _commitPerBatch As TCommitMode
    Private Dim _commitPerStatement As TCommitMode
    Private Dim _commitJoinExisting As TCommitMode
+   Private Dim _resTrigger As TResourceKind
+   Private Dim _resProcedure As TResourceKind
+   Private Dim _resFunc As TResourceKind
+   Private Dim _resView As TResourceKind
+   Private Dim _resIndex As TResourceKind
+   Private Dim _ddlCreateTable As TDdlOpKind
+   Private Dim _ddlDropTable As TDdlOpKind
+   Private Dim _ddlAddColumn As TDdlOpKind
+   Private Dim _ddlDropColumn As TDdlOpKind
+   Private Dim _ddlRenameColumn As TDdlOpKind
+   Private Dim _ddlAlterColumn As TDdlOpKind
+   Private Dim _ddlEnsureSequence As TDdlOpKind
+   Private Dim _ddlDropSequence As TDdlOpKind
+   Private Dim _ddlCustomSql As TDdlOpKind
+   Private Dim _ddlCreateOrAlterRoutine As TDdlOpKind
+   Private Dim _ddlDropRoutine As TDdlOpKind
 
    Class TFieldCache
 
@@ -100,11 +118,29 @@ Namespace TablesField
             _opUpsert = TTableOp.OpUpsert()
             _opMerge = TTableOp.OpMerge()
             _opCustom = TTableOp.OpCustom()
+            _alterInPlace = TAlterColumnMode.InPlace()
+            _alterRebuild = TAlterColumnMode.Rebuild()
             _alterAutomatic = TAlterColumnMode.Automatic()
             _commitSingle = TCommitMode.SingleTransaction()
             _commitPerBatch = TCommitMode.PerBatch()
             _commitPerStatement = TCommitMode.PerStatement()
             _commitJoinExisting = TCommitMode.JoinExisting()
+            _resTrigger = TResourceKind.Trigger()
+            _resProcedure = TResourceKind.Procedure()
+            _resFunc = TResourceKind.Func()
+            _resView = TResourceKind.View()
+            _resIndex = TResourceKind.Index()
+            _ddlCreateTable = TDdlOpKind.CreateTable()
+            _ddlDropTable = TDdlOpKind.DropTable()
+            _ddlAddColumn = TDdlOpKind.AddColumn()
+            _ddlDropColumn = TDdlOpKind.DropColumn()
+            _ddlRenameColumn = TDdlOpKind.RenameColumn()
+            _ddlAlterColumn = TDdlOpKind.AlterColumn()
+            _ddlEnsureSequence = TDdlOpKind.EnsureSequence()
+            _ddlDropSequence = TDdlOpKind.DropSequence()
+            _ddlCustomSql = TDdlOpKind.CustomSql()
+            _ddlCreateOrAlterRoutine = TDdlOpKind.CreateOrAlterRoutine()
+            _ddlDropRoutine = TDdlOpKind.DropRoutine()
             _enumReady = True
          End If
       End Sub
@@ -174,6 +210,16 @@ Namespace TablesField
          OpCustom = _opCustom
       End Function
 
+      Shared Function AlterInPlace() As TAlterColumnMode
+         TFieldCache.Ensure()
+         AlterInPlace = _alterInPlace
+      End Function
+
+      Shared Function AlterRebuild() As TAlterColumnMode
+         TFieldCache.Ensure()
+         AlterRebuild = _alterRebuild
+      End Function
+
       Shared Function AlterAutomatic() As TAlterColumnMode
          TFieldCache.Ensure()
          AlterAutomatic = _alterAutomatic
@@ -197,6 +243,86 @@ Namespace TablesField
       Shared Function CommitJoinExisting() As TCommitMode
          TFieldCache.Ensure()
          CommitJoinExisting = _commitJoinExisting
+      End Function
+
+      Shared Function ResourceTrigger() As TResourceKind
+         TFieldCache.Ensure()
+         ResourceTrigger = _resTrigger
+      End Function
+
+      Shared Function ResourceProcedure() As TResourceKind
+         TFieldCache.Ensure()
+         ResourceProcedure = _resProcedure
+      End Function
+
+      Shared Function ResourceFunc() As TResourceKind
+         TFieldCache.Ensure()
+         ResourceFunc = _resFunc
+      End Function
+
+      Shared Function ResourceView() As TResourceKind
+         TFieldCache.Ensure()
+         ResourceView = _resView
+      End Function
+
+      Shared Function ResourceIndex() As TResourceKind
+         TFieldCache.Ensure()
+         ResourceIndex = _resIndex
+      End Function
+
+      Shared Function DdlCreateTable() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlCreateTable = _ddlCreateTable
+      End Function
+
+      Shared Function DdlDropTable() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlDropTable = _ddlDropTable
+      End Function
+
+      Shared Function DdlAddColumn() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlAddColumn = _ddlAddColumn
+      End Function
+
+      Shared Function DdlDropColumn() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlDropColumn = _ddlDropColumn
+      End Function
+
+      Shared Function DdlRenameColumn() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlRenameColumn = _ddlRenameColumn
+      End Function
+
+      Shared Function DdlAlterColumn() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlAlterColumn = _ddlAlterColumn
+      End Function
+
+      Shared Function DdlEnsureSequence() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlEnsureSequence = _ddlEnsureSequence
+      End Function
+
+      Shared Function DdlDropSequence() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlDropSequence = _ddlDropSequence
+      End Function
+
+      Shared Function DdlCustomSql() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlCustomSql = _ddlCustomSql
+      End Function
+
+      Shared Function DdlCreateOrAlterRoutine() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlCreateOrAlterRoutine = _ddlCreateOrAlterRoutine
+      End Function
+
+      Shared Function DdlDropRoutine() As TDdlOpKind
+         TFieldCache.Ensure()
+         DdlDropRoutine = _ddlDropRoutine
       End Function
 
       Sub Free()

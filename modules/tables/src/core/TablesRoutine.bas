@@ -4,11 +4,22 @@ Imports TablesSql
 
 Namespace TablesRoutine
 
+   Private Dim _resReady As Boolean
+   Private Dim _resIndex As TResourceKind
+
    Class TRoutine
       Inherits TTObject
 
       Sub New()
          MyBase.New()
+         TRoutine.EnsureKinds()
+      End Sub
+
+      Shared Sub EnsureKinds()
+         If Not _resReady Then
+            _resIndex = TFieldCache.ResourceIndex()
+            _resReady = True
+         End If
       End Sub
 
       Function Exists(pKind As TResourceKind, pName As String) As Boolean
@@ -30,7 +41,7 @@ Namespace TablesRoutine
       Sub DropIndexOnTable(pIndex As String, pTable As String)
          If TSql.Dialect().SupportsDropIfExists() Then
             TSql.ExecScript(TSql.Dialect().SqlDropIndexOnTable(pIndex, pTable))
-         ElseIf me.Exists(TResourceKind.Index(), pIndex) Then
+         ElseIf me.Exists(_resIndex, pIndex) Then
             TSql.ExecScript(TSql.Dialect().SqlDropIndexOnTable(pIndex, pTable))
          End If
       End Sub
