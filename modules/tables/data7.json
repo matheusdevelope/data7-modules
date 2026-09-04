@@ -1,7 +1,7 @@
 {
   "nome": "Tables",
   "language": "Basic",
-  "version": "1.0",
+  "version": "1.0.0.2",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",

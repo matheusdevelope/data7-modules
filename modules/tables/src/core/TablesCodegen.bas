@@ -43,7 +43,7 @@ Namespace TablesCodegen
          If Not TSql.Dialect().IsDefaultSchema(pSchemaName) Then
             ns = me.ToSnake(pSchemaName) & "_" & ns
          End If
-         NamespaceName = ns
+         NamespaceName = "table_" & ns
       End Function
 
       Function ClassNameOf(pSchemaName As String, pTable As String) As String
