@@ -1,0 +1,170 @@
+{
+  "nome": "Tables",
+  "language": "Basic",
+  "version": "1.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Core para mapear, persistir, migrar e gerar classes de tabela.\n",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "6B3204FB-3574-45D3-84F1-57F413F10C4E"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (37)",
+      "id": "{74DE4124-7A2B-483A-B7EF-B4707451AB98}",
+      "pastaId": "",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{D43B4421-5395-45DC-A837-F33A22A65A31}",
+      "pastaId": "{74DE4124-7A2B-483A-B7EF-B4707451AB98}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}",
+      "pastaId": "{74DE4124-7A2B-483A-B7EF-B4707451AB98}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "tests",
+      "id": "{7C9E4F12-8A3B-4D6E-9F01-2B5C8D7E6A4F}",
+      "pastaId": "{74DE4124-7A2B-483A-B7EF-B4707451AB98}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{AAACB55B-77A1-43CF-8957-AD269795A48D}",
+      "pastaId": "{D43B4421-5395-45DC-A837-F33A22A65A31}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "helpers",
+      "id": "{9479DB8C-C9DC-4112-A655-0B75712627E0}",
+      "pastaId": "{D43B4421-5395-45DC-A837-F33A22A65A31}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "helpers",
+      "id": "{D77C1E12-7D06-4FF6-BF29-1BEE2FA45666}",
+      "pastaId": "{9479DB8C-C9DC-4112-A655-0B75712627E0}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "TablesCodegen": {
+      "nome": "TablesCodegen",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "TablesDdl": {
+      "nome": "TablesDdl",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "TablesExecutor": {
+      "nome": "TablesExecutor",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "TablesField": {
+      "nome": "TablesField",
+      "aberto": false,
+      "ordemAbertura": -1,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "TablesMigration": {
+      "nome": "TablesMigration",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "TablesRoutine": {
+      "nome": "TablesRoutine",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "TablesSchema": {
+      "nome": "TablesSchema",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "TablesSequence": {
+      "nome": "TablesSequence",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "TablesSql": {
+      "nome": "TablesSql",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "TablesTable": {
+      "nome": "TablesTable",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
+    },
+    "tests": {
+      "nome": "tests",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{7C9E4F12-8A3B-4D6E-9F01-2B5C8D7E6A4F}"
+    }
+  },
+  "dependencies": {
+    "helpers": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "Tables",
+    "publisher": "matheusdevelope"
+  }
+}
