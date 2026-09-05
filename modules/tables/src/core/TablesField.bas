@@ -5,6 +5,8 @@ Imports mod_tenum
 
 Namespace TablesField
 
+   Private Declare Function CharUpperBuffW Lib "user32" (ByVal lpsz As String, ByVal cchLength As Long) As Long
+
    Enun TKindField
       StringKind = "String"
       IntegerKind = "Integer"
@@ -96,7 +98,6 @@ Namespace TablesField
    Private Dim _ddlCustomSql As TDdlOpKind
    Private Dim _ddlCreateOrAlterRoutine As TDdlOpKind
    Private Dim _ddlDropRoutine As TDdlOpKind
-   Private Dim _regex As Variant
 
    Class TFieldCache
 
@@ -142,9 +143,6 @@ Namespace TablesField
             _ddlCustomSql = TDdlOpKind.CustomSql()
             _ddlCreateOrAlterRoutine = TDdlOpKind.CreateOrAlterRoutine()
             _ddlDropRoutine = TDdlOpKind.DropRoutine()
-            _regex = CreateObject("VBScript.RegExp")
-            _regex.Global = True
-            _regex.IgnoreCase = True
             _enumReady = True
          End If
       End Sub
@@ -465,8 +463,9 @@ Namespace TablesField
       End Sub
 
       Function FoldBoolToken(pText As String) As String
-         _regex.Pattern = "[^\w\s]" 
-         FoldBoolToken = UCase(Trim(_regex.Replace(pText, "")))
+         pText = Trim(pText)
+         CharUpperBuffW(pText, Len(pText))
+         FoldBoolToken = pText
       End Function
 
       Function IsTrueToken(pFolded As String) As Boolean
