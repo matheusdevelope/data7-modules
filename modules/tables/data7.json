@@ -1,7 +1,7 @@
 {
   "nome": "Tables",
   "language": "Basic",
-  "version": "1.0.0.3",
+  "version": "1.0.0.4",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
@@ -115,7 +115,7 @@
     },
     "TablesField": {
       "nome": "TablesField",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
     },

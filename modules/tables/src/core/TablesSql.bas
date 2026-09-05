@@ -105,7 +105,7 @@ Namespace TablesSql
          IsNumericNative = (n = "NUMERIC" Or n = "DECIMAL" Or n = "NUMBER")
       End Function
 
-      Overridable       Function TypeName(pField As TFieldDef) As String
+      Overridable Function TypeName(pField As TFieldDef) As String
          If Trim(pField.DbType) <> "" Then
             TypeName = pField.DbType
             Exit Function
@@ -114,8 +114,6 @@ Namespace TablesSql
             TypeName = "INTEGER"
          ElseIf pField.KindId = 2 Then
             TypeName = me.NumericDbType(pField, "DOUBLE PRECISION")
-         ElseIf pField.KindId = 3 Then
-            TypeName = "SMALLINT"
          ElseIf pField.KindId = 4 Then
             TypeName = "DATE"
          ElseIf pField.KindId = 5 Then
@@ -507,8 +505,6 @@ Namespace TablesSql
             TypeName = "INT"
          ElseIf pField.KindId = 2 Then
             TypeName = me.NumericDbType(pField, "FLOAT")
-         ElseIf pField.KindId = 3 Then
-            TypeName = "BIT"
          ElseIf pField.KindId = 4 Then
             TypeName = "DATE"
          ElseIf pField.KindId = 5 Then
@@ -674,8 +670,6 @@ Namespace TablesSql
             TypeName = "INTEGER"
          ElseIf pField.KindId = 2 Then
             TypeName = me.NumericDbType(pField, "DOUBLE")
-         ElseIf pField.KindId = 3 Then
-            TypeName = "BIT"
          ElseIf pField.KindId = 4 Then
             TypeName = "DATE"
          ElseIf pField.KindId = 5 Then
@@ -835,8 +829,6 @@ Namespace TablesSql
             TypeName = "INTEGER"
          ElseIf pField.KindId = 2 Then
             TypeName = me.NumericDbType(pField, "DOUBLE PRECISION")
-         ElseIf pField.KindId = 3 Then
-            TypeName = "BOOLEAN"
          ElseIf pField.KindId = 4 Then
             TypeName = "DATE"
          ElseIf pField.KindId = 5 Then

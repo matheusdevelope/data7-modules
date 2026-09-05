@@ -96,6 +96,7 @@ Namespace TablesField
    Private Dim _ddlCustomSql As TDdlOpKind
    Private Dim _ddlCreateOrAlterRoutine As TDdlOpKind
    Private Dim _ddlDropRoutine As TDdlOpKind
+   Private Dim _regex As Variant
 
    Class TFieldCache
 
@@ -141,6 +142,9 @@ Namespace TablesField
             _ddlCustomSql = TDdlOpKind.CustomSql()
             _ddlCreateOrAlterRoutine = TDdlOpKind.CreateOrAlterRoutine()
             _ddlDropRoutine = TDdlOpKind.DropRoutine()
+            _regex = CreateObject("VBScript.RegExp")
+            _regex.Global = True
+            _regex.IgnoreCase = True
             _enumReady = True
          End If
       End Sub
@@ -354,6 +358,8 @@ Namespace TablesField
       NullIfEmpty As Boolean
       Required As Boolean
       IncludeInSelect As Boolean
+      BoolTrue As String
+      BoolFalse As String
 
       Sub New(pName As String)
          MyBase.New()
@@ -379,6 +385,8 @@ Namespace TablesField
          me.NullIfEmpty = True
          me.Required = False
          me.IncludeInSelect = True
+         me.BoolTrue = ""
+         me.BoolFalse = ""
       End Sub
 
       Overrides Function GetID() As String
@@ -412,9 +420,90 @@ Namespace TablesField
       End Function
 
       Function AsBoolean() As TFieldDef
+         Dim wasBool As Boolean = (me.KindId = 3)
          me.Kind = _kindBoolean
          me.KindId = 3
+         If Trim(me.BoolTrue) = "" Then
+            me.BoolTrue = "S"
+         End If
+         If Trim(me.BoolFalse) = "" Then
+            me.BoolFalse = "N"
+         End If
+         If Not wasBool Then
+            If me.MaxLength = 255 Then
+               me.MaxLength = 0
+            End If
+         End If
+         me.EnsureBoolLen()
          AsBoolean = me
+      End Function
+
+      Function TrueValue(pValue As String) As TFieldDef
+         me.BoolTrue = pValue
+         me.EnsureBoolLen()
+         TrueValue = me
+      End Function
+
+      Function FalseValue(pValue As String) As TFieldDef
+         me.BoolFalse = pValue
+         me.EnsureBoolLen()
+         FalseValue = me
+      End Function
+
+      Sub EnsureBoolLen()
+         Dim n As Integer = Trim(me.BoolTrue).Length
+         Dim nFalse As Integer = Trim(me.BoolFalse).Length
+         If nFalse > n Then
+            n = nFalse
+         End If
+         If n < 1 Then
+            n = 1
+         End If
+         If me.MaxLength < n Then
+            me.MaxLength = n
+         End If
+      End Sub
+
+      Function FoldBoolToken(pText As String) As String
+         _regex.Pattern = "[^\w\s]" 
+         FoldBoolToken = UCase(Trim(_regex.Replace(pText, "")))
+      End Function
+
+      Function IsTrueToken(pFolded As String) As Boolean
+         IsTrueToken = (pFolded = "S") Or (pFolded = "SIM") Or (pFolded = "TRUE") Or (pFolded = "T") Or (pFolded = "1") Or (pFolded = "-1") Or (pFolded = "Y") Or (pFolded = "YES") Or (pFolded = "V") Or (pFolded = "VERDADEIRO")
+      End Function
+
+      Function ParseBoolText(pText As String) As Boolean
+         Dim folded As String = me.FoldBoolToken(pText)
+         If folded = "" Then
+            ParseBoolText = False
+            Exit Function
+         End If
+         If folded = me.FoldBoolToken(me.BoolTrue) Then
+            ParseBoolText = True
+            Exit Function
+         End If
+         If folded = me.FoldBoolToken(me.BoolFalse) Then
+            ParseBoolText = False
+            Exit Function
+         End If
+         ParseBoolText = me.IsTrueToken(folded)
+      End Function
+
+      Function ParseBoolValue(pValue As Variant) As Boolean
+         If IsEmpty(pValue) Then
+            ParseBoolValue = False
+            Exit Function
+         End If
+         ParseBoolValue = me.ParseBoolText(CStr(pValue))
+      End Function
+
+      Function BoolDbText(pValue As Boolean) As String
+         If pValue Then
+            BoolDbText = me.BoolTrue
+         Else
+            BoolDbText = me.BoolFalse
+         End If
       End Function
 
       Function AsDate() As TFieldDef
@@ -529,6 +618,8 @@ Namespace TablesField
          n.NullIfEmpty = me.NullIfEmpty
          n.Required = me.Required
          n.IncludeInSelect = me.IncludeInSelect
+         n.BoolTrue = me.BoolTrue
+         n.BoolFalse = me.BoolFalse
          Clone = n
       End Function
 
@@ -617,7 +708,7 @@ Namespace TablesField
             If IsEmpty(_value) Then
                AsBoolean = False
             Else
-               AsBoolean = CBool(_value)
+               AsBoolean = me.Def.ParseBoolValue(_value)
             End If
          End Get
          Set(pValue As Boolean)

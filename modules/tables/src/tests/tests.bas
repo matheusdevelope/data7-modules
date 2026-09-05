@@ -2,6 +2,7 @@ Imports TablesTable
 Imports TablesSchema
 Imports TablesField
 Imports TablesSql
+Imports Collections
 Imports mod_tobject
 Imports TablesMigration
 Imports TablesDdl
@@ -60,6 +61,7 @@ Namespace tests
          pSchema.Field("Titulo").AsString().MaxLen(150).RequiredField()
          pSchema.Field("ValorTotal").AsFloat()
          pSchema.Field("Ativo").AsBoolean().DefaultVal(True)
+         pSchema.Field("AtivoS").AsBoolean().TrueValue("Sim").FalseValue("Não").DefaultVal(True)
          pSchema.Field("Status").AsString().MaxLen(20).DefaultVal("NOVO")
          pSchema.Field("Observacao").AsString().MaxLen(500)
       End Sub
@@ -124,6 +126,15 @@ Namespace tests
          End Get
          Set(pValue As Boolean)
             me.SetBoolean("Ativo", pValue)
+         End Set
+      End Property
+
+      Property AtivoS As Boolean
+         Get
+            AtivoS = me.GetBoolean("AtivoS")
+         End Get
+         Set(pValue As Boolean)
+            me.SetBoolean("AtivoS", pValue)
          End Set
       End Property
 
@@ -686,6 +697,7 @@ Namespace tests
          me.AssertTrue(ddl.TableExists("_libtest_pedido"), "Tabela _libtest_pedido criada")
          me.AssertTrue(ddl.TableExists("_libtest_item"), "Tabela _libtest_item criada")
          me.AssertTrue(ddl.ColumnExists("_libtest_pedido", "Observacao"), "Coluna Observacao adicionada na v3")
+         me.AssertTrue(ddl.ColumnExists("_libtest_pedido", "AtivoS"), "Coluna AtivoS adicionada na v3")
          me.AssertTrue(ddl.SequenceExists("_libtest_pedido_seq"), "Sequence do pedido")
          me.AssertTrue(ddl.SequenceExists("_libtest_item_seq"), "Sequence do item")
          me.AssertTrue(ddl.TableExists("_libtest_audit"), "Tabela _libtest_audit via RawSql")
@@ -767,6 +779,23 @@ Namespace tests
          Dim numDef As New TFieldDef("Preco")
          numDef.AsNumeric(15, 2)
          me.AssertEq(TSql.Dialect().TypeName(numDef), "NUMERIC(15, 2)", "TypeName NUMERIC(15, 2)")
+         Dim boolDef As New TFieldDef("Ativo")
+         boolDef.AsBoolean()
+         me.AssertEq(TSql.Dialect().TypeName(boolDef), "VARCHAR(1)", "Boolean padrão persiste VARCHAR(1)")
+         me.AssertEq(boolDef.BoolDbText(True), "S", "Boolean padrão True grava S")
+         me.AssertEq(boolDef.BoolDbText(False), "N", "Boolean padrão False grava N")
+         me.AssertTrue(boolDef.ParseBoolText("S"), "Lê S como True")
+         me.AssertTrue(boolDef.ParseBoolText("1"), "Lê 1 como True")
+         me.AssertTrue(boolDef.ParseBoolText("sim"), "Lê sim como True")
+         me.AssertTrue(Not boolDef.ParseBoolText("N"), "Lê N como False")
+         me.AssertTrue(Not boolDef.ParseBoolText("nao"), "Lê nao como False")
+         boolDef.TrueValue("Sim").FalseValue("Não")
+         me.AssertEq(TSql.Dialect().TypeName(boolDef), "VARCHAR(3)", "Boolean Sim/Não persiste VARCHAR(3)")
+         me.AssertEq(boolDef.BoolDbText(True), "Sim", "TrueValue Sim")
+         me.AssertEq(boolDef.BoolDbText(False), "Não", "FalseValue Não")
+         me.AssertTrue(boolDef.ParseBoolText("Sim"), "Lê Sim configurado")
+         me.AssertTrue(Not boolDef.ParseBoolText("Não"), "Lê Não configurado")
+         boolDef.Free()
          Dim numCol As New TColumnInfo()
          numCol.Name = "Preco"
          numCol.NativeType = "numeric"
@@ -827,6 +856,7 @@ Namespace tests
          row.Titulo = "Pedido Alfa"
          row.ValorTotal = 10.5
          row.Ativo = True
+         row.AtivoS = True
          row.Status = "ABERTO"
          row.Observacao = "obs inicial"
          Dim inserted As Integer = row.Insert()
@@ -841,6 +871,16 @@ Namespace tests
          me.AssertTrue(loaded.Load(me.QuoteName("CodPedido") & " = 1001"), "Load pedido 1001")
          me.AssertTrue(loaded.AfterLoadRan, "Hook AfterLoad")
          me.AssertEq(loaded.Titulo, "Pedido Alfa", "Titulo hidratado")
+         me.AssertTrue(loaded.Ativo, "Ativo True hidratado")
+         me.AssertTrue(loaded.AtivoS, "AtivoS True hidratado")
+         Dim ativoDb As StringList = TSql.FetchStringColumn("SELECT " & me.QuoteName("Ativo") & " AS v FROM " & me.QuoteName("_libtest_pedido") & " WHERE " & me.QuoteName("CodPedido") & " = 1001", "v")
+         me.AssertEqInt(ativoDb.Count, 1, "Leu Ativo no banco")
+         me.AssertEq(ativoDb.Strings(0), "S", "Ativo gravado como S")
+         ativoDb.Free()
+         Dim ativoSDb As StringList = TSql.FetchStringColumn("SELECT " & me.QuoteName("AtivoS") & " AS v FROM " & me.QuoteName("_libtest_pedido") & " WHERE " & me.QuoteName("CodPedido") & " = 1001", "v")
+         me.AssertEqInt(ativoSDb.Count, 1, "Leu AtivoS no banco")
+         me.AssertEq(ativoSDb.Strings(0), "SIM", "AtivoS gravado como Sim")
+         ativoSDb.Free()
          me.AssertEq(loaded.Observacao, "obs inicial", "Observacao hidratada")
 
          loaded.Titulo = "Pedido Alfa Edit"
@@ -871,11 +911,14 @@ Namespace tests
          upsertRow.Titulo = "Pedido Upsert"
          upsertRow.ValorTotal = 1
          upsertRow.Ativo = False
+         upsertRow.AtivoS = False
          upsertRow.Status = "FECHADO"
          upsertRow.Observacao = "via upsert"
          upsertRow.Upsert()
          again.Load(me.QuoteName("CodPedido") & " = 1001")
          me.AssertEq(again.Titulo, "Pedido Upsert", "Upsert atualiza existente")
+         me.AssertTrue(Not again.Ativo, "Ativo False após upsert")
+         me.AssertTrue(Not again.AtivoS, "AtivoS False após upsert")
          upsertRow.Free()
 
          Dim novo As New TTestPedido()

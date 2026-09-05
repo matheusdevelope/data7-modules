@@ -131,7 +131,7 @@ Namespace TablesTable
          ElseIf kindId = 2 Then
             pField.Value = pSrc.AsFloat
          ElseIf kindId = 3 Then
-            pField.Value = pSrc.AsBoolean
+            pField.Value = pField.Def.ParseBoolText(pSrc.AsString)
          ElseIf kindId = 4 Then
             pField.Value = pSrc.AsDate
          ElseIf kindId = 5 Then
@@ -420,7 +420,7 @@ Namespace TablesTable
          ElseIf kindId = 2 Then
             prm.AsFloat = pField.AsFloat
          ElseIf kindId = 3 Then
-            prm.AsBoolean = pField.AsBoolean
+            prm.AsString = pField.Def.BoolDbText(pField.AsBoolean)
          ElseIf kindId = 4 Then
             prm.AsDateTime = pField.AsDateTime
          ElseIf kindId = 5 Then
