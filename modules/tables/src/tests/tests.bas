@@ -601,10 +601,10 @@ Namespace tests
       Sub AssertTrue(pOk As Boolean, pMsg As String)
          If pOk Then
             me.Passed = me.Passed + 1
-            console.log("OK  " & pMsg)
+            mod_logger.Info("OK  " & pMsg)
          Else
             me.Failed = me.Failed + 1
-            console.log("FAIL  " & pMsg)
+            mod_logger.Info("FAIL  " & pMsg)
             Throw New Exception("FAIL: " & pMsg)
          End If
       End Sub
@@ -645,7 +645,7 @@ Namespace tests
       End Function
 
       Sub Cleanup()
-         console.timeStart("cleanup")
+         mod_logger.timeStart("cleanup")
          Dim ddl As New TDdl()
          Dim routine As New TRoutine()
          Dim sqlDialect As TSqlDialect = TSql.Dialect()
@@ -667,11 +667,11 @@ Namespace tests
          End If
          routine.Free()
          ddl.Free()
-         console.timeEnd("cleanup")
+         mod_logger.timeEnd("cleanup")
       End Sub
 
       Sub DoSetup()
-         console.timeStart("suite")
+         mod_logger.timeStart("suite")
          me.Passed = 0
          me.Failed = 0
          me.StampSeq = 0
@@ -680,15 +680,15 @@ Namespace tests
 
       Sub DoTeardown()
          me.Cleanup()
-         console.timeEnd("suite")
-         console.log("Resultado: " & CStr(me.Passed) & " ok, " & CStr(me.Failed) & " falhas")
+         mod_logger.timeEnd("suite")
+         mod_logger.Info("Resultado: " & CStr(me.Passed) & " ok, " & CStr(me.Failed) & " falhas")
          If me.Failed > 0 Then
             Throw New Exception("Suíte de testes falhou: " & CStr(me.Failed) & " asserção(ões)")
          End If
       End Sub
 
       Sub DoMigrations()
-         console.timeStart("migrations")
+         mod_logger.timeStart("migrations")
          Dim runner As TMigrationRunner = me.NewRunner()
          Dim applied As Integer = runner.Execute()
          me.AssertEqInt(applied, 6, "Execute aplica 6 migrações novas")
@@ -708,11 +708,11 @@ Namespace tests
          routine.Free()
          ddl.Free()
          runner.Free()
-         console.timeEnd("migrations")
+         mod_logger.timeEnd("migrations")
       End Sub
 
       Sub DoCodegen()
-         console.timeStart("codegen")
+         mod_logger.timeStart("codegen")
          Dim gen As New TTableGenerator()
          Dim body As String = gen.Build("_libtest_pedido")
          me.AssertTrue(body.IndexOf("Namespace table_libtest_pedido") >= 0, "Namespace table_libtest_pedido")
@@ -813,11 +813,11 @@ Namespace tests
          tituloCol.Free()
          itemCol.Free()
          gen.Free()
-         console.timeEnd("codegen")
+         mod_logger.timeEnd("codegen")
       End Sub
 
       Sub DoDdl()
-         console.timeStart("ddl")
+         mod_logger.timeStart("ddl")
          Dim ddl As New TDdl()
          Dim extra As New TFieldDef("TmpTag")
          extra.AsString().MaxLen(40)
@@ -830,11 +830,11 @@ Namespace tests
          me.AssertTrue(Not ddl.ColumnExists("_libtest_pedido", "TmpTag2"), "DropColumn TmpTag2")
          extra.Free()
          ddl.Free()
-         console.timeEnd("ddl")
+         mod_logger.timeEnd("ddl")
       End Sub
 
       Sub DoRoutines()
-         console.timeStart("routines")
+         mod_logger.timeStart("routines")
          Dim routine As New TRoutine()
          Dim sqlDialect As TSqlDialect = TSql.Dialect()
          me.AssertTrue(routine.Exists(TFieldCache.ResourceView(), "_libtest_vw_pedido"), "View existe")
@@ -845,11 +845,11 @@ Namespace tests
          Dim viewCount As String = TSql.ExecSelect("(SELECT COUNT(*) FROM " & sqlDialect.QuoteIdent("_libtest_vw_pedido") & ")")
          me.AssertTrue(Trim(viewCount) <> "", "SELECT na view _libtest_vw_pedido")
          routine.Free()
-         console.timeEnd("routines")
+         mod_logger.timeEnd("routines")
       End Sub
 
       Sub DoCrud()
-         console.timeStart("crud")
+         mod_logger.timeStart("crud")
          Dim row As New TTestPedido()
          row.CodPedido = 1001
          row.Codigo = "abc-1"
@@ -976,11 +976,11 @@ Namespace tests
          again.Free()
          loaded.Free()
          row.Free()
-         console.timeEnd("crud")
+         mod_logger.timeEnd("crud")
       End Sub
 
       Sub DoCompositePk()
-         console.timeStart("composite-pk")
+         mod_logger.timeStart("composite-pk")
          Dim ddl As New TDdl()
          ddl.DropTable("_libtest_venda_item")
          ddl.DropTable("_libtest_venda")
@@ -1071,22 +1071,22 @@ Namespace tests
          itemProbe.Free()
          vendaProbe.Free()
          ddl.Free()
-         console.timeEnd("composite-pk")
+         mod_logger.timeEnd("composite-pk")
       End Sub
 
       Sub DoJoin()
-         console.timeStart("schema-join")
+         mod_logger.timeStart("schema-join")
          Dim rows[] As TTestItemComPedido = TTestItemComPedido.Fetch("I." & me.QuoteName("CodItem") & " = 2001", "I." & me.QuoteName("CodItem"))
          me.AssertEqInt(rows.Length, 1, "Fetch com JOIN FromClause")
          Dim joined As TTestItemComPedido = rows.Take(0)
          me.AssertEq(joined.TituloPedido, "Pedido Upsert", "SelectOnly Expr P.Titulo")
          rows.OwnsObjects = True
          rows.Free()
-         console.timeEnd("schema-join")
+         mod_logger.timeEnd("schema-join")
       End Sub
 
       Sub DoExecutor()
-         console.timeStart("executor")
+         mod_logger.timeStart("executor")
          Dim a As New TTestPedido()
          a.CodPedido = 1101
          a.Codigo = "ex-a"
@@ -1127,11 +1127,11 @@ Namespace tests
          db.Free()
          a.Free()
          b.Free()
-         console.timeEnd("executor")
+         mod_logger.timeEnd("executor")
       End Sub
 
       Sub DoRollback()
-         console.timeStart("rollback")
+         mod_logger.timeStart("rollback")
          Dim runner As TMigrationRunner = me.NewRunner()
          runner.Execute()
          Dim ddl As New TDdl()
@@ -1152,7 +1152,7 @@ Namespace tests
          routine.Free()
          ddl.Free()
          runner.Free()
-         console.timeEnd("rollback")
+         mod_logger.timeEnd("rollback")
       End Sub
 
       Function NextStamp() As Integer
@@ -1222,27 +1222,27 @@ Namespace tests
       End Sub
 
       Sub DoLoad()
-         console.timeStart("load")
+         mod_logger.timeStart("load")
          me.EnsureBenchTable()
          me.StampSeq = 0
 
-         console.timeStart("alloc-2000")
+         mod_logger.timeStart("alloc-2000")
          Dim i As Integer
          For i = 1 To 2000
             Dim tmp As New TBench()
             tmp.Free()
          Next
-         console.timeEnd("alloc-2000")
+         mod_logger.timeEnd("alloc-2000")
 
          Dim probe As New TBench()
-         console.timeStart("sql-build")
+         mod_logger.timeStart("sql-build")
          Dim selSql As String = probe.GetCommandText(TFieldCache.OpSelect())
          Dim insSql As String = probe.GetCommandText(TFieldCache.OpInsert())
          Dim updSql As String = probe.GetCommandText(TFieldCache.OpUpdate())
          Dim delSql As String = probe.GetCommandText(TFieldCache.OpDelete())
          Dim merSql As String = probe.GetCommandText(TFieldCache.OpMerge())
          Dim sel2 As String = probe.GetCommandText(TFieldCache.OpSelect())
-         console.timeEnd("sql-build")
+         mod_logger.timeEnd("sql-build")
          me.AssertTrue(selSql.Length > 0, "SQL SELECT gerado")
          me.AssertTrue(insSql.Length > 0, "SQL INSERT gerado")
          me.AssertTrue(updSql.Length > 0, "SQL UPDATE gerado")
@@ -1250,7 +1250,7 @@ Namespace tests
          me.AssertTrue(merSql.Length > 0, "SQL MERGE gerado")
          me.AssertTrue(sel2 = selSql, "Cache de template SELECT")
 
-         console.timeStart("seed-20")
+         mod_logger.timeStart("seed-20")
          Dim seed[] As TBench = []
          seed.OwnsObjects = True
          For i = 1 To 20
@@ -1259,17 +1259,17 @@ Namespace tests
             row.Insert()
             me.PushBench(seed, row)
          Next
-         console.timeEnd("seed-20")
+         mod_logger.timeEnd("seed-20")
          me.AssertEqInt(seed.Length, 20, "Seed de 20 linhas na tabela temporária")
 
-         console.timeStart("fetch-20")
+         mod_logger.timeStart("fetch-20")
          Dim pool[] As TBench = TBench.Fetch("", me.QuoteName("CodBench"), 20)
-         console.timeEnd("fetch-20")
+         mod_logger.timeEnd("fetch-20")
          print(pool.First.ToString())
          me.AssertEqInt(pool.Length, 20, "Fetch limitou em 20")
          pool.OwnsObjects = True
 
-         console.timeStart("load-exists")
+         mod_logger.timeStart("load-exists")
          For i = 0 To 4
             Dim src As TBench = me.AsBench(pool, i)
             Dim loaded As New TBench()
@@ -1281,41 +1281,41 @@ Namespace tests
             viaWhere.Free()
             loaded.Free()
          Next
-         console.timeEnd("load-exists")
+         mod_logger.timeEnd("load-exists")
 
          Dim created[] As TBench = []
          created.OwnsObjects = True
          Dim firstRow As TBench = me.MakeBenchCopy(pool)
-         console.timeStart("insert-first")
+         mod_logger.timeStart("insert-first")
          me.AssertTrue(firstRow.Insert() >= 0, "Insert primeiro clone")
-         console.timeEnd("insert-first")
+         mod_logger.timeEnd("insert-first")
          me.AssertTrue(firstRow.CodBench <> 0, "AutoCode atribuiu CodBench")
          me.PushBench(created, firstRow)
 
-         console.timeStart("insert-each")
+         mod_logger.timeStart("insert-each")
          For i = 2 To 20
             Dim ins As TBench = me.MakeBenchCopy(pool)
             ins.Insert()
             me.PushBench(created, ins)
          Next
-         console.timeEnd("insert-each")
+         mod_logger.timeEnd("insert-each")
          me.AssertEqInt(created.Length, 20, "20 inserts individuais")
 
-         console.timeStart("update-each")
+         mod_logger.timeStart("update-each")
          For i = 0 To created.Length - 1
             Dim upd As TBench = me.AsBench(created, i)
             upd.Nome = "Upd " & CStr(upd.CodBench)
             upd.Preco = upd.Preco + 0.01
             upd.Update()
          Next
-         console.timeEnd("update-each")
+         mod_logger.timeEnd("update-each")
          Dim check As New TBench()
          Dim sample As TBench = me.AsBench(created, 0)
          me.AssertTrue(check.Load(me.QuoteName("CodBench") & " = " & CStr(sample.CodBench)), "Load após update")
          me.AssertTrue(check.Nome.IndexOf("Upd ") >= 0, "Update persistiu Nome")
          check.Free()
 
-         console.timeStart("upsert-merge")
+         mod_logger.timeStart("upsert-merge")
          Dim existing As TBench = me.AsBench(created, 0)
          existing.Nome = "UPS " & CStr(existing.CodBench)
          existing.Upsert()
@@ -1342,9 +1342,9 @@ Namespace tests
             me.AssertTrue(mrg.ExistsByPk(), "Merge insere quando não existe")
             me.PushBench(created, mrg)
          Next
-         console.timeEnd("upsert-merge")
+         mod_logger.timeEnd("upsert-merge")
 
-         console.timeStart("assign-from")
+         mod_logger.timeStart("assign-from")
          For i = 1 To 3
             Dim src1 As TBench = me.AsBench(pool, 0)
             Dim dst As New TBench()
@@ -1354,18 +1354,18 @@ Namespace tests
             me.AssertTrue(dst.ExistsByPk(), "AssignFrom + Insert")
             me.PushBench(created, dst)
          Next
-         console.timeEnd("assign-from")
+         mod_logger.timeEnd("assign-from")
 
          Dim batch[] As TTable = []
          For i = 1 To 10
             me.PushRow(batch, me.MakeBenchCopy(pool))
          Next
-         console.timeStart("exec-insert")
+         mod_logger.timeStart("exec-insert")
          Dim db As New TExecutor()
          db.CommitMode = TFieldCache.CommitSingle()
          db.AddInsert(batch)
          db.Exec()
-         console.timeEnd("exec-insert")
+         mod_logger.timeEnd("exec-insert")
          For i = 0 To batch.Length - 1
             Dim exRow As TBench = me.AsTableBench(batch, i)
             me.AssertTrue(exRow.CodBench <> 0, "Executor atribuiu PK")
@@ -1375,7 +1375,7 @@ Namespace tests
          batch.Free()
          db.Free()
 
-         console.timeStart("exec-update")
+         mod_logger.timeStart("exec-update")
          Dim dbUpd As New TExecutor()
          dbUpd.CommitMode = TFieldCache.CommitSingle()
          Dim nUpd As Integer = 10
@@ -1388,20 +1388,20 @@ Namespace tests
             dbUpd.AddUpdate(u)
          Next
          dbUpd.Exec()
-         console.timeEnd("exec-update")
+         mod_logger.timeEnd("exec-update")
          dbUpd.Free()
 
          Dim batch2[] As TTable = []
          For i = 1 To 6
             me.PushRow(batch2, me.MakeBenchCopy(pool))
          Next
-         console.timeStart("exec-per-batch")
+         mod_logger.timeStart("exec-per-batch")
          Dim dbBatch As New TExecutor()
          dbBatch.CommitMode = TFieldCache.CommitPerBatch()
          dbBatch.BatchSize = 5
          dbBatch.AddInsert(batch2)
          dbBatch.Exec()
-         console.timeEnd("exec-per-batch")
+         mod_logger.timeEnd("exec-per-batch")
          For i = 0 To batch2.Length - 1
             me.PushBench(created, me.AsTableBench(batch2, i))
          Next
@@ -1419,24 +1419,24 @@ Namespace tests
          dbMix.AddUpsert(mixA)
          dbMix.AddMerge(mixB)
          dbMix.AddSql("UPDATE " & me.QuoteName("_tables_bench") & " SET " & me.QuoteName("Descricao") & " = 'via-sql' WHERE " & me.QuoteName("CodBench") & " = " & CStr(mixC.CodBench))
-         console.timeStart("exec-mixed")
+         mod_logger.timeStart("exec-mixed")
          dbMix.Exec()
-         console.timeEnd("exec-mixed")
+         mod_logger.timeEnd("exec-mixed")
          Dim checkMix As New TBench()
          checkMix.Load(me.QuoteName("CodBench") & " = " & CStr(mixC.CodBench))
          me.AssertEq(Trim(checkMix.Descricao), "via-sql", "AddSql persistiu Descricao")
          checkMix.Free()
          dbMix.Free()
 
-         console.timeStart("fetch-copies")
+         mod_logger.timeStart("fetch-copies")
          Dim copies[] As TBench = TBench.Fetch("", me.QuoteName("CodBench"), 0)
-         console.timeEnd("fetch-copies")
-         console.log("Fetch total bench: " & CStr(copies.Length) & " (seed 20 + criadas " & CStr(created.Length) & ")")
+         mod_logger.timeEnd("fetch-copies")
+         mod_logger.Info("Fetch total bench: " & CStr(copies.Length) & " (seed 20 + criadas " & CStr(created.Length) & ")")
          me.AssertEqInt(copies.Length, 20 + created.Length, "Fetch bate com seed + inseridas")
          copies.OwnsObjects = True
          copies.Free()
 
-         console.timeStart("delete-each")
+         mod_logger.timeStart("delete-each")
          For i = 0 To 4
             Dim delRow As TBench = me.AsBench(created, i)
             If delRow.ExistsByPk() Then
@@ -1444,7 +1444,7 @@ Namespace tests
                me.AssertTrue(Not delRow.ExistsByPk(), "Delete removeu clone")
             End If
          Next
-         console.timeEnd("delete-each")
+         mod_logger.timeEnd("delete-each")
 
          Dim dbDel As New TExecutor()
          dbDel.CommitMode = TFieldCache.CommitSingle()
@@ -1457,11 +1457,11 @@ Namespace tests
             dbDel.AddDelete(me.AsBench(seed, i))
             nAdd = nAdd + 1
          Next
-         console.timeStart("exec-delete")
+         mod_logger.timeStart("exec-delete")
          If nAdd > 0 Then
             dbDel.Exec()
          End If
-         console.timeEnd("exec-delete")
+         mod_logger.timeEnd("exec-delete")
          Dim _empty[] As TBench = TBench.Fetch("", "", 0)
          me.AssertEqInt(_empty.Length, 0, "Tabela temporária vazia após deletes")
          _empty.OwnsObjects = True
@@ -1477,7 +1477,7 @@ Namespace tests
          ddl.DropSequence("_tables_bench_seq")
          me.AssertTrue(Not ddl.TableExists("_tables_bench"), "Tabela temporária removida")
          ddl.Free()
-         console.timeEnd("load")
+         mod_logger.timeEnd("load")
       End Sub
 
       Overrides Sub Dispose()
