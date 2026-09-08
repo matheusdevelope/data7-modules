@@ -1,0 +1,99 @@
+{
+  "nome": "mod_regex",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Wrapper tipado de COM: VBScript.RegExp",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "6B3204FB-3574-45D3-84F1-57F413F10C4E"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": false,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (7)",
+      "id": "{957EE5B4-D7B4-4799-A619-28B0418D03F6}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{7AD78972-09A0-4091-877E-DAB84ADDB033}",
+      "pastaId": "{957EE5B4-D7B4-4799-A619-28B0418D03F6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{C1AF4B37-39EB-480C-9593-5C6FF8C34893}",
+      "pastaId": "{7AD78972-09A0-4091-877E-DAB84ADDB033}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{A698D2DD-B13E-4695-9CBE-559E37D81D31}",
+      "pastaId": "{957EE5B4-D7B4-4799-A619-28B0418D03F6}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_regex": {
+      "nome": "mod_regex",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{957EE5B4-D7B4-4799-A619-28B0418D03F6}"
+    },
+    "mod_regex_tests": {
+      "nome": "mod_regex_tests",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{A698D2DD-B13E-4695-9CBE-559E37D81D31}"
+    }
+  },
+  "dependencies": {},
+  "module": {
+    "enabled": true,
+    "name": "mod_regex",
+    "publisher": "matheusdevelope"
+  }
+}
