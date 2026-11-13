@@ -1,0 +1,595 @@
+{
+  "nome": "mod_pix",
+  "language": "Basic",
+  "version": "1.0.2.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus Teixeira - Unidade Sinop",
+    "versao": "1.0.2.0",
+    "informacoes": "Módulo PIX\n\n13/12/2012: Adicionado suporte ao client http CURL, pois em servidores antigos, não é possível fazer requisições HTTPS, tem falha ao criar o canal seguro, nesses casos, é necessário informar o cliente CURL no parametro Customizado_Projeto_ClientePadraoModuloHttp, dessa forma o developer vai efetuar as requisições através do curl, que possui suporte ao TLS/SSL.",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (100)",
+      "id": "{950D3D8B-6A30-4EDB-88FC-728B9E185850}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "pastaId": "{950D3D8B-6A30-4EDB-88FC-728B9E185850}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "pastaId": "{950D3D8B-6A30-4EDB-88FC-728B9E185850}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "config",
+      "id": "{902CE2C5-A0CF-48AD-A5C9-C8732DA9F62E}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{9E06E656-499B-4A47-9E0B-284D6521C7AC}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "erp",
+      "id": "{5799C77E-1AA8-4C9C-9627-A7A50AAFEEBD}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "http",
+      "id": "{335D9DA4-EB8B-4DFE-B884-C6EBEC78CF67}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "ledger",
+      "id": "{D7998384-1225-481A-BF9C-17748DC3FD2A}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "models",
+      "id": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "providers",
+      "id": "{E9239F16-2885-4601-BC96-24B26CFE5819}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "bacen",
+      "id": "{D844AF42-90B2-46FF-838D-A0AD889DD497}",
+      "pastaId": "{E9239F16-2885-4601-BC96-24B26CFE5819}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "bradesco",
+      "id": "{36D60D04-B7A8-4A98-925B-432C3078E9EB}",
+      "pastaId": "{E9239F16-2885-4601-BC96-24B26CFE5819}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "itau",
+      "id": "{E8B50B95-D82D-4C92-AE27-D2AF6AA58691}",
+      "pastaId": "{E9239F16-2885-4601-BC96-24B26CFE5819}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "memory",
+      "id": "{9D9377B9-6896-4EDD-98E2-4FE52C110F44}",
+      "pastaId": "{E9239F16-2885-4601-BC96-24B26CFE5819}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "santander",
+      "id": "{CB079146-5A16-48C1-BFB6-D39741E84CD0}",
+      "pastaId": "{E9239F16-2885-4601-BC96-24B26CFE5819}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "sicoob",
+      "id": "{87BFDF7F-6721-4EB7-B29E-BD2865C9F601}",
+      "pastaId": "{E9239F16-2885-4601-BC96-24B26CFE5819}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "sicredi",
+      "id": "{E3E90894-D5DE-473B-924C-9576DB156C6A}",
+      "pastaId": "{E9239F16-2885-4601-BC96-24B26CFE5819}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "psp",
+      "id": "{DFD4F43C-E3EF-44D2-B00A-7D5B1F4E4071}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "runtime",
+      "id": "{D40F9124-1FF0-4D2B-82FB-DC306C524E11}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "utils",
+      "id": "{48B2D081-C45C-4E4C-A807-5E30040087D0}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "validation",
+      "id": "{A391CFBA-5D5A-4097-B456-E5B8A8CCDE58}",
+      "pastaId": "{2D3CB424-C8E1-40F3-AAC5-AB9B23613FE1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{9F213D16-B3A1-4925-8D66-505524F2F56C}",
+      "pastaId": "{950D3D8B-6A30-4EDB-88FC-728B9E185850}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{692CCA9A-BF80-43C3-830E-98A31B2BCBD8}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_certificate",
+      "id": "{67F656BF-A4EC-45C4-8ACA-3BB94E94C013}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{01941862-8204-4CEA-A07D-83D728EA60F2}",
+      "pastaId": "{67F656BF-A4EC-45C4-8ACA-3BB94E94C013}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_curl",
+      "id": "{38679825-1FEF-4901-BBD0-1F4F75D4F616}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_http",
+      "id": "{0FA13A10-B165-452D-A5C0-337C493F26F6}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{8229C1EF-C744-486E-881F-198810AB395D}",
+      "pastaId": "{0FA13A10-B165-452D-A5C0-337C493F26F6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "callback",
+      "id": "{CE303F40-AE3E-43AF-AB52-7B61DB5F78A0}",
+      "pastaId": "{8229C1EF-C744-486E-881F-198810AB395D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "clients",
+      "id": "{96D7C2D7-BC04-40DA-A48E-68D3A6417A65}",
+      "pastaId": "{8229C1EF-C744-486E-881F-198810AB395D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "interceptors",
+      "id": "{94C39541-47C0-402A-A07F-D01A6C70C6F6}",
+      "pastaId": "{8229C1EF-C744-486E-881F-198810AB395D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{4433C0B7-154A-4497-8240-CC729E00824C}",
+      "pastaId": "{0FA13A10-B165-452D-A5C0-337C493F26F6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{C7D60289-AD97-4B02-8690-998F6C1036D7}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{60F8AFB8-EA3A-443A-AD00-77080072F500}",
+      "pastaId": "{C7D60289-AD97-4B02-8690-998F6C1036D7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_portable_exe",
+      "id": "{E20ECEA4-58F8-4ED6-B3E8-A8B9F43B1623}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{7392CB9F-28EE-4531-94BF-C4841471FEE7}",
+      "pastaId": "{E20ECEA4-58F8-4ED6-B3E8-A8B9F43B1623}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_regex",
+      "id": "{97F7BD8A-D002-40FF-82B7-7A7C39930F0E}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{BC72039E-F2AB-4CE2-854F-3D47DC952C88}",
+      "pastaId": "{97F7BD8A-D002-40FF-82B7-7A7C39930F0E}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_strings",
+      "id": "{2C4103D4-C76C-4DCF-ACFC-5F2AFAF13D38}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{DE03CF39-F38C-4A51-8850-D714599AA44A}",
+      "pastaId": "{2C4103D4-C76C-4DCF-ACFC-5F2AFAF13D38}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_table",
+      "id": "{59D326A0-5F72-4F2C-BB14-4507F1A8EC10}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{17BF171D-46C6-46BA-AB93-DAC4251674DC}",
+      "pastaId": "{59D326A0-5F72-4F2C-BB14-4507F1A8EC10}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{F3BA6BDB-066F-4790-A242-6170CDFAE13A}",
+      "pastaId": "{59D326A0-5F72-4F2C-BB14-4507F1A8EC10}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_validators",
+      "id": "{AAC0F4BA-009F-4EE7-A026-02D6EAB50121}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{003375A6-7072-42AF-BBBF-4BCDF8BCADBA}",
+      "pastaId": "{AAC0F4BA-009F-4EE7-A026-02D6EAB50121}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{4369CE77-E2A5-4F68-9B9C-A1F4CBB3195A}",
+      "pastaId": "{AAC0F4BA-009F-4EE7-A026-02D6EAB50121}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_pix_config": {
+      "nome": "mod_pix_config",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{902CE2C5-A0CF-48AD-A5C9-C8732DA9F62E}"
+    },
+    "mod_pix_capabilities": {
+      "nome": "mod_pix_capabilities",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{9E06E656-499B-4A47-9E0B-284D6521C7AC}"
+    },
+    "mod_pix_contracts": {
+      "nome": "mod_pix_contracts",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{9E06E656-499B-4A47-9E0B-284D6521C7AC}"
+    },
+    "mod_pix_enums": {
+      "nome": "mod_pix_enums",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{9E06E656-499B-4A47-9E0B-284D6521C7AC}"
+    },
+    "mod_pix_erp": {
+      "nome": "mod_pix_erp",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{5799C77E-1AA8-4C9C-9627-A7A50AAFEEBD}"
+    },
+    "mod_pix_http": {
+      "nome": "mod_pix_http",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{335D9DA4-EB8B-4DFE-B884-C6EBEC78CF67}"
+    },
+    "mod_pix_ledger": {
+      "nome": "mod_pix_ledger",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{D7998384-1225-481A-BF9C-17748DC3FD2A}"
+    },
+    "mod_pix_ledger_movimento": {
+      "nome": "mod_pix_ledger_movimento",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{D7998384-1225-481A-BF9C-17748DC3FD2A}"
+    },
+    "mod_pix_movimento": {
+      "nome": "mod_pix_movimento",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{D7998384-1225-481A-BF9C-17748DC3FD2A}"
+    },
+    "mod_pix_calendario": {
+      "nome": "mod_pix_calendario",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_certificate": {
+      "nome": "mod_pix_certificate",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_cobranca": {
+      "nome": "mod_pix_cobranca",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_cobrancas": {
+      "nome": "mod_pix_cobrancas",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_cobranca_completa": {
+      "nome": "mod_pix_cobranca_completa",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_credentials": {
+      "nome": "mod_pix_credentials",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_devedor": {
+      "nome": "mod_pix_devedor",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_devolucao": {
+      "nome": "mod_pix_devolucao",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_filtro": {
+      "nome": "mod_pix_filtro",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_horario": {
+      "nome": "mod_pix_horario",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_info_adicional": {
+      "nome": "mod_pix_info_adicional",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_paginacao": {
+      "nome": "mod_pix_paginacao",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_recebimento": {
+      "nome": "mod_pix_recebimento",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_recebimentos": {
+      "nome": "mod_pix_recebimentos",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_valor": {
+      "nome": "mod_pix_valor",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8B2268AC-D34C-4810-ADE1-12A76CED1F3D}"
+    },
+    "mod_pix_client_bacen": {
+      "nome": "mod_pix_client_bacen",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{D844AF42-90B2-46FF-838D-A0AD889DD497}"
+    },
+    "mod_pix_client_bradesco": {
+      "nome": "mod_pix_client_bradesco",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{36D60D04-B7A8-4A98-925B-432C3078E9EB}"
+    },
+    "mod_pix_http_bradesco": {
+      "nome": "mod_pix_http_bradesco",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{36D60D04-B7A8-4A98-925B-432C3078E9EB}"
+    },
+    "mod_pix_client_itau": {
+      "nome": "mod_pix_client_itau",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E8B50B95-D82D-4C92-AE27-D2AF6AA58691}"
+    },
+    "mod_pix_http_itau": {
+      "nome": "mod_pix_http_itau",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E8B50B95-D82D-4C92-AE27-D2AF6AA58691}"
+    },
+    "mod_pix_client_memory": {
+      "nome": "mod_pix_client_memory",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{9D9377B9-6896-4EDD-98E2-4FE52C110F44}"
+    },
+    "mod_pix_client_santander": {
+      "nome": "mod_pix_client_santander",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{CB079146-5A16-48C1-BFB6-D39741E84CD0}"
+    },
+    "mod_pix_http_santander": {
+      "nome": "mod_pix_http_santander",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{CB079146-5A16-48C1-BFB6-D39741E84CD0}"
+    },
+    "mod_pix_client_sicoob": {
+      "nome": "mod_pix_client_sicoob",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{87BFDF7F-6721-4EB7-B29E-BD2865C9F601}"
+    },
+    "mod_pix_http_sicoob": {
+      "nome": "mod_pix_http_sicoob",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{87BFDF7F-6721-4EB7-B29E-BD2865C9F601}"
+    },
+    "mod_pix_client_sicredi": {
+      "nome": "mod_pix_client_sicredi",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E3E90894-D5DE-473B-924C-9576DB156C6A}"
+    },
+    "mod_pix_http_sicredi": {
+      "nome": "mod_pix_http_sicredi",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E3E90894-D5DE-473B-924C-9576DB156C6A}"
+    },
+    "mod_pix_psp": {
+      "nome": "mod_pix_psp",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{DFD4F43C-E3EF-44D2-B00A-7D5B1F4E4071}"
+    },
+    "mod_pix_runtime": {
+      "nome": "mod_pix_runtime",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{D40F9124-1FF0-4D2B-82FB-DC306C524E11}"
+    },
+    "mod_pix_utils": {
+      "nome": "mod_pix_utils",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{48B2D081-C45C-4E4C-A807-5E30040087D0}"
+    },
+    "mod_pix_validation": {
+      "nome": "mod_pix_validation",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{A391CFBA-5D5A-4097-B456-E5B8A8CCDE58}"
+    },
+    "mod_pix_live_tests": {
+      "nome": "mod_pix_live_tests",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{9F213D16-B3A1-4925-8D66-505524F2F56C}"
+    },
+    "mod_pix_tests": {
+      "nome": "mod_pix_tests",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{9F213D16-B3A1-4925-8D66-505524F2F56C}"
+    }
+  },
+  "dependencies": {
+    "mod_http": "2.0",
+    "mod_table": "1.0.0.6",
+    "mod_validators": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_pix",
+    "publisher": "matheusdevelope"
+  }
+}
