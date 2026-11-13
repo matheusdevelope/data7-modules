@@ -1,0 +1,246 @@
+{
+  "nome": "mod_ambient",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Módulo para obter informações do ambiente de execução dos projetos Data7, ele carrega dados do usuário, empresa, filial, sistema, etc.",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (71)",
+      "id": "{04E5AD51-147B-4C00-8329-CFD2FD3CE392}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{A2F25E84-1A25-424D-8DB7-EA0D532393B7}",
+      "pastaId": "{04E5AD51-147B-4C00-8329-CFD2FD3CE392}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{CDD5E520-C386-48B8-8B23-176110520F39}",
+      "pastaId": "{A2F25E84-1A25-424D-8DB7-EA0D532393B7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_configurador",
+      "id": "{62AC449A-7F6C-4EFC-8B1E-19AEB6F94C55}",
+      "pastaId": "{A2F25E84-1A25-424D-8DB7-EA0D532393B7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Configurador",
+      "id": "{F0F7ED59-92A9-4CD0-B117-2C0387027698}",
+      "pastaId": "{62AC449A-7F6C-4EFC-8B1E-19AEB6F94C55}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Tables",
+      "id": "{D8609E64-55B7-49D5-A9A7-EBF836A660AF}",
+      "pastaId": "{62AC449A-7F6C-4EFC-8B1E-19AEB6F94C55}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Tables",
+      "id": "{33881395-0B19-4AFB-B28F-99905C2597F0}",
+      "pastaId": "{04E5AD51-147B-4C00-8329-CFD2FD3CE392}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Tables",
+      "id": "{9FDE90A7-A9C2-4447-8D9C-651CEFA88863}",
+      "pastaId": "{F0F7ED59-92A9-4CD0-B117-2C0387027698}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Ambient",
+      "id": "{C31A1001-7A11-4E22-9B01-A1B2C3D4E5F6}",
+      "pastaId": "{04E5AD51-147B-4C00-8329-CFD2FD3CE392}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "mod_cache",
+      "id": "{98ED0524-D4D9-4220-B869-960B05FDFFF9}",
+      "pastaId": "{A2F25E84-1A25-424D-8DB7-EA0D532393B7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{B6973E50-E6CB-4D20-B896-59B212E3DFF8}",
+      "pastaId": "{98ED0524-D4D9-4220-B869-960B05FDFFF9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "test",
+      "id": "{D7A9EDE0-EDD7-4A87-85F4-E65890706AC9}",
+      "pastaId": "{98ED0524-D4D9-4220-B869-960B05FDFFF9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_table",
+      "id": "{99D2DEF4-3756-40CF-8B71-22CCAC411047}",
+      "pastaId": "{A2F25E84-1A25-424D-8DB7-EA0D532393B7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{527FA5A1-7DD3-4F68-9780-BA82E82451F9}",
+      "pastaId": "{99D2DEF4-3756-40CF-8B71-22CCAC411047}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{8918FB94-B88F-4FEA-BA56-3B4C75F7FD9A}",
+      "pastaId": "{99D2DEF4-3756-40CF-8B71-22CCAC411047}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "ambient_campo": {
+      "nome": "ambient_campo",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C31A1001-7A11-4E22-9B01-A1B2C3D4E5F6}"
+    },
+    "ambient_campos": {
+      "nome": "ambient_campos",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C31A1001-7A11-4E22-9B01-A1B2C3D4E5F6}"
+    },
+    "ambient_context": {
+      "nome": "ambient_context",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C31A1001-7A11-4E22-9B01-A1B2C3D4E5F6}"
+    },
+    "ambient_database": {
+      "nome": "ambient_database",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C31A1001-7A11-4E22-9B01-A1B2C3D4E5F6}"
+    },
+    "ambient_json": {
+      "nome": "ambient_json",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C31A1001-7A11-4E22-9B01-A1B2C3D4E5F6}"
+    },
+    "ambient_query": {
+      "nome": "ambient_query",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{C31A1001-7A11-4E22-9B01-A1B2C3D4E5F6}"
+    },
+    "mod_ambient": {
+      "nome": "mod_ambient",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{04E5AD51-147B-4C00-8329-CFD2FD3CE392}"
+    },
+    "table_empresa": {
+      "nome": "table_empresa",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{33881395-0B19-4AFB-B28F-99905C2597F0}"
+    },
+    "table_estacao": {
+      "nome": "table_estacao",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{33881395-0B19-4AFB-B28F-99905C2597F0}"
+    },
+    "table_filial": {
+      "nome": "table_filial",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{33881395-0B19-4AFB-B28F-99905C2597F0}"
+    },
+    "table_menu": {
+      "nome": "table_menu",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{33881395-0B19-4AFB-B28F-99905C2597F0}"
+    },
+    "table_periodocaixa": {
+      "nome": "table_periodocaixa",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{33881395-0B19-4AFB-B28F-99905C2597F0}"
+    },
+    "table_sessaoconexao": {
+      "nome": "table_sessaoconexao",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{33881395-0B19-4AFB-B28F-99905C2597F0}"
+    },
+    "table_sistema": {
+      "nome": "table_sistema",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{33881395-0B19-4AFB-B28F-99905C2597F0}"
+    },
+    "table_usuario": {
+      "nome": "table_usuario",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{33881395-0B19-4AFB-B28F-99905C2597F0}"
+    }
+  },
+  "dependencies": {
+    "mod_configurador": "1.0.0.0",
+    "mod_cache": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_ambient",
+    "publisher": "matheusdevelope"
+  }
+}
