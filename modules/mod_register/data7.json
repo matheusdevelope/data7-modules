@@ -1,0 +1,399 @@
+{
+  "nome": "mod_register",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto mod_register criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": true
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (150)",
+      "id": "{E552F182-2A9F-46B6-BD88-5FFC1B99E4B3}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "pastaId": "{E552F182-2A9F-46B6-BD88-5FFC1B99E4B3}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{4DF36973-26AE-435C-8584-D7791A338030}",
+      "pastaId": "{E552F182-2A9F-46B6-BD88-5FFC1B99E4B3}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{02783157-E9AC-4F5A-90D1-3BD629457918}",
+      "pastaId": "{E552F182-2A9F-46B6-BD88-5FFC1B99E4B3}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{A0AAEA80-84AE-4ED9-A943-87D8A871D286}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_ambient",
+      "id": "{9FAF833C-5864-4492-BDA1-CFB3FC72B071}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Ambient",
+      "id": "{50BED158-2C5B-4C0A-8C00-36F0813659EC}",
+      "pastaId": "{9FAF833C-5864-4492-BDA1-CFB3FC72B071}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Tables",
+      "id": "{9AD5823A-DC8B-4D69-B441-E2B30924099F}",
+      "pastaId": "{9FAF833C-5864-4492-BDA1-CFB3FC72B071}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_cache",
+      "id": "{165F6AC3-9E3E-4372-B32F-CEC01F9D2537}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{5B2E8A77-F47A-4BFB-9AA1-FCD60D2CA236}",
+      "pastaId": "{165F6AC3-9E3E-4372-B32F-CEC01F9D2537}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "test",
+      "id": "{1500AFFE-B865-4A46-BB74-28872030C2D0}",
+      "pastaId": "{165F6AC3-9E3E-4372-B32F-CEC01F9D2537}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_camera",
+      "id": "{B95A5C96-BF59-4A52-9337-514FD9F59674}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_clipboard_manager",
+      "id": "{DB6736AE-4A9D-4217-80E1-0CDB3D931923}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_configurador",
+      "id": "{7E9B3091-1A77-4D0D-9B66-BA6997D139BE}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Configurador",
+      "id": "{9CC2385A-60A7-463A-BB7F-FD8FFCB2B471}",
+      "pastaId": "{7E9B3091-1A77-4D0D-9B66-BA6997D139BE}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Tables",
+      "id": "{DE2649FD-946D-499C-ABB1-CC43681ED2D2}",
+      "pastaId": "{9CC2385A-60A7-463A-BB7F-FD8FFCB2B471}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Tables",
+      "id": "{3E75B0F0-01EC-44FB-B420-63BE9666E33D}",
+      "pastaId": "{7E9B3091-1A77-4D0D-9B66-BA6997D139BE}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_editors",
+      "id": "{5A742D21-B43A-4022-8ECE-AC7B1D0E157F}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{5A97C570-7395-4823-B011-29E7DB1EE11B}",
+      "pastaId": "{5A742D21-B43A-4022-8ECE-AC7B1D0E157F}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "editors",
+      "id": "{8674E665-3E34-429F-B2FC-32FE1516C89F}",
+      "pastaId": "{5A97C570-7395-4823-B011-29E7DB1EE11B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "base",
+      "id": "{BFC996F1-5712-4B62-9580-14CE0F2CB9D0}",
+      "pastaId": "{8674E665-3E34-429F-B2FC-32FE1516C89F}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "custom",
+      "id": "{7226DFEA-C75B-4A5F-BA6C-3DD17A975ECE}",
+      "pastaId": "{8674E665-3E34-429F-B2FC-32FE1516C89F}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_forms",
+      "id": "{77E1B607-C260-4FBB-B96E-BED22BABD1AA}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{650210E5-40C6-447D-A066-C47FC8EF2A09}",
+      "pastaId": "{77E1B607-C260-4FBB-B96E-BED22BABD1AA}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{DEDD9F4F-6375-4430-A5B8-F79CFB58B828}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{2EE33548-A784-4E48-8FE2-D69A6DE8F64F}",
+      "pastaId": "{DEDD9F4F-6375-4430-A5B8-F79CFB58B828}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_log",
+      "id": "{ACD89F25-8DD3-4DC6-831A-1B7C900E7145}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{0CA0097A-4AB7-435F-BC2E-F5FEAA766C0B}",
+      "pastaId": "{ACD89F25-8DD3-4DC6-831A-1B7C900E7145}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Tables",
+      "id": "{92FBB831-6DDF-4C24-907D-20EB70B4B4C4}",
+      "pastaId": "{ACD89F25-8DD3-4DC6-831A-1B7C900E7145}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{52FF6A8E-EE40-4C15-BECD-3D5FFB25C137}",
+      "pastaId": "{ACD89F25-8DD3-4DC6-831A-1B7C900E7145}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_regex",
+      "id": "{5F0E73CB-EC74-4749-B8CF-8E41FE23C293}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{B82BFE83-58D5-472B-8B25-093988AF2FD6}",
+      "pastaId": "{5F0E73CB-EC74-4749-B8CF-8E41FE23C293}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_winapi",
+      "id": "{B4EC75F2-7A0A-437E-A01A-9860A7655360}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_strings",
+      "id": "{FA421E47-78F7-457D-BBAB-8ECA5C6A75CE}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{574A104E-9DB3-4541-954E-A4E4F7937C74}",
+      "pastaId": "{FA421E47-78F7-457D-BBAB-8ECA5C6A75CE}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_validators",
+      "id": "{B0045AFC-373B-4569-9A2F-66EDE769FDA3}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{7EC2FD49-EABA-4A08-8F67-A4F9635019C5}",
+      "pastaId": "{B0045AFC-373B-4569-9A2F-66EDE769FDA3}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{6D458B96-48E4-4366-A217-816D547F3321}",
+      "pastaId": "{B0045AFC-373B-4569-9A2F-66EDE769FDA3}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_table",
+      "id": "{3BEE9BF6-4040-47C8-88A8-2736D3FEB19F}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{D43C00D3-8F1E-496A-A0D2-F37A576E12F8}",
+      "pastaId": "{3BEE9BF6-4040-47C8-88A8-2736D3FEB19F}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{3A20415D-C797-4067-A826-5EE5D9029A28}",
+      "pastaId": "{3BEE9BF6-4040-47C8-88A8-2736D3FEB19F}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_portable_exe",
+      "id": "{372F90DC-F1C1-423B-95DD-7274A21E7E3A}",
+      "pastaId": "{518D76F0-21D4-4E0B-BFE1-D029F6529458}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{F12EB7DB-F74D-4261-AAD0-35AD6256360C}",
+      "pastaId": "{372F90DC-F1C1-423B-95DD-7274A21E7E3A}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_register_config": {
+      "nome": "mod_register_config",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_eval": {
+      "nome": "mod_register_eval",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_events": {
+      "nome": "mod_register_events",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_factory": {
+      "nome": "mod_register_factory",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_form": {
+      "nome": "mod_register_form",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_layout": {
+      "nome": "mod_register_layout",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_log": {
+      "nome": "mod_register_log",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_record": {
+      "nome": "mod_register_record",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_session": {
+      "nome": "mod_register_session",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_store": {
+      "nome": "mod_register_store",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_tabela": {
+      "nome": "mod_register_tabela",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    },
+    "mod_register_validation": {
+      "nome": "mod_register_validation",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4DF36973-26AE-435C-8584-D7791A338030}"
+    }
+  },
+  "dependencies": {
+    "mod_configurador": "1.0.0.0",
+    "mod_forms": "1.0.0.0",
+    "mod_editors": "1.0.0.1",
+    "mod_ambient": "1.0.0.0",
+    "mod_log": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_register",
+    "publisher": "matheusdevelope"
+  }
+}
