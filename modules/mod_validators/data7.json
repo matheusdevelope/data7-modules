@@ -1,0 +1,156 @@
+{
+  "nome": "mod_validators",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Lib de validação e formatação: documentos, telefone, email e url",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (15)",
+      "id": "{9626C6B1-BF80-4AB6-A13E-326E1F2AEFB6}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{622DB077-2971-4C4B-965C-C2B80D51203B}",
+      "pastaId": "{9626C6B1-BF80-4AB6-A13E-326E1F2AEFB6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{CCF3B566-99C8-4756-BB4E-3F1184B64244}",
+      "pastaId": "{622DB077-2971-4C4B-965C-C2B80D51203B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_regex",
+      "id": "{3003AD3D-30AD-43AE-BADC-D8809AF807DF}",
+      "pastaId": "{622DB077-2971-4C4B-965C-C2B80D51203B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{08E7586D-7003-4798-B999-4A1422F9FD75}",
+      "pastaId": "{3003AD3D-30AD-43AE-BADC-D8809AF807DF}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_strings",
+      "id": "{81EBCDBB-F4A9-4380-A1DF-D223282414D2}",
+      "pastaId": "{622DB077-2971-4C4B-965C-C2B80D51203B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{15EE90EA-FF7F-41DC-8DA9-0E726087CDC4}",
+      "pastaId": "{81EBCDBB-F4A9-4380-A1DF-D223282414D2}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{909AD322-BF3D-4788-AC41-DB9308CBBA1A}",
+      "pastaId": "{9626C6B1-BF80-4AB6-A13E-326E1F2AEFB6}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "lib",
+      "id": "{E9F937D4-2EF4-4046-83DE-0F8C84EB25EB}",
+      "pastaId": "{9626C6B1-BF80-4AB6-A13E-326E1F2AEFB6}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_validators": {
+      "nome": "mod_validators",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E9F937D4-2EF4-4046-83DE-0F8C84EB25EB}"
+    },
+    "mod_validators_docs": {
+      "nome": "mod_validators_docs",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E9F937D4-2EF4-4046-83DE-0F8C84EB25EB}"
+    },
+    "mod_validators_email": {
+      "nome": "mod_validators_email",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E9F937D4-2EF4-4046-83DE-0F8C84EB25EB}"
+    },
+    "mod_validators_phone": {
+      "nome": "mod_validators_phone",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E9F937D4-2EF4-4046-83DE-0F8C84EB25EB}"
+    },
+    "mod_validators_url": {
+      "nome": "mod_validators_url",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E9F937D4-2EF4-4046-83DE-0F8C84EB25EB}"
+    },
+    "mod_validators_tests": {
+      "nome": "mod_validators_tests",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{909AD322-BF3D-4788-AC41-DB9308CBBA1A}"
+    }
+  },
+  "dependencies": {
+    "mod_regex": "1.0.0.0",
+    "mod_strings": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_validators",
+    "publisher": "matheusdevelope"
+  }
+}
