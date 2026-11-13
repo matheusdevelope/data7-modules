@@ -1,0 +1,273 @@
+{
+  "nome": "mod_http",
+  "language": "Basic",
+  "version": "2.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "2.0.0.0",
+    "informacoes": "Lib HTTP com transports pluggáveis (WinHttp, CURL, Data7, Mock)\n",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (41)",
+      "id": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{3D0AA8C7-41DC-4CF9-99BD-8F1BD0065FBC}",
+      "pastaId": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}",
+      "pastaId": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "clients",
+      "id": "{1A9E4B56-2C70-4F18-8D33-9E6A0C5B7D12}",
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "interceptors",
+      "id": "{3D7C2E81-5A14-4B90-BE27-6F1D8C4A0E55}",
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "callback",
+      "id": "{6B2F9A44-8E31-4C76-AD05-2A7E1F3B9C88}",
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{9C4D1E70-3B28-4F52-9A16-8D5C0E2F7B41}",
+      "pastaId": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{F90EF79E-1338-4841-988B-704C3134571B}",
+      "pastaId": "{3D0AA8C7-41DC-4CF9-99BD-8F1BD0065FBC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{F22670DB-366C-4846-896D-9419051F9FD9}",
+      "pastaId": "{3D0AA8C7-41DC-4CF9-99BD-8F1BD0065FBC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{63C9B3AB-2C08-4877-8B2B-2DC6DFD409CA}",
+      "pastaId": "{F22670DB-366C-4846-896D-9419051F9FD9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_regex",
+      "id": "{CA4F01E3-FD5B-45C0-BA6D-7B1ADC4E25C2}",
+      "pastaId": "{3D0AA8C7-41DC-4CF9-99BD-8F1BD0065FBC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{293C5D31-4DC6-49AE-8250-47C712223D7D}",
+      "pastaId": "{CA4F01E3-FD5B-45C0-BA6D-7B1ADC4E25C2}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_strings",
+      "id": "{662FB642-E9C8-41A7-92DC-E5FC40909B41}",
+      "pastaId": "{3D0AA8C7-41DC-4CF9-99BD-8F1BD0065FBC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{FB2C2108-A959-4CEB-95A3-9DF67572C530}",
+      "pastaId": "{662FB642-E9C8-41A7-92DC-E5FC40909B41}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_portable_exe",
+      "id": "{BDB0CAEA-0C99-4E05-9C8C-7F1C6B56CC01}",
+      "pastaId": "{3D0AA8C7-41DC-4CF9-99BD-8F1BD0065FBC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{31CB7647-F815-4CA4-8B90-868B090C54A8}",
+      "pastaId": "{BDB0CAEA-0C99-4E05-9C8C-7F1C6B56CC01}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_curl",
+      "id": "{2A1C68BC-C816-49B6-9346-B1222C1127E4}",
+      "pastaId": "{3D0AA8C7-41DC-4CF9-99BD-8F1BD0065FBC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_certificate",
+      "id": "{5FE25F97-51BD-4F3C-9941-36662B253D9F}",
+      "pastaId": "{3D0AA8C7-41DC-4CF9-99BD-8F1BD0065FBC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{3EEAA227-F65E-41A7-9E00-265DFF79E334}",
+      "pastaId": "{5FE25F97-51BD-4F3C-9941-36662B253D9F}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "curl_transport": {
+      "nome": "curl_transport",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{1A9E4B56-2C70-4F18-8D33-9E6A0C5B7D12}"
+    },
+    "mock_transport": {
+      "nome": "mock_transport",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{1A9E4B56-2C70-4F18-8D33-9E6A0C5B7D12}"
+    },
+    "winhttp_transport": {
+      "nome": "winhttp_transport",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{1A9E4B56-2C70-4F18-8D33-9E6A0C5B7D12}"
+    },
+    "http": {
+      "nome": "http",
+      "aberto": false,
+      "ordemAbertura": 1,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_body": {
+      "nome": "http_body",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_enums": {
+      "nome": "http_enums",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_form": {
+      "nome": "http_form",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_headers": {
+      "nome": "http_headers",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_request": {
+      "nome": "http_request",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_response": {
+      "nome": "http_response",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_transport": {
+      "nome": "http_transport",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_url": {
+      "nome": "http_url",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_interceptor": {
+      "nome": "http_interceptor",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{3D7C2E81-5A14-4B90-BE27-6F1D8C4A0E55}"
+    },
+    "http_live_tests": {
+      "nome": "http_live_tests",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{9C4D1E70-3B28-4F52-9A16-8D5C0E2F7B41}"
+    },
+    "http_test_harness": {
+      "nome": "http_test_harness",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{9C4D1E70-3B28-4F52-9A16-8D5C0E2F7B41}"
+    }
+  },
+  "dependencies": {
+    "mod_io": "1.0.0.0",
+    "mod_strings": "1.0.0.0",
+    "mod_portable_exe": "1.0.0.0",
+    "mod_curl": "1.0.0.0",
+    "mod_certificate": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_http",
+    "publisher": "matheusdevelope"
+  }
+}
