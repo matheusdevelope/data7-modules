@@ -1,0 +1,149 @@
+{
+  "nome": "mod_certificate",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto mod_certificate criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (19)",
+      "id": "{AAC3D3B0-4114-4246-AA2E-3941B4104D31}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{2CF7DAC3-B304-411C-AF1C-5138508BE5A7}",
+      "pastaId": "{AAC3D3B0-4114-4246-AA2E-3941B4104D31}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{1E8EF8BF-C7F2-4B41-9FD4-EC00316245D7}",
+      "pastaId": "{2CF7DAC3-B304-411C-AF1C-5138508BE5A7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{7C2F3D08-C0EE-43F8-AB30-8852CFDC9552}",
+      "pastaId": "{2CF7DAC3-B304-411C-AF1C-5138508BE5A7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{693284F8-21C7-4D1E-AAEF-0873B1A7F0EE}",
+      "pastaId": "{7C2F3D08-C0EE-43F8-AB30-8852CFDC9552}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_portable_exe",
+      "id": "{6AEE59ED-B790-4FD9-8655-E73F9352FA9C}",
+      "pastaId": "{2CF7DAC3-B304-411C-AF1C-5138508BE5A7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{CC7C2523-EEBE-45E6-BF4D-FC89BB39979A}",
+      "pastaId": "{6AEE59ED-B790-4FD9-8655-E73F9352FA9C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{8843793C-1210-4E69-998F-A9E2832D78B5}",
+      "pastaId": "{AAC3D3B0-4114-4246-AA2E-3941B4104D31}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_certificate": {
+      "nome": "mod_certificate",
+      "aberto": false,
+      "ordemAbertura": 3,
+      "pastaId": "{8843793C-1210-4E69-998F-A9E2832D78B5}"
+    },
+    "mod_certificates": {
+      "nome": "mod_certificates",
+      "aberto": false,
+      "ordemAbertura": 4,
+      "pastaId": "{8843793C-1210-4E69-998F-A9E2832D78B5}"
+    },
+    "mod_certificate_store": {
+      "nome": "mod_certificate_store",
+      "aberto": false,
+      "ordemAbertura": 5,
+      "pastaId": "{8843793C-1210-4E69-998F-A9E2832D78B5}"
+    },
+    "mod_certutil": {
+      "nome": "mod_certutil",
+      "aberto": false,
+      "ordemAbertura": 2,
+      "pastaId": "{8843793C-1210-4E69-998F-A9E2832D78B5}"
+    },
+    "mod_cert_dump": {
+      "nome": "mod_cert_dump",
+      "aberto": false,
+      "ordemAbertura": 1,
+      "pastaId": "{8843793C-1210-4E69-998F-A9E2832D78B5}"
+    },
+    "mod_cert_enums": {
+      "nome": "mod_cert_enums",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8843793C-1210-4E69-998F-A9E2832D78B5}"
+    }
+  },
+  "dependencies": {
+    "mod_portable_exe": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_certificate",
+    "publisher": "matheusdevelope"
+  }
+}
