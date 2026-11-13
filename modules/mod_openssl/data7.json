@@ -1,0 +1,113 @@
+{
+  "nome": "mod_openssl",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto mod_openssl criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": false,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (14)",
+      "id": "{D66AA032-B022-4AEA-8DCE-531C64280E48}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{8B39FEB6-9292-4FF1-867D-9F1DF3981F06}",
+      "pastaId": "{D66AA032-B022-4AEA-8DCE-531C64280E48}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{3CBCDF40-B449-417A-9602-FB18C7E409EF}",
+      "pastaId": "{8B39FEB6-9292-4FF1-867D-9F1DF3981F06}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{81674472-D86A-4AA6-9268-7F1F38F7CC60}",
+      "pastaId": "{8B39FEB6-9292-4FF1-867D-9F1DF3981F06}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{788AAE3C-71B9-4F5A-AA6F-FB912AD5659F}",
+      "pastaId": "{81674472-D86A-4AA6-9268-7F1F38F7CC60}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_portable_exe",
+      "id": "{18F01DC1-D166-4FEC-9F49-B5AF3AB8A97E}",
+      "pastaId": "{8B39FEB6-9292-4FF1-867D-9F1DF3981F06}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{806E7AA6-CD7B-4C12-B8C7-1EE6D3BCA016}",
+      "pastaId": "{18F01DC1-D166-4FEC-9F49-B5AF3AB8A97E}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_openssl": {
+      "nome": "mod_openssl",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{D66AA032-B022-4AEA-8DCE-531C64280E48}"
+    }
+  },
+  "dependencies": {
+    "mod_portable_exe": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_openssl",
+    "publisher": "matheusdevelope"
+  }
+}
