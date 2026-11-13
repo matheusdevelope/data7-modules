@@ -1,0 +1,489 @@
+{
+  "nome": "mod_whatsapp",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Esse projeto é um módulo de integração com o WhatsApp, desenvolvido para facilitar a comunicação e automação de mensagens dentro do sistema. Ele permite o envio e integração com outras funcionalidades do sistema.",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (92)",
+      "id": "{D8EFEECD-BD52-473F-9175-55DCF5EB6751}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{FD1E4FB3-00E6-455B-B731-B7FCBD453036}",
+      "pastaId": "{D8EFEECD-BD52-473F-9175-55DCF5EB6751}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{F9EF8A9E-0EA1-4738-8964-A426CD64A306}",
+      "pastaId": "{FD1E4FB3-00E6-455B-B731-B7FCBD453036}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "clients",
+      "id": "{81CB61E7-4D52-4B4C-AD78-800C262259EC}",
+      "pastaId": "{D8EFEECD-BD52-473F-9175-55DCF5EB6751}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{802AC540-7387-4374-A141-1587F014FC8C}",
+      "pastaId": "{D8EFEECD-BD52-473F-9175-55DCF5EB6751}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "contracts",
+      "id": "{AB24914E-18A2-4E22-8BC8-F6C11D6D0805}",
+      "pastaId": "{802AC540-7387-4374-A141-1587F014FC8C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "infra",
+      "id": "{916D3A80-AB86-4338-BC31-8CBBD51D25A3}",
+      "pastaId": "{802AC540-7387-4374-A141-1587F014FC8C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "models",
+      "id": "{39970809-0096-4535-B2A4-A8C638B175CB}",
+      "pastaId": "{802AC540-7387-4374-A141-1587F014FC8C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "services",
+      "id": "{44DB0CD0-5C73-4FA9-93AA-04606BCFF0B2}",
+      "pastaId": "{802AC540-7387-4374-A141-1587F014FC8C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "validation",
+      "id": "{4F915DEC-345D-4108-8F3D-60CD2A983857}",
+      "pastaId": "{802AC540-7387-4374-A141-1587F014FC8C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "desktop",
+      "id": "{9EBA160D-AE28-4000-A0AA-80479FB16B32}",
+      "pastaId": "{81CB61E7-4D52-4B4C-AD78-800C262259EC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "devstudio",
+      "id": "{A41E10C3-0145-4173-963C-FE431AC203D9}",
+      "pastaId": "{81CB61E7-4D52-4B4C-AD78-800C262259EC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "evolution",
+      "id": "{9B4F9E25-6618-4F69-BFBB-E499BA951320}",
+      "pastaId": "{81CB61E7-4D52-4B4C-AD78-800C262259EC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "evolution_go",
+      "id": "{CCF6BC7B-D27F-44E5-B07B-5D2BEB261569}",
+      "pastaId": "{81CB61E7-4D52-4B4C-AD78-800C262259EC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "auth",
+      "id": "{8690B81A-5829-441B-88E9-C634D8557953}",
+      "pastaId": "{802AC540-7387-4374-A141-1587F014FC8C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "dto",
+      "id": "{D1900112-C9CD-4790-95B1-B5D64ED44560}",
+      "pastaId": "{802AC540-7387-4374-A141-1587F014FC8C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "ui",
+      "id": "{B1EDADC6-9D6B-4DBC-A60B-485B6E36ECF8}",
+      "pastaId": "{D8EFEECD-BD52-473F-9175-55DCF5EB6751}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "compose",
+      "id": "{C804E7EE-AAA0-4B29-83D6-A5E99EE5AFDA}",
+      "pastaId": "{B1EDADC6-9D6B-4DBC-A60B-485B6E36ECF8}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "helpers",
+      "id": "{D95A285C-3FEE-4F89-930E-6BD735F84854}",
+      "pastaId": "{B1EDADC6-9D6B-4DBC-A60B-485B6E36ECF8}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{80D8A580-3A2E-4704-9F61-784137A7788C}",
+      "pastaId": "{FD1E4FB3-00E6-455B-B731-B7FCBD453036}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{9C06C65E-40AD-4FC2-978C-F02189BBC70F}",
+      "pastaId": "{80D8A580-3A2E-4704-9F61-784137A7788C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_forms",
+      "id": "{C6123CE4-AC5D-4DED-A260-E2307D2A5C80}",
+      "pastaId": "{FD1E4FB3-00E6-455B-B731-B7FCBD453036}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{5FC710EA-8BF0-4CB1-B6F5-21CE3022891C}",
+      "pastaId": "{C6123CE4-AC5D-4DED-A260-E2307D2A5C80}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_winapi",
+      "id": "{146D5A30-8F03-4F61-B2F8-72D70360DF6A}",
+      "pastaId": "{FD1E4FB3-00E6-455B-B731-B7FCBD453036}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_camera",
+      "id": "{C74215B9-AFF0-48D2-BB54-29347352F93E}",
+      "pastaId": "{FD1E4FB3-00E6-455B-B731-B7FCBD453036}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_clipboard_manager",
+      "id": "{03E552BD-E8B6-42E3-8C36-C7B868F5FF45}",
+      "pastaId": "{FD1E4FB3-00E6-455B-B731-B7FCBD453036}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_editors",
+      "id": "{3140370C-9B30-472E-8578-57CC9522CD0B}",
+      "pastaId": "{FD1E4FB3-00E6-455B-B731-B7FCBD453036}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{DF6641F4-7B56-402A-8320-726DCABF1BA2}",
+      "pastaId": "{3140370C-9B30-472E-8578-57CC9522CD0B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "editors",
+      "id": "{B4E91966-6D1D-4BB7-81E6-20BFC103AB10}",
+      "pastaId": "{DF6641F4-7B56-402A-8320-726DCABF1BA2}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "base",
+      "id": "{A1D4F4E9-59D4-411B-B5AB-C73B19B2A6FE}",
+      "pastaId": "{B4E91966-6D1D-4BB7-81E6-20BFC103AB10}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "custom",
+      "id": "{EB244FFD-CC9F-4580-9B2F-3E0429881720}",
+      "pastaId": "{B4E91966-6D1D-4BB7-81E6-20BFC103AB10}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_regex",
+      "id": "{34729F2F-C803-47D8-B1C4-62DEE2786EDD}",
+      "pastaId": "{FD1E4FB3-00E6-455B-B731-B7FCBD453036}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{0925AB5D-F553-4189-B225-3CAB393E5696}",
+      "pastaId": "{34729F2F-C803-47D8-B1C4-62DEE2786EDD}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "wa_client_desktop": {
+      "nome": "wa_client_desktop",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{9EBA160D-AE28-4000-A0AA-80479FB16B32}"
+    },
+    "wa_desktop_options": {
+      "nome": "wa_desktop_options",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{9EBA160D-AE28-4000-A0AA-80479FB16B32}"
+    },
+    "wa_client_devstudio": {
+      "nome": "wa_client_devstudio",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{A41E10C3-0145-4173-963C-FE431AC203D9}"
+    },
+    "wa_devstudio_options": {
+      "nome": "wa_devstudio_options",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{A41E10C3-0145-4173-963C-FE431AC203D9}"
+    },
+    "wa_client_evolution": {
+      "nome": "wa_client_evolution",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{9B4F9E25-6618-4F69-BFBB-E499BA951320}"
+    },
+    "wa_evolution_options": {
+      "nome": "wa_evolution_options",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{9B4F9E25-6618-4F69-BFBB-E499BA951320}"
+    },
+    "wa_client_evolution_go": {
+      "nome": "wa_client_evolution_go",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{CCF6BC7B-D27F-44E5-B07B-5D2BEB261569}"
+    },
+    "wa_evolution_go_options": {
+      "nome": "wa_evolution_go_options",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{CCF6BC7B-D27F-44E5-B07B-5D2BEB261569}"
+    },
+    "wa_auth": {
+      "nome": "wa_auth",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8690B81A-5829-441B-88E9-C634D8557953}"
+    },
+    "wa_contracts": {
+      "nome": "wa_contracts",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{AB24914E-18A2-4E22-8BC8-F6C11D6D0805}"
+    },
+    "wa_dto_send": {
+      "nome": "wa_dto_send",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{D1900112-C9CD-4790-95B1-B5D64ED44560}"
+    },
+    "wa_dto_user": {
+      "nome": "wa_dto_user",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{D1900112-C9CD-4790-95B1-B5D64ED44560}"
+    },
+    "wa_http": {
+      "nome": "wa_http",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{916D3A80-AB86-4338-BC31-8CBBD51D25A3}"
+    },
+    "wa_api_result": {
+      "nome": "wa_api_result",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{39970809-0096-4535-B2A4-A8C638B175CB}"
+    },
+    "wa_attachment": {
+      "nome": "wa_attachment",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{39970809-0096-4535-B2A4-A8C638B175CB}"
+    },
+    "wa_capabilities": {
+      "nome": "wa_capabilities",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{39970809-0096-4535-B2A4-A8C638B175CB}"
+    },
+    "wa_contact": {
+      "nome": "wa_contact",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{39970809-0096-4535-B2A4-A8C638B175CB}"
+    },
+    "wa_instance": {
+      "nome": "wa_instance",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{39970809-0096-4535-B2A4-A8C638B175CB}"
+    },
+    "wa_message": {
+      "nome": "wa_message",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{39970809-0096-4535-B2A4-A8C638B175CB}"
+    },
+    "wa_message_format": {
+      "nome": "wa_message_format",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{39970809-0096-4535-B2A4-A8C638B175CB}"
+    },
+    "wa_send_result": {
+      "nome": "wa_send_result",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{39970809-0096-4535-B2A4-A8C638B175CB}"
+    },
+    "wa_chat_resource": {
+      "nome": "wa_chat_resource",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{44DB0CD0-5C73-4FA9-93AA-04606BCFF0B2}"
+    },
+    "wa_group_resource": {
+      "nome": "wa_group_resource",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{44DB0CD0-5C73-4FA9-93AA-04606BCFF0B2}"
+    },
+    "wa_instance_resource": {
+      "nome": "wa_instance_resource",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{44DB0CD0-5C73-4FA9-93AA-04606BCFF0B2}"
+    },
+    "wa_message_resource": {
+      "nome": "wa_message_resource",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{44DB0CD0-5C73-4FA9-93AA-04606BCFF0B2}"
+    },
+    "wa_resource_base": {
+      "nome": "wa_resource_base",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{44DB0CD0-5C73-4FA9-93AA-04606BCFF0B2}"
+    },
+    "wa_send_resource": {
+      "nome": "wa_send_resource",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{44DB0CD0-5C73-4FA9-93AA-04606BCFF0B2}"
+    },
+    "wa_service": {
+      "nome": "wa_service",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{44DB0CD0-5C73-4FA9-93AA-04606BCFF0B2}"
+    },
+    "wa_user_resource": {
+      "nome": "wa_user_resource",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{44DB0CD0-5C73-4FA9-93AA-04606BCFF0B2}"
+    },
+    "wa_validators": {
+      "nome": "wa_validators",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{4F915DEC-345D-4108-8F3D-60CD2A983857}"
+    },
+    "wa_compose": {
+      "nome": "wa_compose",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{C804E7EE-AAA0-4B29-83D6-A5E99EE5AFDA}"
+    },
+    "wa_compose_client": {
+      "nome": "wa_compose_client",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C804E7EE-AAA0-4B29-83D6-A5E99EE5AFDA}"
+    },
+    "wa_compose_events": {
+      "nome": "wa_compose_events",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C804E7EE-AAA0-4B29-83D6-A5E99EE5AFDA}"
+    },
+    "wa_compose_form": {
+      "nome": "wa_compose_form",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{C804E7EE-AAA0-4B29-83D6-A5E99EE5AFDA}"
+    },
+    "wa_compose_options": {
+      "nome": "wa_compose_options",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C804E7EE-AAA0-4B29-83D6-A5E99EE5AFDA}"
+    },
+    "wa_compose_rules": {
+      "nome": "wa_compose_rules",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C804E7EE-AAA0-4B29-83D6-A5E99EE5AFDA}"
+    },
+    "wa_phone_mask": {
+      "nome": "wa_phone_mask",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{D95A285C-3FEE-4F89-930E-6BD735F84854}"
+    }
+  },
+  "dependencies": {
+    "mod_io": "1.0.0.0",
+    "mod_forms": "1.0.0.0",
+    "mod_editors": "1.0.0.1",
+    "mod_winapi": "1.0.0.0",
+    "mod_clipboard_manager": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_whatsapp",
+    "publisher": "matheusdevelope"
+  }
+}
