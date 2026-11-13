@@ -1,0 +1,105 @@
+{
+  "nome": "mod_cache",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "LIB para gerenciamento de cache",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (7)",
+      "id": "{04E5AD51-147B-4C00-8329-CFD2FD3CE392}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{A2F25E84-1A25-424D-8DB7-EA0D532393B7}",
+      "pastaId": "{04E5AD51-147B-4C00-8329-CFD2FD3CE392}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{CDD5E520-C386-48B8-8B23-176110520F39}",
+      "pastaId": "{A2F25E84-1A25-424D-8DB7-EA0D532393B7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{0D62B89F-9D33-4E94-864E-062F7F77AD58}",
+      "pastaId": "{04E5AD51-147B-4C00-8329-CFD2FD3CE392}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "test",
+      "id": "{B716E9D2-5942-439C-A831-6064BFD2E90A}",
+      "pastaId": "{04E5AD51-147B-4C00-8329-CFD2FD3CE392}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_cache": {
+      "nome": "mod_cache",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{0D62B89F-9D33-4E94-864E-062F7F77AD58}"
+    },
+    "test_cache": {
+      "nome": "test_cache",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{B716E9D2-5942-439C-A831-6064BFD2E90A}"
+    }
+  },
+  "dependencies": {},
+  "module": {
+    "enabled": true,
+    "name": "mod_cache",
+    "publisher": "matheusdevelope"
+  }
+}
