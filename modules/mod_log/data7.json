@@ -1,0 +1,167 @@
+{
+  "nome": "mod_log",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Módulo para gravação de logs de sistema",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (24)",
+      "id": "{CEB2CA88-6DFF-4B88-96DC-3BA1B10E3F2B}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{DE066DC6-6005-48D1-9B81-13E2DC6121F7}",
+      "pastaId": "{CEB2CA88-6DFF-4B88-96DC-3BA1B10E3F2B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{33355879-3602-4221-84BC-5984D1B42363}",
+      "pastaId": "{DE066DC6-6005-48D1-9B81-13E2DC6121F7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Tables",
+      "id": "{3E315E3A-2217-4DEF-B98D-26CFB904EEEA}",
+      "pastaId": "{CEB2CA88-6DFF-4B88-96DC-3BA1B10E3F2B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{57DA24F1-7D55-419A-8E85-AFB0EA957DA3}",
+      "pastaId": "{CEB2CA88-6DFF-4B88-96DC-3BA1B10E3F2B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{C4D8E2A1-6B17-4F90-8C3D-1A9E5F70B2D4}",
+      "pastaId": "{CEB2CA88-6DFF-4B88-96DC-3BA1B10E3F2B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_table",
+      "id": "{6CB11CCB-CF94-48A7-9724-3871CFCF02C6}",
+      "pastaId": "{DE066DC6-6005-48D1-9B81-13E2DC6121F7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{F0B29BA2-2D2D-44BC-9E6B-2343839A30AA}",
+      "pastaId": "{6CB11CCB-CF94-48A7-9724-3871CFCF02C6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{871F0718-AF78-4F14-87AC-747C8345A0DE}",
+      "pastaId": "{6CB11CCB-CF94-48A7-9724-3871CFCF02C6}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_log": {
+      "nome": "mod_log",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{57DA24F1-7D55-419A-8E85-AFB0EA957DA3}"
+    },
+    "mod_log_batch": {
+      "nome": "mod_log_batch",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{57DA24F1-7D55-419A-8E85-AFB0EA957DA3}"
+    },
+    "mod_log_context": {
+      "nome": "mod_log_context",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{57DA24F1-7D55-419A-8E85-AFB0EA957DA3}"
+    },
+    "mod_log_item": {
+      "nome": "mod_log_item",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{57DA24F1-7D55-419A-8E85-AFB0EA957DA3}"
+    },
+    "mod_log_type": {
+      "nome": "mod_log_type",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{57DA24F1-7D55-419A-8E85-AFB0EA957DA3}"
+    },
+    "table_logsistema": {
+      "nome": "table_logsistema",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{3E315E3A-2217-4DEF-B98D-26CFB904EEEA}"
+    },
+    "table_logsistemadetalhe": {
+      "nome": "table_logsistemadetalhe",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{3E315E3A-2217-4DEF-B98D-26CFB904EEEA}"
+    },
+    "log_tests": {
+      "nome": "log_tests",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C4D8E2A1-6B17-4F90-8C3D-1A9E5F70B2D4}"
+    }
+  },
+  "dependencies": {
+    "mod_table": "1.0.0.6"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_log",
+    "publisher": "matheusdevelope"
+  }
+}
