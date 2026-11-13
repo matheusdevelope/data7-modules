@@ -1,0 +1,87 @@
+{
+  "nome": "mod_winapi",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto mod_winapi criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (6)",
+      "id": "{3C9615CA-8BB9-4CAA-A4DD-A20514B1E577}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{C752D367-08DC-4C00-9A66-5204C4F506AC}",
+      "pastaId": "{3C9615CA-8BB9-4CAA-A4DD-A20514B1E577}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{276585E1-DF1F-4CAB-81EF-625437F3F483}",
+      "pastaId": "{C752D367-08DC-4C00-9A66-5204C4F506AC}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_winapi": {
+      "nome": "mod_winapi",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{3C9615CA-8BB9-4CAA-A4DD-A20514B1E577}"
+    }
+  },
+  "dependencies": {},
+  "module": {
+    "enabled": true,
+    "name": "mod_winapi",
+    "publisher": "matheusdevelope"
+  }
+}
