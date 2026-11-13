@@ -1,0 +1,168 @@
+{
+  "nome": "mod_table_filter_builder",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto mod_table_filter_builder criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (28)",
+      "id": "{11589718-0FE9-4DE5-ACD8-FFCC8F458298}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{B60A9EC2-1E45-4088-B126-18B8E22FD100}",
+      "pastaId": "{11589718-0FE9-4DE5-ACD8-FFCC8F458298}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{C4E8B1A2-7D3F-4A91-8C5E-2B6F9D0A1E47}",
+      "pastaId": "{11589718-0FE9-4DE5-ACD8-FFCC8F458298}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{525CC9AB-5743-4101-90D7-6DC8C48EC80A}",
+      "pastaId": "{B60A9EC2-1E45-4088-B126-18B8E22FD100}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_table",
+      "id": "{3831F83A-B9C9-427F-BC65-52BD83CF70EC}",
+      "pastaId": "{B60A9EC2-1E45-4088-B126-18B8E22FD100}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{428030D9-3E35-4E0D-B9C9-1E8ED678FDA9}",
+      "pastaId": "{3831F83A-B9C9-427F-BC65-52BD83CF70EC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{2F2BAA19-A84D-4AB9-A481-81600873329D}",
+      "pastaId": "{3831F83A-B9C9-427F-BC65-52BD83CF70EC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{05D2D457-2BE7-4BD0-81CE-7630E3339826}",
+      "pastaId": "{B60A9EC2-1E45-4088-B126-18B8E22FD100}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{9C23D061-4F19-4A06-8ABD-03565BA3C579}",
+      "pastaId": "{05D2D457-2BE7-4BD0-81CE-7630E3339826}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "table_filter_builder": {
+      "nome": "table_filter_builder",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{C4E8B1A2-7D3F-4A91-8C5E-2B6F9D0A1E47}"
+    },
+    "table_filter_field": {
+      "nome": "table_filter_field",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C4E8B1A2-7D3F-4A91-8C5E-2B6F9D0A1E47}"
+    },
+    "table_filter_item": {
+      "nome": "table_filter_item",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C4E8B1A2-7D3F-4A91-8C5E-2B6F9D0A1E47}"
+    },
+    "table_filter_json": {
+      "nome": "table_filter_json",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C4E8B1A2-7D3F-4A91-8C5E-2B6F9D0A1E47}"
+    },
+    "table_filter_ops": {
+      "nome": "table_filter_ops",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C4E8B1A2-7D3F-4A91-8C5E-2B6F9D0A1E47}"
+    },
+    "table_filter_sql": {
+      "nome": "table_filter_sql",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C4E8B1A2-7D3F-4A91-8C5E-2B6F9D0A1E47}"
+    },
+    "table_filter_table": {
+      "nome": "table_filter_table",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C4E8B1A2-7D3F-4A91-8C5E-2B6F9D0A1E47}"
+    },
+    "table_filter_value": {
+      "nome": "table_filter_value",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{C4E8B1A2-7D3F-4A91-8C5E-2B6F9D0A1E47}"
+    }
+  },
+  "dependencies": {
+    "mod_table": "1.0.0.6",
+    "mod_io": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_table_filter_builder",
+    "publisher": "matheusdevelope"
+  }
+}
