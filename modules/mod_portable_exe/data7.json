@@ -1,0 +1,119 @@
+{
+  "nome": "mod_portable_exe",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto mod_portable_exe criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (13)",
+      "id": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{F80A3D1E-2FDA-448A-8A79-E24955E0E40B}",
+      "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{75526553-399D-4EAB-A732-3D09064EB5D8}",
+      "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{30827F8E-2C53-4783-AD2F-55987067A5A2}",
+      "pastaId": "{75526553-399D-4EAB-A732-3D09064EB5D8}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_portable_exe": {
+      "nome": "mod_portable_exe",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}"
+    },
+    "mod_portable_exe_tests": {
+      "nome": "mod_portable_exe_tests",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}"
+    },
+    "mod_remote_exe": {
+      "nome": "mod_remote_exe",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}"
+    },
+    "mod_zip_exe": {
+      "nome": "mod_zip_exe",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}"
+    }
+  },
+  "dependencies": {
+    "mod_io": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_portable_exe",
+    "publisher": "matheusdevelope"
+  }
+}
