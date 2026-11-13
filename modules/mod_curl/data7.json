@@ -1,0 +1,113 @@
+{
+  "nome": "mod_curl",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto mod_curl criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": false,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (14)",
+      "id": "{B2CAF061-8484-40B5-8DF9-9AFCBCD44927}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{601DD414-9945-4E98-8B09-BAEF85757300}",
+      "pastaId": "{B2CAF061-8484-40B5-8DF9-9AFCBCD44927}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{20AB9251-6F54-424D-93EE-29A527615718}",
+      "pastaId": "{601DD414-9945-4E98-8B09-BAEF85757300}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{E9D305C2-E2B1-4F78-B93C-998BCECE52DA}",
+      "pastaId": "{601DD414-9945-4E98-8B09-BAEF85757300}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{4C84E56F-35E0-4F83-8F3E-8143C23DB04A}",
+      "pastaId": "{E9D305C2-E2B1-4F78-B93C-998BCECE52DA}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_portable_exe",
+      "id": "{5531F321-A967-403A-B6BD-EA07C08E16D1}",
+      "pastaId": "{601DD414-9945-4E98-8B09-BAEF85757300}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{1D63B2A2-ECA2-4C40-838D-C09015EF152D}",
+      "pastaId": "{5531F321-A967-403A-B6BD-EA07C08E16D1}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_curl": {
+      "nome": "mod_curl",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{B2CAF061-8484-40B5-8DF9-9AFCBCD44927}"
+    }
+  },
+  "dependencies": {
+    "mod_portable_exe": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_curl",
+    "publisher": "matheusdevelope"
+  }
+}
