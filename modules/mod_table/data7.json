@@ -1,11 +1,11 @@
 {
   "nome": "mod_table",
   "language": "Basic",
-  "version": "1.0.0.6",
+  "version": "1.0.0.7",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
-    "versao": "1.0.0.1",
+    "versao": "1.0.0.7",
     "informacoes": "Core para mapear, persistir, migrar e gerar classes de tabelas.\n",
     "codEmpresa": 1,
     "codFilial": 1,
