@@ -1,0 +1,111 @@
+{
+  "nome": "mod_io",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto criado para oferecer funcionalidades de IO para o projeto",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": true
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (9)",
+      "id": "{EF77DB8A-6E3B-46C2-9F9E-7B45ED07D515}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{67497064-8887-4026-A256-33F22149942D}",
+      "pastaId": "{EF77DB8A-6E3B-46C2-9F9E-7B45ED07D515}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{96A48E1B-8F7B-4114-AA81-9B92A883C435}",
+      "pastaId": "{67497064-8887-4026-A256-33F22149942D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{30BD032D-B816-42D5-885E-0854240580F2}",
+      "pastaId": "{EF77DB8A-6E3B-46C2-9F9E-7B45ED07D515}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_tdialogs": {
+      "nome": "mod_tdialogs",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{30BD032D-B816-42D5-885E-0854240580F2}"
+    },
+    "mod_tdirectory": {
+      "nome": "mod_tdirectory",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{30BD032D-B816-42D5-885E-0854240580F2}"
+    },
+    "mod_tfile": {
+      "nome": "mod_tfile",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{30BD032D-B816-42D5-885E-0854240580F2}"
+    },
+    "mod_tpath": {
+      "nome": "mod_tpath",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{30BD032D-B816-42D5-885E-0854240580F2}"
+    }
+  },
+  "dependencies": {},
+  "module": {
+    "enabled": true,
+    "name": "mod_io",
+    "publisher": "matheusdevelope"
+  }
+}
