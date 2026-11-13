@@ -1,0 +1,215 @@
+{
+  "nome": "mod_configurador",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto mod_configurador criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (54)",
+      "id": "{FBB96815-A910-417C-9CC0-8E99F5661F9F}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{0BF75BD0-06FB-46E7-BB1C-769ACFAE3E81}",
+      "pastaId": "{FBB96815-A910-417C-9CC0-8E99F5661F9F}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{54837223-2798-4884-BD58-226DB8B7B582}",
+      "pastaId": "{0BF75BD0-06FB-46E7-BB1C-769ACFAE3E81}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Tables",
+      "id": "{EBC1C8A2-CA39-4EA6-8DB6-861ED904DBCF}",
+      "pastaId": "{FBB96815-A910-417C-9CC0-8E99F5661F9F}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "Configurador",
+      "id": "{B3E8A271-9C4D-4F6A-8B15-7E2C9D0A4F81}",
+      "pastaId": "{FBB96815-A910-417C-9CC0-8E99F5661F9F}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "Tables",
+      "id": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}",
+      "pastaId": "{B3E8A271-9C4D-4F6A-8B15-7E2C9D0A4F81}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_table",
+      "id": "{5A76958B-2F3E-4C91-8328-E08FD483AB7D}",
+      "pastaId": "{0BF75BD0-06FB-46E7-BB1C-769ACFAE3E81}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{9D38F0CA-395C-4AA5-9F51-2422F1DD3E49}",
+      "pastaId": "{5A76958B-2F3E-4C91-8328-E08FD483AB7D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{21CB01DB-106D-48DC-A78B-1A336DBC945D}",
+      "pastaId": "{5A76958B-2F3E-4C91-8328-E08FD483AB7D}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "configurador_lote": {
+      "nome": "configurador_lote",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{B3E8A271-9C4D-4F6A-8B15-7E2C9D0A4F81}"
+    },
+    "configurador_sql": {
+      "nome": "configurador_sql",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{B3E8A271-9C4D-4F6A-8B15-7E2C9D0A4F81}"
+    },
+    "configurador_acesso_processo": {
+      "nome": "configurador_acesso_processo",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_acesso_tabela": {
+      "nome": "configurador_acesso_tabela",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_ajuda": {
+      "nome": "configurador_ajuda",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_campo": {
+      "nome": "configurador_campo",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_campo_busca": {
+      "nome": "configurador_campo_busca",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_filtro": {
+      "nome": "configurador_filtro",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_grupotabela": {
+      "nome": "configurador_grupotabela",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_legenda": {
+      "nome": "configurador_legenda",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_pasta": {
+      "nome": "configurador_pasta",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_pesquisa": {
+      "nome": "configurador_pesquisa",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_processo": {
+      "nome": "configurador_processo",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_relatorio": {
+      "nome": "configurador_relatorio",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_tabela": {
+      "nome": "configurador_tabela",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    },
+    "configurador_tcfgbase": {
+      "nome": "configurador_tcfgbase",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{576EE6F9-6CE7-4042-8EAA-02743678A3A9}"
+    }
+  },
+  "dependencies": {
+    "mod_table": "1.0.0.6"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_configurador",
+    "publisher": "matheusdevelope"
+  }
+}
