@@ -1,0 +1,648 @@
+{
+  "nome": "mod_pix_app_whatsapp_sharer",
+  "language": "Basic",
+  "version": "1.0.2.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus Teixeira - Unidade Sinop",
+    "versao": "1.0.0.0",
+    "informacoes": "Implementação do módulo de compartilhamento de WhatsApp para o app de Pix",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (233)",
+      "id": "{4E733EC4-6833-4767-B82B-53F40AB24A94}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "pastaId": "{4E733EC4-6833-4767-B82B-53F40AB24A94}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{F60CE9C2-7A54-4BC5-B867-DEE4352C8917}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_camera",
+      "id": "{99E83496-5B57-4426-847C-6013EB5825F5}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_certificate",
+      "id": "{3D8A4CB2-D23C-4B56-AE7F-67D5550143FC}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{E0B9BAC4-BA0E-40F6-9393-4BCCD5C4F776}",
+      "pastaId": "{3D8A4CB2-D23C-4B56-AE7F-67D5550143FC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_clipboard_manager",
+      "id": "{4BAB44AE-6CBA-4655-92CC-9DD160F5D52B}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_curl",
+      "id": "{A35631F6-6CEF-40CD-928C-DFD79B59B3B5}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_editors",
+      "id": "{D1AB963D-DB35-4E5B-BDFF-17DAF9BB0BCC}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{2F5700AF-B8AF-49D5-9B1D-AA69D721891C}",
+      "pastaId": "{D1AB963D-DB35-4E5B-BDFF-17DAF9BB0BCC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "editors",
+      "id": "{4A031306-03B3-42B5-B316-2ED516978247}",
+      "pastaId": "{2F5700AF-B8AF-49D5-9B1D-AA69D721891C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "base",
+      "id": "{A88F670C-2580-43DD-B6DE-9751AEFB8680}",
+      "pastaId": "{4A031306-03B3-42B5-B316-2ED516978247}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "custom",
+      "id": "{6B084804-F42F-45A0-AF7D-C8988A380E35}",
+      "pastaId": "{4A031306-03B3-42B5-B316-2ED516978247}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_forms",
+      "id": "{E736C3AF-E27A-4873-8916-7E87B078D2D5}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{ABCAB3F5-3B92-42F3-8F96-AAE3A8BBBD05}",
+      "pastaId": "{E736C3AF-E27A-4873-8916-7E87B078D2D5}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_grid",
+      "id": "{AD5164A3-5E71-4109-94BB-60F44E8DF8A1}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_grid",
+      "id": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "pastaId": "{AD5164A3-5E71-4109-94BB-60F44E8DF8A1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "adapters",
+      "id": "{D5BB2A7F-2FC4-4ABA-8F5D-87E716DCEACB}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "columns",
+      "id": "{294AE4EE-5888-4132-9056-791FB2DBB4FF}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{F32A16AC-37B5-4E1E-8D2D-5D1C498ACC9D}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "data",
+      "id": "{61420DCB-44E2-4972-ABDA-69DE61029575}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "editors",
+      "id": "{9AE1614D-0F93-485A-B719-5626F9EBCBA3}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "drawers",
+      "id": "{42BF040F-2E9E-4F8E-9582-5EAFFAAFD8B9}",
+      "pastaId": "{9AE1614D-0F93-485A-B719-5626F9EBCBA3}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "factories",
+      "id": "{483AFEFB-4E9C-4384-B895-959DA45C75AB}",
+      "pastaId": "{9AE1614D-0F93-485A-B719-5626F9EBCBA3}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "effects",
+      "id": "{74071D0B-13B3-4566-B90E-E01B8D7CCB0B}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "events",
+      "id": "{9D0DCB89-CAB5-4604-8466-84096F3462BC}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "popup",
+      "id": "{4D956B0B-C5E9-4BAB-A315-CF55881942AD}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "utils",
+      "id": "{A84D4B62-CF77-4D41-BEFD-E92DB8ACEC11}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "validation",
+      "id": "{37658DC7-7E6B-4C36-8D60-D86EDD74290C}",
+      "pastaId": "{622002E0-4203-43A5-95B1-152261C015E7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_http",
+      "id": "{5080F013-287C-4090-A92F-ABB3812A1711}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{3E3E3445-8345-4B46-BB04-D36217264C2D}",
+      "pastaId": "{5080F013-287C-4090-A92F-ABB3812A1711}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "callback",
+      "id": "{B86A23E4-B2B2-4024-AE98-EB5CFCA587A7}",
+      "pastaId": "{3E3E3445-8345-4B46-BB04-D36217264C2D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "clients",
+      "id": "{D3EE6436-AC88-477F-8ED6-A486580BAE00}",
+      "pastaId": "{3E3E3445-8345-4B46-BB04-D36217264C2D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "interceptors",
+      "id": "{90F8144E-D978-426C-9830-F23C24D168D8}",
+      "pastaId": "{3E3E3445-8345-4B46-BB04-D36217264C2D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{A290DFB3-535B-49E5-9925-96532643ED69}",
+      "pastaId": "{5080F013-287C-4090-A92F-ABB3812A1711}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{167E2C3F-87A9-4B67-A485-46A848828701}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{203B5889-218A-466A-8601-381CF6895A96}",
+      "pastaId": "{167E2C3F-87A9-4B67-A485-46A848828701}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_matrix",
+      "id": "{8D22BF25-1E03-41E4-B61D-9016D6D06D49}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_pix",
+      "id": "{656C39ED-3A11-499F-8241-5CEBEBEDC6E8}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "pastaId": "{656C39ED-3A11-499F-8241-5CEBEBEDC6E8}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "config",
+      "id": "{6E0C74A3-2F38-4E1A-9252-CE1C5B63B8DB}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{61597EF7-A49A-4E7E-BF43-FCBA267263DF}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "erp",
+      "id": "{B89B4633-9491-4A68-8D9B-939E6D312CBA}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "http",
+      "id": "{56D61F40-9FB3-4E55-8270-5A3850218273}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "ledger",
+      "id": "{9102F2FE-3DAC-40F8-9A1C-10573B564318}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "models",
+      "id": "{0B3CDC62-9E74-4F14-8008-DE93B1387DC6}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "providers",
+      "id": "{25EB6C60-B3BC-4446-B1B1-78A5139A29AC}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "bacen",
+      "id": "{D4AB985D-BA55-4ACF-B070-7F57D97D68F9}",
+      "pastaId": "{25EB6C60-B3BC-4446-B1B1-78A5139A29AC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "bradesco",
+      "id": "{F67BA420-580C-4D72-8189-10863DC41626}",
+      "pastaId": "{25EB6C60-B3BC-4446-B1B1-78A5139A29AC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "itau",
+      "id": "{57681C6E-E0C6-4C2E-B58F-205BD9BCCDDE}",
+      "pastaId": "{25EB6C60-B3BC-4446-B1B1-78A5139A29AC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "memory",
+      "id": "{B192B9A7-1A89-4082-912A-DD5CCD7B3176}",
+      "pastaId": "{25EB6C60-B3BC-4446-B1B1-78A5139A29AC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "santander",
+      "id": "{BD402C2C-8FEB-47D1-B67D-D344FAFCCD11}",
+      "pastaId": "{25EB6C60-B3BC-4446-B1B1-78A5139A29AC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "sicoob",
+      "id": "{30807599-CEDA-496A-9F86-EC10DD7DDF08}",
+      "pastaId": "{25EB6C60-B3BC-4446-B1B1-78A5139A29AC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "sicredi",
+      "id": "{EE1431CB-36E4-422E-B8C9-5D7ED3D76043}",
+      "pastaId": "{25EB6C60-B3BC-4446-B1B1-78A5139A29AC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "psp",
+      "id": "{2D71A1BE-F5AD-42F3-99A5-756EBA315B81}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "runtime",
+      "id": "{FAAD9147-7675-4E89-8E62-A203BCF668B7}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "utils",
+      "id": "{71D88511-D85D-4CA3-A9C7-3CAF9985D381}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "validation",
+      "id": "{A37B3451-C54B-4878-ADD8-40BB4C217B81}",
+      "pastaId": "{6BD49F46-E71E-49C2-9079-C9C3F6C0ECB9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{425ED0DD-82C9-40C3-B163-0B5E8C45EDA4}",
+      "pastaId": "{656C39ED-3A11-499F-8241-5CEBEBEDC6E8}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_pix_app",
+      "id": "{7AFE19E3-5C14-4DA5-9CD8-7EC51C5B55D4}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{E4EE3138-4A51-410E-9F1C-1E470A660144}",
+      "pastaId": "{7AFE19E3-5C14-4DA5-9CD8-7EC51C5B55D4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "adapters",
+      "id": "{0D3F1C50-5951-4681-9C2E-EC25A1A2FFC0}",
+      "pastaId": "{E4EE3138-4A51-410E-9F1C-1E470A660144}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "dialogs",
+      "id": "{AC6A7E0A-4458-4ACC-8984-4398570DEC78}",
+      "pastaId": "{E4EE3138-4A51-410E-9F1C-1E470A660144}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "form",
+      "id": "{6C7EDEE8-6863-4BAC-BF07-07094AAB4A45}",
+      "pastaId": "{E4EE3138-4A51-410E-9F1C-1E470A660144}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "panels",
+      "id": "{B49FAD42-4D2F-44CC-BA51-9E750D9C6E5E}",
+      "pastaId": "{E4EE3138-4A51-410E-9F1C-1E470A660144}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "session",
+      "id": "{6C36A4FF-80F5-4092-9BC6-DE443ABEA8B1}",
+      "pastaId": "{E4EE3138-4A51-410E-9F1C-1E470A660144}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_portable_exe",
+      "id": "{B57F477C-45BE-4EE8-B5FD-E6521DBC46DC}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{567B1B36-E920-4294-B51A-F4A28B8726F7}",
+      "pastaId": "{B57F477C-45BE-4EE8-B5FD-E6521DBC46DC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_regex",
+      "id": "{B4859720-1F95-4C80-9C6D-678E20761BAC}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{4B431D8B-E284-4A57-BCE4-C8E57F67E207}",
+      "pastaId": "{B4859720-1F95-4C80-9C6D-678E20761BAC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_strings",
+      "id": "{6ECC2771-2AE0-4D3C-B29B-7E0CDADF72FF}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{B7380B93-95C7-4EFD-87B6-7DC935F7D4A5}",
+      "pastaId": "{6ECC2771-2AE0-4D3C-B29B-7E0CDADF72FF}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_table",
+      "id": "{83368C16-2C6F-4A6C-BC1E-250765064E9E}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{1D0EB78C-EF1C-45CA-9CBC-E2F3C15FE49A}",
+      "pastaId": "{83368C16-2C6F-4A6C-BC1E-250765064E9E}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{915A8F4F-8EFB-4FD7-BF6C-7C85E7ED828F}",
+      "pastaId": "{83368C16-2C6F-4A6C-BC1E-250765064E9E}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_validators",
+      "id": "{8AFE9A44-A1A9-4501-B27A-767886761350}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{55D32B41-7D95-4B19-9244-593E7A91A36C}",
+      "pastaId": "{8AFE9A44-A1A9-4501-B27A-767886761350}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{065E4FB3-D951-43A2-BAB1-7AD302BA6054}",
+      "pastaId": "{8AFE9A44-A1A9-4501-B27A-767886761350}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_whatsapp",
+      "id": "{83443151-311A-4ADD-908E-17C981C3513A}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "clients",
+      "id": "{A9469F1E-ED41-447E-95D9-D6ADA0FC41A0}",
+      "pastaId": "{83443151-311A-4ADD-908E-17C981C3513A}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "desktop",
+      "id": "{7559B44C-F6CF-41B2-914D-B031573E9861}",
+      "pastaId": "{A9469F1E-ED41-447E-95D9-D6ADA0FC41A0}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "devstudio",
+      "id": "{C3C00F19-9175-4706-B0E2-F2D1412F4FA2}",
+      "pastaId": "{A9469F1E-ED41-447E-95D9-D6ADA0FC41A0}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "evolution",
+      "id": "{4CB3D5F3-9586-4D1B-8061-EB5782B4312B}",
+      "pastaId": "{A9469F1E-ED41-447E-95D9-D6ADA0FC41A0}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "evolution_go",
+      "id": "{974FE6E4-AE26-4573-9939-858CA8778797}",
+      "pastaId": "{A9469F1E-ED41-447E-95D9-D6ADA0FC41A0}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core",
+      "id": "{284CF888-8CE1-4EC8-AD37-0B3467F22D42}",
+      "pastaId": "{83443151-311A-4ADD-908E-17C981C3513A}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "auth",
+      "id": "{DFFAA39F-2272-4BC2-B5B8-AC31BD4BF22C}",
+      "pastaId": "{284CF888-8CE1-4EC8-AD37-0B3467F22D42}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "contracts",
+      "id": "{085F05C0-DFA7-4BE6-BC45-B6327E2DDFBD}",
+      "pastaId": "{284CF888-8CE1-4EC8-AD37-0B3467F22D42}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "dto",
+      "id": "{F0957D0C-114C-4F89-AA17-CCB8A60A419A}",
+      "pastaId": "{284CF888-8CE1-4EC8-AD37-0B3467F22D42}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "infra",
+      "id": "{3F55E891-0E92-4ED1-9412-97DD4B8FE6CC}",
+      "pastaId": "{284CF888-8CE1-4EC8-AD37-0B3467F22D42}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "models",
+      "id": "{26655407-61ED-4612-83E4-948B0607C100}",
+      "pastaId": "{284CF888-8CE1-4EC8-AD37-0B3467F22D42}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "services",
+      "id": "{36AE2413-BB23-4B01-B125-98177DE28E10}",
+      "pastaId": "{284CF888-8CE1-4EC8-AD37-0B3467F22D42}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "validation",
+      "id": "{C9F438AE-1F35-44C4-A332-E8B7DDD1EC21}",
+      "pastaId": "{284CF888-8CE1-4EC8-AD37-0B3467F22D42}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "ui",
+      "id": "{7D6ABC3D-60F7-4C2A-BD97-292332D0A905}",
+      "pastaId": "{83443151-311A-4ADD-908E-17C981C3513A}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "compose",
+      "id": "{2D69EC0A-2AF9-40CA-9870-B084A933D5C2}",
+      "pastaId": "{7D6ABC3D-60F7-4C2A-BD97-292332D0A905}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "helpers",
+      "id": "{55C90BF8-DA64-4920-824A-CE422BF165D2}",
+      "pastaId": "{7D6ABC3D-60F7-4C2A-BD97-292332D0A905}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_winapi",
+      "id": "{AF9F9110-EA4F-43DA-B60C-1C17D553D5B0}",
+      "pastaId": "{F71CBBBC-41CD-4817-B6AB-B9BD2B6FE316}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_pix_app_whatsapp_sharer": {
+      "nome": "mod_pix_app_whatsapp_sharer",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{4E733EC4-6833-4767-B82B-53F40AB24A94}"
+    }
+  },
+  "dependencies": {
+    "mod_whatsapp": "1.0.0.0",
+    "mod_pix_app": "1.0.2.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_pix_app_whatsapp_sharer",
+    "publisher": "matheusdevelope"
+  }
+}
