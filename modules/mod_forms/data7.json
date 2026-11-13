@@ -1,0 +1,137 @@
+{
+  "nome": "mod_forms",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.0",
+    "informacoes": "Projeto mod_forms criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": false,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": true
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": true
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (13)",
+      "id": "{43FA02B4-7FD7-4FBF-851C-52B6E2B44F64}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{503CD2A3-2759-4545-B638-38F5C1FA0AC7}",
+      "pastaId": "{43FA02B4-7FD7-4FBF-851C-52B6E2B44F64}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{B433D10B-AA6F-4403-A07E-2E3EB749180B}",
+      "pastaId": "{503CD2A3-2759-4545-B638-38F5C1FA0AC7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{2C5FD16B-C866-47D2-8A06-07A2C417B851}",
+      "pastaId": "{43FA02B4-7FD7-4FBF-851C-52B6E2B44F64}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_winapi",
+      "id": "{2BEA1517-7D28-49ED-9F42-69EC9D7C46CA}",
+      "pastaId": "{503CD2A3-2759-4545-B638-38F5C1FA0AC7}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_forms": {
+      "nome": "mod_forms",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{2C5FD16B-C866-47D2-8A06-07A2C417B851}"
+    },
+    "mod_forms_chrome": {
+      "nome": "mod_forms_chrome",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{2C5FD16B-C866-47D2-8A06-07A2C417B851}"
+    },
+    "mod_forms_icons": {
+      "nome": "mod_forms_icons",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{2C5FD16B-C866-47D2-8A06-07A2C417B851}"
+    },
+    "mod_forms_metrics": {
+      "nome": "mod_forms_metrics",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{2C5FD16B-C866-47D2-8A06-07A2C417B851}"
+    },
+    "mod_forms_screen": {
+      "nome": "mod_forms_screen",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{2C5FD16B-C866-47D2-8A06-07A2C417B851}"
+    },
+    "mod_forms_shortcut": {
+      "nome": "mod_forms_shortcut",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{2C5FD16B-C866-47D2-8A06-07A2C417B851}"
+    },
+    "mod_forms_topbar": {
+      "nome": "mod_forms_topbar",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{2C5FD16B-C866-47D2-8A06-07A2C417B851}"
+    }
+  },
+  "dependencies": {
+    "mod_winapi": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_forms",
+    "publisher": "matheusdevelope"
+  }
+}
