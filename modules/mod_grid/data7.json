@@ -1,11 +1,11 @@
 {
   "nome": "mod_grid",
   "language": "Basic",
-  "version": "1.0.0.2",
+  "version": "1.0.0.3",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
-    "versao": "1.0.0.0",
+    "versao": "1.0.0.3",
     "informacoes": "Wrapper sobre o grid nativo, adicionado suporte para tipagem de colunas, tipos e validação de dados.",
     "codEmpresa": 1,
     "codFilial": 1,
