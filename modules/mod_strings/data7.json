@@ -1,0 +1,113 @@
+{
+  "nome": "mod_strings",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.0",
+    "informacoes": "Lib de helpers para strings (regex via mod_regex)",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": false,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (9)",
+      "id": "{93B0DCAC-C010-45ED-BB45-A048B24BB0E9}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{AED91BF4-31F0-49EE-8C4F-CF0B08B8D833}",
+      "pastaId": "{93B0DCAC-C010-45ED-BB45-A048B24BB0E9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{D1FB7504-4B29-49D5-8BF5-37E519B6CAAE}",
+      "pastaId": "{AED91BF4-31F0-49EE-8C4F-CF0B08B8D833}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{412E9105-5F26-4357-AD06-00D27B605970}",
+      "pastaId": "{93B0DCAC-C010-45ED-BB45-A048B24BB0E9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_regex",
+      "id": "{8A264AE3-C9C2-4B12-8C88-9662FDF6A7C6}",
+      "pastaId": "{AED91BF4-31F0-49EE-8C4F-CF0B08B8D833}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{F4FD67C8-EFDB-45B3-BE4B-38848F2E9221}",
+      "pastaId": "{8A264AE3-C9C2-4B12-8C88-9662FDF6A7C6}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_strings": {
+      "nome": "mod_strings",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{93B0DCAC-C010-45ED-BB45-A048B24BB0E9}"
+    },
+    "mod_strings_tests": {
+      "nome": "mod_strings_tests",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{412E9105-5F26-4357-AD06-00D27B605970}"
+    }
+  },
+  "dependencies": {
+    "mod_regex": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_strings",
+    "publisher": "matheusdevelope"
+  }
+}
