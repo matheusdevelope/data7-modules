@@ -1,0 +1,95 @@
+{
+  "nome": "mod_camera",
+  "language": "Basic",
+  "version": "1.0.0.1",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.1",
+    "informacoes": "Projeto mod_camera criado no VS Code",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": true
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (7)",
+      "id": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{F80A3D1E-2FDA-448A-8A79-E24955E0E40B}",
+      "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_portable_exe",
+      "id": "{F7F7B9C3-E791-48B1-986B-E969141346B0}",
+      "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_camera": {
+      "nome": "mod_camera",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}"
+    }
+  },
+  "dependencies": {
+    "mod_portable_exe": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_camera",
+    "publisher": "matheusdevelope"
+  }
+}
