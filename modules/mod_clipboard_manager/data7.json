@@ -1,11 +1,11 @@
 {
   "nome": "mod_clipboard_manager",
   "language": "Basic",
-  "version": "1.0.0.0",
+  "version": "1.0.0.1",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
-    "versao": "1.0.0.0",
+    "versao": "1.0.0.1",
     "informacoes": "Projeto mod_clipboard_manager criado no VS Code",
     "codEmpresa": 1,
     "codFilial": 1,
