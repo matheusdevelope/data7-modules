@@ -1,11 +1,11 @@
 {
   "nome": "mod_matrix",
   "language": "Basic",
-  "version": "1.0.0.3",
+  "version": "1.0.0.5",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Administrador",
-    "versao": "1.0.0.4",
+    "versao": "1.0.0.5",
     "informacoes": "Projeto mod_matrix criado no VS Code",
     "codEmpresa": 1,
     "codFilial": 1,
