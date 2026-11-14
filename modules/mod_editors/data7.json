@@ -1,0 +1,358 @@
+{
+  "nome": "mod_editors",
+  "language": "Basic",
+  "version": "1.0.0.2",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.2",
+    "informacoes": "Lib de editores padrões para o Data7",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Matheus",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (51)",
+      "id": "{76B2C6E6-CDE0-42F3-9770-0F1FEBC28200}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{3C8B7E32-FC6F-46E2-AEEE-93AFC69FC035}",
+      "pastaId": "{76B2C6E6-CDE0-42F3-9770-0F1FEBC28200}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{643B3B62-AAC6-44E7-B89B-2937F9A73B63}",
+      "pastaId": "{3C8B7E32-FC6F-46E2-AEEE-93AFC69FC035}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{1E35ED05-DC8F-4602-9EDC-1B675082E623}",
+      "pastaId": "{76B2C6E6-CDE0-42F3-9770-0F1FEBC28200}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "editors",
+      "id": "{439F28A2-DD81-4A38-83EB-1646E52C6F9E}",
+      "pastaId": "{1E35ED05-DC8F-4602-9EDC-1B675082E623}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "base",
+      "id": "{34BBBD3A-DA97-487F-8316-A98640757A3B}",
+      "pastaId": "{439F28A2-DD81-4A38-83EB-1646E52C6F9E}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "custom",
+      "id": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}",
+      "pastaId": "{439F28A2-DD81-4A38-83EB-1646E52C6F9E}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_regex",
+      "id": "{4A18FD04-A860-4DD9-9EC5-250199918029}",
+      "pastaId": "{3C8B7E32-FC6F-46E2-AEEE-93AFC69FC035}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{D9194826-DEC5-4988-B827-F1D0AD80BFE8}",
+      "pastaId": "{4A18FD04-A860-4DD9-9EC5-250199918029}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_winapi",
+      "id": "{9527C0C0-C970-4363-B6AC-0D8DCF4A0F73}",
+      "pastaId": "{3C8B7E32-FC6F-46E2-AEEE-93AFC69FC035}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_clipboard_manager",
+      "id": "{6C285BF7-7D90-4799-828E-4B2F825BFE72}",
+      "pastaId": "{3C8B7E32-FC6F-46E2-AEEE-93AFC69FC035}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_camera",
+      "id": "{0509690F-6DE4-46BA-BE1E-48E20730E5D9}",
+      "pastaId": "{3C8B7E32-FC6F-46E2-AEEE-93AFC69FC035}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{4E58EEF8-3716-4D28-8EE3-9C11ADBD27B9}",
+      "pastaId": "{3C8B7E32-FC6F-46E2-AEEE-93AFC69FC035}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{872662F5-9334-4409-A5CE-78ED6FED0C17}",
+      "pastaId": "{4E58EEF8-3716-4D28-8EE3-9C11ADBD27B9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_strings",
+      "id": "{8FAC792A-DE98-488D-A834-344C7063BB57}",
+      "pastaId": "{3C8B7E32-FC6F-46E2-AEEE-93AFC69FC035}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{EA8E70A8-1C2E-428B-A908-7A11A60BD320}",
+      "pastaId": "{8FAC792A-DE98-488D-A834-344C7063BB57}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_validators",
+      "id": "{11C74592-FB06-4988-8F16-3FE711212781}",
+      "pastaId": "{3C8B7E32-FC6F-46E2-AEEE-93AFC69FC035}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{CC38C1F5-AF8E-4B32-832C-39358D928198}",
+      "pastaId": "{11C74592-FB06-4988-8F16-3FE711212781}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{7F31DAB7-357E-4A31-BCFC-F9B1CF108ACA}",
+      "pastaId": "{11C74592-FB06-4988-8F16-3FE711212781}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_editors_button": {
+      "nome": "mod_editors_button",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_check": {
+      "nome": "mod_editors_check",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_combo": {
+      "nome": "mod_editors_combo",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_date": {
+      "nome": "mod_editors_date",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_datetime": {
+      "nome": "mod_editors_datetime",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_image": {
+      "nome": "mod_editors_image",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_integer": {
+      "nome": "mod_editors_integer",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_mask": {
+      "nome": "mod_editors_mask",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_memo": {
+      "nome": "mod_editors_memo",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_number": {
+      "nome": "mod_editors_number",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_password": {
+      "nome": "mod_editors_password",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_search": {
+      "nome": "mod_editors_search",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_text": {
+      "nome": "mod_editors_text",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_time": {
+      "nome": "mod_editors_time",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_value": {
+      "nome": "mod_editors_value",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{34BBBD3A-DA97-487F-8316-A98640757A3B}"
+    },
+    "mod_editors_cep": {
+      "nome": "mod_editors_cep",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_cnh": {
+      "nome": "mod_editors_cnh",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_cnpj": {
+      "nome": "mod_editors_cnpj",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_cpf": {
+      "nome": "mod_editors_cpf",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_cpf_cnpj": {
+      "nome": "mod_editors_cpf_cnpj",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_docs": {
+      "nome": "mod_editors_docs",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_email": {
+      "nome": "mod_editors_email",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_gtin": {
+      "nome": "mod_editors_gtin",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_ie": {
+      "nome": "mod_editors_ie",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_placa": {
+      "nome": "mod_editors_placa",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_renavam": {
+      "nome": "mod_editors_renavam",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_site": {
+      "nome": "mod_editors_site",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors_suframa": {
+      "nome": "mod_editors_suframa",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{98F98F4F-8F56-4E7F-A040-AF6ECCE8A585}"
+    },
+    "mod_editors": {
+      "nome": "mod_editors",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{1E35ED05-DC8F-4602-9EDC-1B675082E623}"
+    }
+  },
+  "dependencies": {
+    "mod_regex": "1.0.0.1",
+    "mod_winapi": "1.0.0.0",
+    "mod_clipboard_manager": "1.0.0.0",
+    "mod_camera": "1.0.0.0",
+    "mod_io": "1.0.0.0",
+    "mod_validators": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_editors",
+    "publisher": "matheusdevelope"
+  }
+}
