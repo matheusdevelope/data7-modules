@@ -1,0 +1,457 @@
+{
+  "nome": "mod_google_auth",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.0",
+    "informacoes": "Google OAuth 2.0 authentication module (user consent, token refresh, pluggable stores)",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (75)",
+      "id": "{D26E6FE8-16DE-4E69-80A1-14B3F36509E2}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "pastaId": "{D26E6FE8-16DE-4E69-80A1-14B3F36509E2}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{05D3EC61-1041-4BD3-8664-6E2389087EF7}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_certificate",
+      "id": "{863F7831-2038-45F6-AD0A-683A3A4248C1}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{F984DCF4-EE5D-40E4-A8AB-2C4A220062CB}",
+      "pastaId": "{863F7831-2038-45F6-AD0A-683A3A4248C1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_curl",
+      "id": "{37C5AFC2-587D-44B5-AA2B-388B095FF998}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_http",
+      "id": "{2DF965C1-0DC6-43F9-9F3F-D157CA91ED18}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{5C9077DA-7F51-4FFA-9E34-A42A30AB5F35}",
+      "pastaId": "{2DF965C1-0DC6-43F9-9F3F-D157CA91ED18}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "callback",
+      "id": "{5355AB3E-A085-427B-9BAB-A937122A0250}",
+      "pastaId": "{5C9077DA-7F51-4FFA-9E34-A42A30AB5F35}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "clients",
+      "id": "{F04EB754-E6DE-484E-ACC6-ACC0AD4E77B8}",
+      "pastaId": "{5C9077DA-7F51-4FFA-9E34-A42A30AB5F35}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "interceptors",
+      "id": "{D329BC7B-79BA-44D9-A3A0-4C5EAC3625FA}",
+      "pastaId": "{5C9077DA-7F51-4FFA-9E34-A42A30AB5F35}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{C4953A9D-C1D7-4035-BA1B-900181B1C68B}",
+      "pastaId": "{2DF965C1-0DC6-43F9-9F3F-D157CA91ED18}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{CB8BE247-AF18-478C-825A-B5573CB6A592}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{CB43FD12-703E-450C-A9D4-9C4983A9E8A7}",
+      "pastaId": "{CB8BE247-AF18-478C-825A-B5573CB6A592}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_portable_exe",
+      "id": "{0A754700-E93E-42B8-BBF0-518FFE399FED}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{74BAF3A9-EF78-4201-9BF4-2C3283C85E18}",
+      "pastaId": "{0A754700-E93E-42B8-BBF0-518FFE399FED}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_regex",
+      "id": "{C99A840A-6F38-4F89-A3B9-B69A62AE602B}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{AE0B7AB8-16DE-4176-8ED5-63FA55742F15}",
+      "pastaId": "{C99A840A-6F38-4F89-A3B9-B69A62AE602B}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_strings",
+      "id": "{351DBF78-1983-4F0A-A03B-B911E75F6BE4}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{349B0022-A7F8-4048-8266-42170189E340}",
+      "pastaId": "{351DBF78-1983-4F0A-A03B-B911E75F6BE4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_winapi",
+      "id": "{D0754084-7A1C-4144-A8A7-8771BE613E53}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "pastaId": "{D26E6FE8-16DE-4E69-80A1-14B3F36509E2}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "core",
+      "id": "{8A4B0D23-5C9F-4E32-0B76-D2F3A4B5C6E7}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "config",
+      "id": "{9B5C1E34-6D0A-4F43-1C87-E3A4B5C6D7F8}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "models",
+      "id": "{0C6D2F45-7E1B-4054-2D98-F4B5C6D7E809}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "endpoints",
+      "id": "{1D7E3056-8F2C-4165-3E09-05C6D7E8F91A}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "http",
+      "id": "{2E8F4167-903D-4276-4F1A-16D7E8F90A2B}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "crypto",
+      "id": "{3F905278-A14E-4387-502B-27E8F90A1B3C}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "grants",
+      "id": "{40A16389-B25F-4498-613C-38F90A1B2C4D}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "stores",
+      "id": "{51B2749A-C360-45A9-724D-490A1B2C3D5E}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "consent",
+      "id": "{62C385AB-D471-46BA-835E-5A1B2C3D4E6F}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "interceptors",
+      "id": "{73D496BC-E582-47CB-946F-6B2C3D4E5F70}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "runtime",
+      "id": "{84E5A7CD-F693-48DC-A570-7C3D4E5F6081}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "validation",
+      "id": "{95F6B8DE-07A4-49ED-B681-8D4E5F607192}",
+      "pastaId": "{7F3A9C12-4B8E-4D21-9A65-C1E2F3A4B5D6}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "forms",
+      "id": "{A607C9EF-18B5-4AFE-C792-9E5F607182A3}",
+      "pastaId": "{D26E6FE8-16DE-4E69-80A1-14B3F36509E2}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{B718DAF0-29C6-4B0F-D8A3-0F60718293B4}",
+      "pastaId": "{D26E6FE8-16DE-4E69-80A1-14B3F36509E2}",
+      "aberta": "Sim"
+    }
+  ],
+  "modulesMetadata": {
+    "google_auth_form": {
+      "nome": "google_auth_form",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{A607C9EF-18B5-4AFE-C792-9E5F607182A3}"
+    },
+    "google_auth_config": {
+      "nome": "google_auth_config",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{9B5C1E34-6D0A-4F43-1C87-E3A4B5C6D7F8}"
+    },
+    "google_auth_consent": {
+      "nome": "google_auth_consent",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{62C385AB-D471-46BA-835E-5A1B2C3D4E6F}"
+    },
+    "google_auth_consent_loopback": {
+      "nome": "google_auth_consent_loopback",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{62C385AB-D471-46BA-835E-5A1B2C3D4E6F}"
+    },
+    "google_auth_consent_manual": {
+      "nome": "google_auth_consent_manual",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{62C385AB-D471-46BA-835E-5A1B2C3D4E6F}"
+    },
+    "google_auth_client": {
+      "nome": "google_auth_client",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8A4B0D23-5C9F-4E32-0B76-D2F3A4B5C6E7}"
+    },
+    "google_auth_enums": {
+      "nome": "google_auth_enums",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8A4B0D23-5C9F-4E32-0B76-D2F3A4B5C6E7}"
+    },
+    "google_auth_errors": {
+      "nome": "google_auth_errors",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8A4B0D23-5C9F-4E32-0B76-D2F3A4B5C6E7}"
+    },
+    "google_auth_crypto": {
+      "nome": "google_auth_crypto",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{3F905278-A14E-4387-502B-27E8F90A1B3C}"
+    },
+    "google_auth_pkce": {
+      "nome": "google_auth_pkce",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{3F905278-A14E-4387-502B-27E8F90A1B3C}"
+    },
+    "google_auth_endpoints": {
+      "nome": "google_auth_endpoints",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{1D7E3056-8F2C-4165-3E09-05C6D7E8F91A}"
+    },
+    "google_auth_endpoints_v2": {
+      "nome": "google_auth_endpoints_v2",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{1D7E3056-8F2C-4165-3E09-05C6D7E8F91A}"
+    },
+    "google_auth_grant": {
+      "nome": "google_auth_grant",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{40A16389-B25F-4498-613C-38F90A1B2C4D}"
+    },
+    "google_auth_grant_code": {
+      "nome": "google_auth_grant_code",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{40A16389-B25F-4498-613C-38F90A1B2C4D}"
+    },
+    "google_auth_grant_refresh": {
+      "nome": "google_auth_grant_refresh",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{40A16389-B25F-4498-613C-38F90A1B2C4D}"
+    },
+    "google_auth_http": {
+      "nome": "google_auth_http",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{2E8F4167-903D-4276-4F1A-16D7E8F90A2B}"
+    },
+    "google_auth_bearer": {
+      "nome": "google_auth_bearer",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{73D496BC-E582-47CB-946F-6B2C3D4E5F70}"
+    },
+    "google_auth_code": {
+      "nome": "google_auth_code",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{0C6D2F45-7E1B-4054-2D98-F4B5C6D7E809}"
+    },
+    "google_auth_credentials": {
+      "nome": "google_auth_credentials",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{0C6D2F45-7E1B-4054-2D98-F4B5C6D7E809}"
+    },
+    "google_auth_scopes": {
+      "nome": "google_auth_scopes",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{0C6D2F45-7E1B-4054-2D98-F4B5C6D7E809}"
+    },
+    "google_auth_session_result": {
+      "nome": "google_auth_session_result",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{0C6D2F45-7E1B-4054-2D98-F4B5C6D7E809}"
+    },
+    "google_auth_state": {
+      "nome": "google_auth_state",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{0C6D2F45-7E1B-4054-2D98-F4B5C6D7E809}"
+    },
+    "google_auth_token_set": {
+      "nome": "google_auth_token_set",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{0C6D2F45-7E1B-4054-2D98-F4B5C6D7E809}"
+    },
+    "google_auth": {
+      "nome": "google_auth",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{84E5A7CD-F693-48DC-A570-7C3D4E5F6081}"
+    },
+    "google_auth_store": {
+      "nome": "google_auth_store",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{51B2749A-C360-45A9-724D-490A1B2C3D5E}"
+    },
+    "google_auth_stores": {
+      "nome": "google_auth_stores",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{51B2749A-C360-45A9-724D-490A1B2C3D5E}"
+    },
+    "google_auth_store_encrypted": {
+      "nome": "google_auth_store_encrypted",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{51B2749A-C360-45A9-724D-490A1B2C3D5E}"
+    },
+    "google_auth_store_json": {
+      "nome": "google_auth_store_json",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{51B2749A-C360-45A9-724D-490A1B2C3D5E}"
+    },
+    "google_auth_validation": {
+      "nome": "google_auth_validation",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{95F6B8DE-07A4-49ED-B681-8D4E5F607192}"
+    }
+  },
+  "dependencies": {
+    "mod_http": "2.0",
+    "mod_winapi": "1.0.0.0",
+    "mod_certificate": "1.0.0.0"
+  },
+  "module": {
+    "enabled": true,
+    "name": "mod_google_auth",
+    "publisher": "matheusdevelope"
+  }
+}
