@@ -88,6 +88,7 @@ Namespace tests
          me.TestUrlJoin()
          me.TestUrlEncode()
          me.TestHeaders()
+         me.TestFollowRedirects()
          me.TestParams()
          me.TestBody()
          me.TestFormData()
@@ -187,7 +188,24 @@ Namespace tests
          headers.Remove("X-App")
          me.AssertEqBool(headers.Has("X-App"), False, "Remove")
          copiedHeaders.Free()
+         headers.Define("Content-Range", "bytes 0-8388607/5497558138880")
+         me.AssertEq(headers.Value("Content-Range"), "bytes 0-8388607/5497558138880", "Define Content-Range string")
          headers.Free()
+      End Sub
+
+      Sub TestFollowRedirects()
+         print("-- follow redirects")
+         Dim client As HttpClient = Http.Mock()
+         me.AssertEqBool(client.FollowRedirects, True, "default FollowRedirects")
+         Dim res As HttpResponse = client.Gett("/ok")
+         Dim recorded As MockTransport = MockTransport(client.Transport)
+         me.AssertEqBool(recorded.LastFollowRedirects, True, "request copies True")
+         res.Free()
+         client.FollowRedirects = False
+         Dim second As HttpResponse = client.Gett("/ok")
+         me.AssertEqBool(recorded.LastFollowRedirects, False, "request copies False")
+         second.Free()
+         client.Free()
       End Sub
 
       Sub TestParams()

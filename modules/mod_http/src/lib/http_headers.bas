@@ -32,7 +32,7 @@ Namespace http_headers
 
       Function Define(pName As String, pValue As String) As String
          me.Remove(pName)
-         Dim line As String = pName + me._separator + pValue
+         Dim line As String = pName & me._separator & pValue
          me._values.Add(line)
          Define = line
       End Function

@@ -20,6 +20,7 @@ Namespace http_client
 
       BaseUrl As String
       Timeout As Integer = 10000
+      FollowRedirects As Boolean = True
       ReadOnly Headers As HttpHeaders
       ReadOnly Params As HttpParams
       ReadOnly Certificate As TCertificate
@@ -43,6 +44,7 @@ Namespace http_client
          me.ContentType = "application/json"
          me.Accept = "application/json"
          me.UserAgent = "Data7/1.0"
+         me.FollowRedirects = True
       End Sub
 
       Property Transport As IHttpTransport
@@ -233,7 +235,7 @@ Namespace http_client
             headers.Define("Content-Type", body.ContentType)
          End If
          Dim url As String = http_url.Build(me.BaseUrl, pEndpoint, me.Params)
-         BuildRequest = New HttpRequest(pMethod, url, headers, body, me.Certificate, me.Timeout)
+         BuildRequest = New HttpRequest(pMethod, url, headers, body, me.Certificate, me.Timeout, me.FollowRedirects)
       End Function
 
       Sub Free()

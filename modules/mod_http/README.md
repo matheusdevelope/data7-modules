@@ -1,6 +1,6 @@
 # mod_http
 
-HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, and an optional localhost callback listener. It does **not** implement OAuth flows, retries, cookie jars, or proxy configuration — those belong to the consumer. Version **2.0** (`opcoes.versao` `2.0.0.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`.
+HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, and an optional localhost callback listener. It does **not** implement OAuth flows, retries, cookie jars, or proxy configuration — those belong to the consumer. It **does** expose transport-agnostic request options such as `FollowRedirects` (needed when `308` is a status, not a redirect). Version **2.0** (`opcoes.versao` `2.0.0.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`.
 
 This file is the module contract. Consumers must be able to assemble, extend, and call the API from this README alone. Open a `.bas` file only to confirm a detail that is not stated here.
 
@@ -86,6 +86,7 @@ Session that builds `HttpRequest`, runs interceptors, and delegates `Send` to an
 | --- | --- | --- |
 | `BaseUrl` | `""` (or factory argument) | Joined with the endpoint by `http_url.Build` |
 | `Timeout` | `10000` | Milliseconds, copied onto each `HttpRequest` |
+| `FollowRedirects` | `True` | Copied onto each `HttpRequest`. `False` returns `3xx` (including Google/tus `308 Resume Incomplete`) instead of following. WinHTTP sets `WinHttpRequestOption_EnableRedirects`; CURL omits `-L`. |
 | `Headers` | empty `HttpHeaders` | Copied per request |
 | `Params` | empty `HttpParams` | Merged into the URL query |
 | `Certificate` | `New TCertificate()` | Shared onto every request; owned by the client |
@@ -211,8 +212,8 @@ Function Build(pBaseUrl As String, pEndpoint As String, pParams As HttpParams) A
 Name/value list. `HttpHeaders` separator `":"`. `HttpParams` separator `"="`.
 
 ```basic
-Function Define(pName As String, pValue As Integer) As String   ' ToString then Define
-Function Define(pName As String, pValue As String) As String    ' Remove(name) then append; returns the stored line
+Function Define(pName As String, pValue As Integer) As String   ' ToString then Define — 32-bit only; do not pass Int64
+Function Define(pName As String, pValue As String) As String    ' Remove(name) then append with `&`; returns the stored line
 Function Remove(pName As String) As Boolean                     ' True if deleted
 Function Take(pName As String) As String                        ' throws if missing
 Function Take(pIndex As Integer) As String                      ' full line; throws if index invalid
@@ -333,7 +334,7 @@ Function StringToBytes(pText As String) As Variant
 Built by `HttpClient`; also constructible for a custom transport.
 
 ```basic
-Sub New(pMethod As HttpMethod, pUrl As String, pHeaders As HttpHeaders, pBody As HttpBody, pCertificate As TCertificate, pTimeout As Integer)
+Sub New(pMethod As HttpMethod, pUrl As String, pHeaders As HttpHeaders, pBody As HttpBody, pCertificate As TCertificate, pTimeout As Integer, pFollowRedirects As Boolean = True)
 ```
 
 | Member | Default / ownership |
@@ -341,6 +342,7 @@ Sub New(pMethod As HttpMethod, pUrl As String, pHeaders As HttpHeaders, pBody As
 | `Method` | constructor |
 | `Url` | constructor |
 | `Timeout` | `10000` if not set |
+| `FollowRedirects` | `True` if not set; transports must honor this |
 | `Headers` | constructor; **freed** on `Dispose` |
 | `Body` | constructor; **not** freed |
 | `Certificate` | constructor; **not** freed |
@@ -353,6 +355,7 @@ Sub New(pStatus As Integer, pStatusText As String, pHeaders As String, pBodyText
    ' Headers parsed as HttpHeaders(pHeaders).
    ' ContentType from header "Content-Type" when present.
    ' ContentLength from header "Content-Length" when present, else pBodyText.Length.
+   ' Values that do not fit Integer (32-bit) become 0; read the header string for large sizes.
 ```
 
 | Member | Meaning |
@@ -561,7 +564,7 @@ No UI types are registered by this module. `HttpCallback` is the only Forms-rela
 
 ## Tests
 
-- `tests.THttpTest.RunAll()` — enums, URL join/encode, headers/params, body, form, `TCertificate` defaults, curl dump-header parse (redirect uses last status), `HttpResponse`, mock GET/POST/queue/last-request, Bearer/Basic, interceptor 401 replace, subclass hooks, factories (`Http.Mock`, `Http.FromTransport`).
+- `tests.THttpTest.RunAll()` — enums, URL join/encode, headers/params (including `Content-Range` strings), `FollowRedirects` copied onto the request, body, form, `TCertificate` defaults, curl dump-header parse (redirect uses last status), `HttpResponse`, mock GET/POST/queue/last-request, Bearer/Basic, interceptor 401 replace, subclass hooks, factories (`Http.Mock`, `Http.FromTransport`).
 - `tests_live.THttpLiveTest.RunAll()` — optional network: `Http.WinHttp` and `Http.Curl` GET `https://httpbin.org/get`. Not part of `THttpTest.RunAll`.
 
 ## Module Notes

@@ -1,11 +1,11 @@
 {
   "nome": "mod_http",
   "language": "Basic",
-  "version": "2.0",
+  "version": "2.0.0.1",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
-    "versao": "2.0.0.0",
+    "versao": "2.0.0.1",
     "informacoes": "Lib HTTP com transports pluggáveis (WinHttp, CURL, Data7, Mock)\n",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -223,7 +223,7 @@
     },
     "http_response": {
       "nome": "http_response",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
     },

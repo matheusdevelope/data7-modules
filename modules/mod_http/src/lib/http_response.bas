@@ -162,7 +162,7 @@ Namespace http_response
             me._contentType = me._headers.Value("Content-Type")
          End If
          If me._headers.Has("Content-Length") Then
-            me._contentLength = CInt(me._headers.Value("Content-Length"))
+            me._contentLength = me.ParseContentLength(me._headers.Value("Content-Length"))
          Else
             me._contentLength = pBodyText.Length
          End If
@@ -227,16 +227,24 @@ Namespace http_response
          End With
       End Function
 
+      Private Function ParseContentLength(pText As String) As Integer
+         Dim _length As Integer = 0
+         If Not TryStrToInt(Trim(pText), _length) Then
+            _length = 0
+         End If
+         ParseContentLength = _length
+      End Function
+
       Overrides Sub Dispose()
          me._status = 0
          me._statusText = ""
          If Assigned(me._headers) Then
             me._headers.Free()
-            me._headers = NULL
+            me._headers = Null
          End If
          If Assigned(me._data) Then
             me._data.Free()
-            me._data = NULL
+            me._data = Null
          End If
       End Sub
 

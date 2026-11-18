@@ -25,6 +25,7 @@ Namespace http_winhttp
 
             me._http = CreateObject("WinHttp.WinHttpRequest.5.1")
             me._http.Open(pReq.Verb.ToUpper(), pReq.Url, False)
+            me.ApplyRedirectPolicy(pReq)
             me.ApplyClientCertificate(pReq)
 
             me._http.SetTimeouts(pReq.Timeout, pReq.Timeout, pReq.Timeout, pReq.Timeout)
@@ -68,6 +69,16 @@ Namespace http_winhttp
             Throw New Exception("Request failed: " & ex._GetMessage() & CHAR(13) & "URL: " & pReq.Url)
          End Try
       End Function
+
+      Private Sub ApplyRedirectPolicy(pReq As HttpRequest)
+         If pReq.FollowRedirects Then
+            Exit Sub
+         End If
+         Dim enableRedirects As Integer = 6
+         Dim maxRedirects As Integer = 14
+         me._http.Option(enableRedirects) = False
+         me._http.Option(maxRedirects) = 0
+      End Sub
 
       Private Sub ApplyClientCertificate(pReq As HttpRequest)
          If Not Assigned(pReq.Certificate) Then

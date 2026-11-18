@@ -21,6 +21,7 @@ Namespace http_curl
             curlCli.Method = pReq.Verb
             curlCli.Url = pReq.Url
             curlCli.TimeoutMs = pReq.Timeout
+            curlCli.FollowRedirects = pReq.FollowRedirects
 
             If Assigned(pReq.Certificate) Then
                If pReq.Certificate.Use And pReq.Certificate.Path <> "" Then
