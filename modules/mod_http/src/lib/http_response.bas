@@ -155,7 +155,7 @@ Namespace http_response
 
       Overrides Sub Dispose()
          me._text = ""
-         me._data = ""
+         me._data = Unassigned
       End Sub
 
       Sub Free()

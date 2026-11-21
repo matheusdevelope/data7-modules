@@ -1,6 +1,6 @@
 # mod_http
 
-HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, RFC 7233 Range helpers, ranged download-to-file, and an optional localhost callback listener. It does **not** implement OAuth flows, cookie jars, or proxy configuration. **Retries** are opt-in on `HttpClient` (`RetryCount` default `0`). `FollowRedirects` stays transport-agnostic (needed when `308` is a status, not a redirect). Disk upload/download uses `TFileStream` (`mod_data7_utils`) so destination files are not loaded whole into an `ADODB.Stream`. Version **2.1.2** (`opcoes.versao` `2.1.2.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`, `mod_data7_utils` `2.0`.
+HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, RFC 7233 Range helpers, ranged download-to-file, and an optional localhost callback listener. It does **not** implement OAuth flows, cookie jars, or proxy configuration. **Retries** are opt-in on `HttpClient` (`RetryCount` default `0`). `FollowRedirects` stays transport-agnostic (needed when `308` is a status, not a redirect). Disk upload/download uses `TFileStream` (`mod_data7_utils`) so destination files are not loaded whole into an `ADODB.Stream`. Version **2.1.3** (`opcoes.versao` `2.1.3.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`, `mod_data7_utils` `2.0`.
 
 This file is the module contract. Consumers must be able to assemble, extend, and call the API from this README alone. Open a `.bas` file only to confirm a detail that is not stated here.
 
@@ -93,7 +93,7 @@ Session that builds `HttpRequest`, runs interceptors, and delegates `Send` to an
 | `BaseUrl` | `""` (or factory argument) | Joined with the endpoint by `http_url.Build` |
 | `Timeout` | `10000` | Milliseconds, copied onto each `HttpRequest` |
 | `FollowRedirects` | `True` | Copied onto each `HttpRequest`. `False` returns `3xx` (including Google/tus `308 Resume Incomplete`) instead of following. WinHTTP sets `WinHttpRequestOption_EnableRedirects`; CURL omits `-L`. |
-| `WantText` | `True` | Copied onto each `HttpRequest`. `False` skips WinHTTP `ResponseText` / CURL `ResponseText` so large binary GETs do not duplicate the body as a Data7 `String`. Always read bytes from `Body.Raw()`. |
+| `WantText` | `True` | Copied onto each `HttpRequest`. `False` skips WinHTTP `ResponseText` / CURL `ResponseText` so large binary GETs do not duplicate the body as a Data7 `String`. Always read bytes from `Body.Raw()`. After a WinHTTP GET with `WantText = False`, the transport drops the `WinHttpRequest` so `ResponseBody` is not kept alongside `HttpResponse`. |
 | `RetryCount` | `0` | Extra tries after the first `Send` when status is 429/500/502/503/504. **308 is not retried.** Default off. |
 | `RetryBaseDelayMs` | `1000` | Exponential backoff between retries. `Retry-After` (delta-seconds) wins when present. |
 | `Headers` | empty `HttpHeaders` | Copied per request. Extra headers are merged onto that **copy**, never onto the session. |
@@ -455,7 +455,7 @@ Send:
 - `Body.IsBytes`: copy into a binary `ADODB.Stream` (latin-1 if `Raw()` is a `String`) and `Send` the stream object. Do **not** `Send(stream.Read)` — Data7 often turns that into a `String` and WinHTTP recodes RAR/ZIP/PDF. Prefer `FromFile` + Curl for large binaries.
 - Else `Body.Raw()`: non-empty `Array` or non-blank `String` is passed to `Send`; otherwise `Send()` with no payload.
 
-When `WantText` is False, `ResponseText` is not read (empty `Body.AsText`); `ResponseBody` is still assigned to `Raw()`.
+When `WantText` is False, `ResponseText` is not read (empty `Body.AsText`); `ResponseBody` is assigned to `Raw()` and the `WinHttpRequest` is released so the COM object does not keep a second copy of the GET. `HttpResponseData.Dispose` sets the byte payload to `Unassigned` (not `""`).
 
 Failures wrap as `"Request failed: " & message & CHAR(13) & "URL: " & url`.
 
@@ -532,7 +532,7 @@ options.TransferControl = gate   ' optional HttpTransferControl
 HttpDownload.ToFile(client, "/files/id?alt=media", options)
 ```
 
-Sets `WantText = False` for the GETs and restores the previous value. Issues `Range` on a **request copy**. Each chunk is **appended with `TFileStream.Write` + `Flush`** (`HttpFileIo`); the destination is never `LoadFromFile`/`SaveToFile` as a whole `ADODB.Stream`. Resume uses `TFileStream.Size` (not `LoadFromFile`). Cooperative **pause** / **cancel** uses `HttpDownloadOptions.TransferControl` (`HttpTransferControl`): the current GET always finishes; between ranges the helper calls `Forms.ProcessMessages()` and then honors the flag. **Pause** flushes/closes the `TFileStream` and keeps the partial file; call `ToFile` again with `ResumePartial = True`. **Cancel** closes and deletes the partial file. The caller owns the control. Default chunk 8 MiB — WinHTTP `ResponseBody` is still one GET in RAM; it is written to disk and then discarded. Drive keeps its own downloader for export, Workspace MIME, and Drive query flags.
+Sets `WantText = False` for the GETs and restores the previous value. Issues `Range` on a **request copy**. Each chunk is **appended with `TFileStream.Write` + `Flush`** (`HttpFileIo`); the destination is never `LoadFromFile`/`SaveToFile` as a whole `ADODB.Stream`. After write, the payload Variant is `Unassigned`. Resume uses `TFileStream.Size` (not `LoadFromFile`). Cooperative **pause** / **cancel** uses `HttpDownloadOptions.TransferControl` (`HttpTransferControl`): the current GET always finishes; between ranges the helper calls `Forms.ProcessMessages()` and then honors the flag. **Pause** flushes/closes the `TFileStream` and keeps the partial file; call `ToFile` again with `ResumePartial = True`. **Cancel** closes and deletes the partial file. The caller owns the control. Default chunk 8 MiB — WinHTTP `ResponseBody` is still one GET in RAM; it is written to disk and then discarded. Drive keeps its own downloader for export, Workspace MIME, and Drive query flags.
 
 ## Interceptors
 

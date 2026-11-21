@@ -50,6 +50,10 @@ Namespace http_winhttp
             End If
             bodyData = me._http.ResponseBody
             Send = New HttpResponse(statusCode, statusText, headersText, bodyText, bodyData)
+            bodyData = Unassigned
+            If Not pReq.WantText Then
+               me.ResetWinHttp()
+            End If
          Catch ex As Exception
             me.ResetWinHttp()
             Throw New Exception("Request failed: " & ex._GetMessage() & CHAR(13) & "URL: " & pReq.Url)

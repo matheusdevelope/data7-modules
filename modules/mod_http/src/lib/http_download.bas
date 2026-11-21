@@ -146,6 +146,7 @@ Namespace http_download
             payload = pResponse.Data.Raw()
          End If
          HttpFileIo.WritePayload(pDestFile, payload)
+         payload = Unassigned
       End Sub
 
       Shared Sub ApplyHalt(pOptions As HttpDownloadOptions, pClient As HttpClient, pSavedWant As Boolean, pDest As String, ByRef pDestFile As TFileStream)
