@@ -1,3 +1,4 @@
+Imports Forms
 Imports TFile
 Imports TPath
 Imports TDirectory
@@ -7,6 +8,7 @@ Imports http_headers
 Imports http_response
 Imports http_download_options
 Imports http_range
+Imports http_transfer_control
 Imports mod_tobject
 
 Namespace http_download
@@ -78,6 +80,7 @@ Namespace http_download
                End If
             End If
             While True
+               HttpDownload.ApplyHalt(pOptions, pClient, savedWant, dest, destStream)
                If (total > HttpRange.Zero64()) And (Not (sent < total)) Then
                   Exit While
                End If
@@ -115,6 +118,7 @@ Namespace http_download
                If pOptions.OnProgress <> Null Then
                   pOptions.OnProgress(sent, total)
                End If
+               HttpDownload.ApplyHalt(pOptions, pClient, savedWant, dest, destStream)
                If response.Status = 200 Then
                   response.Free()
                   response = Null
@@ -179,6 +183,62 @@ Namespace http_download
             pDestStream.Write(payload)
          End If
       End Sub
+
+      Shared Sub ApplyHalt(pOptions As HttpDownloadOptions, pClient As HttpClient, pSavedWant As Boolean, pDest As String, ByRef pDestStream As Variant)
+         Dim gate As HttpTransferControl = Null
+         If Not Assigned(pOptions) Then
+            Exit Sub
+         End If
+         gate = pOptions.TransferControl
+         If Not Assigned(gate) Then
+            Exit Sub
+         End If
+         Forms.ProcessMessages()
+         If gate.CancelRequested() Then
+            gate.MarkCancelled()
+            HttpDownload.CloseDestStream(pDestStream)
+            If TFile.Exists(pDest) Then
+               TFile.Delete(pDest)
+            End If
+            pClient.WantText = pSavedWant
+            Throw New Exception(HttpDownload.CancelledMessage())
+         End If
+         If gate.PauseRequested() Then
+            gate.MarkPaused()
+            HttpDownload.FinishDestStream(pDest, pDestStream)
+            pClient.WantText = pSavedWant
+            Throw New Exception(HttpDownload.PausedMessage())
+         End If
+      End Sub
+
+      Shared Sub FinishDestStream(pDest As String, ByRef pDestStream As Variant)
+         Dim kind As String = TypeName(pDestStream)
+         If (kind = "Empty") Or (kind = "Null") Or (kind = "Unassigned") Then
+            Exit Sub
+         End If
+         pDestStream.SaveToFile(pDest, 2)
+         HttpDownload.CloseDestStream(pDestStream)
+      End Sub
+
+      Shared Sub CloseDestStream(ByRef pDestStream As Variant)
+         Dim kind As String = TypeName(pDestStream)
+         If (kind = "Empty") Or (kind = "Null") Or (kind = "Unassigned") Then
+            Exit Sub
+         End If
+         Try
+            pDestStream.Close()
+         Catch ex As Exception
+         End Try
+         pDestStream = Unassigned
+      End Sub
+
+      Shared Function PausedMessage() As String
+         PausedMessage = "Download paused. Partial file was kept; call ToFile again with ResumePartial=True to continue."
+      End Function
+
+      Shared Function CancelledMessage() As String
+         CancelledMessage = "Download cancelled. Partial file was discarded."
+      End Function
 
       Shared Function LocalBytes(pPath As String) As Int64
          Dim stream As Variant

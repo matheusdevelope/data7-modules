@@ -1,6 +1,6 @@
 # mod_http
 
-HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, RFC 7233 Range helpers, ranged download-to-file, and an optional localhost callback listener. It does **not** implement OAuth flows, cookie jars, or proxy configuration. **Retries** are opt-in on `HttpClient` (`RetryCount` default `0`). `FollowRedirects` stays transport-agnostic (needed when `308` is a status, not a redirect). Version **2.1** (`opcoes.versao` `2.1.0.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`.
+HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, RFC 7233 Range helpers, ranged download-to-file, and an optional localhost callback listener. It does **not** implement OAuth flows, cookie jars, or proxy configuration. **Retries** are opt-in on `HttpClient` (`RetryCount` default `0`). `FollowRedirects` stays transport-agnostic (needed when `308` is a status, not a redirect). Version **2.1.1** (`opcoes.versao` `2.1.1.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`.
 
 This file is the module contract. Consumers must be able to assemble, extend, and call the API from this README alone. Open a `.bas` file only to confirm a detail that is not stated here.
 
@@ -38,6 +38,7 @@ live.Free()
 | `src/lib/http_range.bas` | `http_range` | `HttpRange` (RFC 7233 `bytes=` / `Content-Range`) |
 | `src/lib/http_progress.bas` | `http_progress` | `HttpProgressDel` |
 | `src/lib/http_download_options.bas` | `http_download_options` | `HttpDownloadOptions` |
+| `src/lib/http_transfer_control.bas` | `http_transfer_control` | `HttpTransferControl` |
 | `src/lib/http_download.bas` | `http_download` | `HttpDownload.ToFile` |
 | `src/lib/http_headers.bas` | `http_headers` | `HttpBaseList`, `HttpHeaders`, `HttpParams` |
 | `src/lib/http_form.bas` | `http_form` | `FormDataPart`, `FormData` |
@@ -517,10 +518,11 @@ options.DestinationPath = destPath
 options.ChunkSizeBytes = HttpRange.DefaultChunkBytes()
 options.TotalBytes = totalBytes   ' optional; Content-Range / Content-Length fill it
 options.OnProgress = me.OnDownloadProgress
+options.TransferControl = gate   ' optional HttpTransferControl
 HttpDownload.ToFile(client, "/files/id?alt=media", options)
 ```
 
-Sets `WantText = False` for the GETs and restores the previous value. Issues `Range` on a **request copy**. Pause/cancel stay in the consumer (Drive). Default chunk 8 MiB — still one `ResponseBody` per GET in RAM.
+Sets `WantText = False` for the GETs and restores the previous value. Issues `Range` on a **request copy**. Cooperative **pause** / **cancel** uses `HttpDownloadOptions.TransferControl` (`HttpTransferControl`): the current GET always finishes; between ranges the helper calls `Forms.ProcessMessages()` and then honors the flag. **Pause** keeps the partial file and throws; call `ToFile` again with `ResumePartial = True`. **Cancel** deletes the partial file. The caller owns the control. Default chunk 8 MiB — still one `ResponseBody` per GET in RAM. Drive keeps its own downloader for export, Workspace MIME, and Drive query flags.
 
 ## Interceptors
 
@@ -635,7 +637,7 @@ No UI types are registered by this module. `HttpCallback` is the only Forms-rela
 
 ## Tests
 
-- `tests.THttpTest.RunAll()` — enums, URL join/encode, headers/params (including `Content-Range` strings, case-insensitive names, `Define` Int64), `FollowRedirects` / `WantText` copied onto the request, extra headers without mutating the session, retry 503 then 200 and no-retry on 308, `HttpRange`, `ContentLengthText`, ranged `HttpDownload.ToFile`, body (including `FromFile`/`FromStream`), form, `TCertificate` defaults, curl dump-header parse (redirect uses last status), `HttpResponse`, mock GET/POST/queue/last-request, Bearer/Basic, interceptor 401 replace, subclass hooks, factories (`Http.Mock`, `Http.FromTransport`).
+- `tests.THttpTest.RunAll()` — enums, URL join/encode, headers/params (including `Content-Range` strings, case-insensitive names, `Define` Int64), `FollowRedirects` / `WantText` copied onto the request, extra headers without mutating the session, retry 503 then 200 and no-retry on 308, `HttpRange`, `ContentLengthText`, ranged `HttpDownload.ToFile` (including pause/cancel/resume), body (including `FromFile`/`FromStream`), form, `TCertificate` defaults, curl dump-header parse (redirect uses last status), `HttpResponse`, mock GET/POST/queue/last-request, Bearer/Basic, interceptor 401 replace, subclass hooks, factories (`Http.Mock`, `Http.FromTransport`).
 - `tests_live.THttpLiveTest.RunAll()` — optional network: `Http.WinHttp` and `Http.Curl` GET `https://httpbin.org/get`. Not part of `THttpTest.RunAll`.
 
 ## Module Notes

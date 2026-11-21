@@ -1,6 +1,7 @@
 Imports mod_tobject
 Imports http_progress
 Imports http_range
+Imports http_transfer_control
 
 Namespace http_download_options
 
@@ -12,6 +13,7 @@ Namespace http_download_options
       TotalBytes As Int64
       ResumePartial As Boolean
       OnProgress As HttpProgressDel
+      TransferControl As HttpTransferControl
 
       Sub New()
          MyBase.New()
@@ -22,6 +24,7 @@ Namespace http_download_options
 
       Overrides Sub Dispose()
          me.OnProgress = Null
+         me.TransferControl = Null
       End Sub
 
       Sub Free()

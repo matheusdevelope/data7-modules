@@ -15,6 +15,7 @@ Imports http_transport
 Imports http_range
 Imports http_download
 Imports http_download_options
+Imports http_transfer_control
 Imports TFile
 Imports TPath
 
@@ -74,6 +75,7 @@ Namespace tests
       Failed As Integer
       Private _failures As StringList
       Private _progressTicks As Integer
+      Private _haltGate As HttpTransferControl
 
       Sub New()
          MyBase.New()
@@ -117,6 +119,7 @@ Namespace tests
          me.TestHttpRange()
          me.TestContentLengthText()
          me.TestDownloadToFile()
+         me.TestDownloadPauseCancelResume()
          me.PrintSummary()
       End Sub
 
@@ -557,6 +560,69 @@ Namespace tests
             TFile.Delete(dest)
          End If
          options.Free()
+         client.Free()
+      End Sub
+
+      Sub RequestPauseOnProgress(pBytesSent As Int64, pTotalBytes As Int64)
+         me._progressTicks = me._progressTicks + 1
+         If Assigned(me._haltGate) Then
+            me._haltGate.RequestPause()
+         End If
+      End Sub
+
+      Sub TestDownloadPauseCancelResume()
+         print("-- download pause cancel resume")
+         Dim transport As New MockTransport()
+         transport.Enqueue(206, "HELLO", "Content-Range: bytes 0-4/10" & CHAR(13) & CHAR(10) & "Content-Type: application/octet-stream")
+         Dim client As HttpClient = Http.FromTransport(transport)
+         Dim dest As String = TPath.GetTempFileName()
+         Dim gate As New HttpTransferControl()
+         me._haltGate = gate
+         Dim options As New HttpDownloadOptions()
+         options.DestinationPath = dest
+         options.ChunkSizeBytes = 5
+         options.TotalBytes = HttpRange.FromInteger(10)
+         options.TransferControl = gate
+         options.OnProgress = me.RequestPauseOnProgress
+         Dim paused As Boolean = False
+         Try
+            HttpDownload.ToFile(client, "/file.bin", options)
+         Catch ex As Exception
+            paused = InStr(ex._GetMessage(), "paused") > 0
+         End Try
+         me._haltGate = Null
+         me.AssertTrue(paused, "download pause throws")
+         me.AssertTrue(gate.WasPaused(), "download was paused")
+         me.AssertTrue(TFile.Exists(dest), "partial download kept")
+         me.AssertEq(TFile.ReadAllText(dest), "HELLO", "paused body")
+         transport.Enqueue(206, "WORLD", "Content-Range: bytes 5-9/10" & CHAR(13) & CHAR(10) & "Content-Type: application/octet-stream")
+         options.ResumePartial = True
+         options.OnProgress = Null
+         options.TransferControl = Null
+         HttpDownload.ToFile(client, "/file.bin", options)
+         me.AssertEq(TFile.ReadAllText(dest), "HELLOWORLD", "resumed body")
+         Dim cancelDest As String = TPath.GetTempFileName()
+         TFile.WriteAllText(cancelDest, "partial")
+         Dim cancelGate As New HttpTransferControl()
+         cancelGate.RequestCancel()
+         Dim cancelOptions As New HttpDownloadOptions()
+         cancelOptions.DestinationPath = cancelDest
+         cancelOptions.TransferControl = cancelGate
+         Dim cancelled As Boolean = False
+         Try
+            HttpDownload.ToFile(client, "/file.bin", cancelOptions)
+         Catch ex As Exception
+            cancelled = InStr(ex._GetMessage(), "cancelled") > 0
+         End Try
+         me.AssertTrue(cancelled, "download cancel throws")
+         me.AssertTrue(Not TFile.Exists(cancelDest), "partial download discarded")
+         If TFile.Exists(dest) Then
+            TFile.Delete(dest)
+         End If
+         options.Free()
+         gate.Free()
+         cancelOptions.Free()
+         cancelGate.Free()
          client.Free()
       End Sub
 
