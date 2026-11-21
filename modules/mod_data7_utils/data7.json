@@ -1,0 +1,174 @@
+{
+  "nome": "mod_data7_utils",
+  "language": "Basic",
+  "version": "2.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Matheus",
+    "versao": "1.0.0.1",
+    "informacoes": "Registration-free COM bridge to Data7Utils.dll for .NET streams and Socket.IO. Disk I/O and dialogs belong in mod_io.",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": true,
+      "minify": {
+        "enabled": false,
+        "stripComments": true,
+        "collapseWhitespace": false
+      },
+      "prune": {
+        "enabled": false,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (16)",
+      "id": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{3ED8EFD3-73D9-41F8-BD07-7E6853B65B5A}",
+      "pastaId": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{0DF87DA9-05C3-4975-820B-D1DE3AE4429B}",
+      "pastaId": "{3ED8EFD3-73D9-41F8-BD07-7E6853B65B5A}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}",
+      "pastaId": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "runtime",
+      "id": "{B7E1A4C0-2D8F-4A91-9C33-6E1F8B2A5D70}",
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "stream",
+      "id": "{C8F2B5D1-3E90-4B02-AD44-7F209C3B6E81}",
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "socket",
+      "id": "{D9A3C6E2-4F01-4C13-BE55-8031AD4C7F92}",
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "tests",
+      "id": "{E0B4D7F3-5012-4D24-CF66-9142BE5D80A3}",
+      "pastaId": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
+      "aberta": "Sim"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_data7_utils_payload": {
+      "nome": "mod_data7_utils_payload",
+      "aberto": false,
+      "ordemAbertura": -1,
+      "pastaId": "{B7E1A4C0-2D8F-4A91-9C33-6E1F8B2A5D70}"
+    },
+    "mod_data7_utils_runtime": {
+      "nome": "mod_data7_utils_runtime",
+      "aberto": false,
+      "ordemAbertura": 1,
+      "pastaId": "{B7E1A4C0-2D8F-4A91-9C33-6E1F8B2A5D70}"
+    },
+    "mod_data7_utils_socket": {
+      "nome": "mod_data7_utils_socket",
+      "aberto": false,
+      "ordemAbertura": 2,
+      "pastaId": "{D9A3C6E2-4F01-4C13-BE55-8031AD4C7F92}"
+    },
+    "mod_data7_utils_socket_event": {
+      "nome": "mod_data7_utils_socket_event",
+      "aberto": false,
+      "ordemAbertura": -1,
+      "pastaId": "{D9A3C6E2-4F01-4C13-BE55-8031AD4C7F92}"
+    },
+    "mod_data7_utils_file_stream": {
+      "nome": "mod_data7_utils_file_stream",
+      "aberto": false,
+      "ordemAbertura": -1,
+      "pastaId": "{C8F2B5D1-3E90-4B02-AD44-7F209C3B6E81}"
+    },
+    "mod_data7_utils_int64": {
+      "nome": "mod_data7_utils_int64",
+      "aberto": false,
+      "ordemAbertura": -1,
+      "pastaId": "{C8F2B5D1-3E90-4B02-AD44-7F209C3B6E81}"
+    },
+    "mod_data7_utils_memory_stream": {
+      "nome": "mod_data7_utils_memory_stream",
+      "aberto": false,
+      "ordemAbertura": -1,
+      "pastaId": "{C8F2B5D1-3E90-4B02-AD44-7F209C3B6E81}"
+    },
+    "mod_data7_utils_stream": {
+      "nome": "mod_data7_utils_stream",
+      "aberto": false,
+      "ordemAbertura": -1,
+      "pastaId": "{C8F2B5D1-3E90-4B02-AD44-7F209C3B6E81}"
+    },
+    "mod_data7_utils_stream_enums": {
+      "nome": "mod_data7_utils_stream_enums",
+      "aberto": false,
+      "ordemAbertura": -1,
+      "pastaId": "{C8F2B5D1-3E90-4B02-AD44-7F209C3B6E81}"
+    },
+    "mod_data7_utils_tests": {
+      "nome": "mod_data7_utils_tests",
+      "aberto": false,
+      "ordemAbertura": 3,
+      "pastaId": "{E0B4D7F3-5012-4D24-CF66-9142BE5D80A3}"
+    },
+    "mod_data7_utils_tests_large_stream": {
+      "nome": "mod_data7_utils_tests_large_stream",
+      "aberto": false,
+      "ordemAbertura": -1,
+      "pastaId": "{E0B4D7F3-5012-4D24-CF66-9142BE5D80A3}"
+    }
+  },
+  "dependencies": {},
+  "module": {
+    "enabled": true,
+    "name": "mod_data7_utils",
+    "publisher": "matheusdevelope"
+  }
+}
