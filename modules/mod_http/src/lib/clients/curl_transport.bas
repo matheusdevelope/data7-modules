@@ -3,6 +3,7 @@ Imports http_transport
 Imports http_request
 Imports http_response
 Imports http_form
+Imports http_file_io
 
 Namespace http_curl
 
@@ -42,6 +43,10 @@ Namespace http_curl
             If Assigned(pReq.Body) And Not pReq.Body.IsEmpty Then
                If pReq.Body.IsForm Then
                   me.AddFormParts(curlCli, pReq.Body.Form)
+               ElseIf pReq.Body.IsDiskStream Then
+                  Dim diskPath As String = HttpFileIo.SpoolDisk(pReq.Body.DiskStream)
+                  curlCli.TrackTemp(diskPath)
+                  curlCli.AddDataBinaryFile(diskPath)
                ElseIf pReq.Body.IsStream Then
                   Dim streamPath As String = me.WriteTempStream(pReq.Body.Raw())
                   curlCli.TrackTemp(streamPath)
@@ -110,27 +115,11 @@ Namespace http_curl
       End Sub
 
       Private Function WriteTempStream(pStream As Variant) As String
-         Dim fso As Variant = CreateObject("Scripting.FileSystemObject")
-         Dim path As String = fso.GetSpecialFolder(2) & "\" & fso.GetTempName
-         fso = Unassigned
-         pStream.Position = 0
-         pStream.SaveToFile(path, 2)
-         pStream.Position = 0
-         WriteTempStream = path
+         WriteTempStream = HttpFileIo.SpoolToTempFile(pStream)
       End Function
 
       Private Function WriteTempBytes(pData As Variant) As String
-         Dim fso As Variant = CreateObject("Scripting.FileSystemObject")
-         Dim path As String = fso.GetSpecialFolder(2) & "\" & fso.GetTempName
-         fso = Unassigned
-         Dim stream As Variant = CreateObject("ADODB.Stream")
-         stream.Type = 1
-         stream.Open()
-         stream.Write(pData)
-         stream.SaveToFile(path, 2)
-         stream.Close()
-         stream = Unassigned
-         WriteTempBytes = path
+         WriteTempBytes = HttpFileIo.WriteBytesToTemp(pData)
       End Function
 
       Sub Free()

@@ -9,6 +9,8 @@ Imports http_response
 Imports http_download_options
 Imports http_range
 Imports http_transfer_control
+Imports http_file_io
+Imports mod_data7_utils_file_stream
 Imports mod_tobject
 
 Namespace http_download
@@ -28,9 +30,8 @@ Namespace http_download
          Dim extra As HttpHeaders = Null
          Dim response As HttpResponse = Null
          Dim savedWant As Boolean = True
-         Dim destStream As Variant = Unassigned
+         Dim destFile As TFileStream = Null
          Dim parsedTotal As Int64 = HttpRange.Zero64()
-         Dim streamKind As String = ""
          If Not Assigned(pClient) Then
             Throw New Exception("HttpDownload.ToFile requires an HttpClient.")
          End If
@@ -57,30 +58,20 @@ Namespace http_download
          End If
          savedWant = pClient.WantText
          pClient.WantText = False
-         destStream = CreateObject("ADODB.Stream")
-         destStream.Type = 1
-         destStream.Open()
-         If pOptions.ResumePartial And TFile.Exists(dest) Then
-            destStream.LoadFromFile(dest)
-            destStream.Position = destStream.Size
-         End If
+         destFile = HttpFileIo.OpenForWrite(dest, pOptions.ResumePartial And TFile.Exists(dest))
+         Dim alreadyDone As Boolean = False
          Try
             If Not (sent < total) Then
                If total > HttpRange.Zero64() Then
                   If pOptions.OnProgress <> Null Then
                      pOptions.OnProgress(sent, total)
                   End If
-                  destStream.SaveToFile(dest, 2)
-                  destStream.Close()
-                  destStream = Unassigned
-                  pClient.WantText = savedWant
-                  ' data7:disable-next-line shared-return-assignment-in-try
-                  ToFile = dest
-                  Exit Function
+                  alreadyDone = True
                End If
             End If
+            If Not alreadyDone Then
             While True
-               HttpDownload.ApplyHalt(pOptions, pClient, savedWant, dest, destStream)
+               HttpDownload.ApplyHalt(pOptions, pClient, savedWant, dest, destFile)
                If (total > HttpRange.Zero64()) And (Not (sent < total)) Then
                   Exit While
                End If
@@ -106,7 +97,7 @@ Namespace http_download
                      total = HttpRange.ParseInt64(response.Headers.Value("Content-Length"))
                   End If
                End If
-               HttpDownload.AppendPayload(destStream, response)
+               HttpDownload.AppendPayload(destFile, response)
                If total > HttpRange.Zero64() Then
                   sent = endInclusive + 1
                   If sent > total Then
@@ -118,7 +109,7 @@ Namespace http_download
                If pOptions.OnProgress <> Null Then
                   pOptions.OnProgress(sent, total)
                End If
-               HttpDownload.ApplyHalt(pOptions, pClient, savedWant, dest, destStream)
+               HttpDownload.ApplyHalt(pOptions, pClient, savedWant, dest, destFile)
                If response.Status = 200 Then
                   response.Free()
                   response = Null
@@ -133,58 +124,31 @@ Namespace http_download
                   Exit While
                End If
             End While
-            destStream.SaveToFile(dest, 2)
-            destStream.Close()
-            destStream = Unassigned
+            End If
+            HttpFileIo.Release(destFile)
             pClient.WantText = savedWant
          Catch ex As Exception
             If Assigned(response) Then
                response.Free()
             End If
-            streamKind = TypeName(destStream)
-            If (streamKind <> "Empty") And (streamKind <> "Null") And (streamKind <> "Unassigned") Then
-               Try
-                  destStream.Close()
-               Catch closeEx As Exception
-               End Try
-               destStream = Unassigned
-            End If
+            HttpFileIo.Release(destFile)
             pClient.WantText = savedWant
             Throw ex
          End Try
          ToFile = dest
       End Function
 
-      Shared Sub AppendPayload(pDestStream As Variant, pResponse As HttpResponse)
+      Shared Sub AppendPayload(pDestFile As TFileStream, pResponse As HttpResponse)
          Dim payload As Variant
-         Dim chunkBytes As Variant
-         Dim textStream As Variant
          If Assigned(pResponse.Body) Then
             payload = pResponse.Body.Raw()
          Else
             payload = pResponse.Data.Raw()
          End If
-         pDestStream.Position = pDestStream.Size
-         If TypeName(payload) = "String" Then
-            textStream = CreateObject("ADODB.Stream")
-            textStream.Type = 2
-            textStream.Charset = "iso-8859-1"
-            textStream.Open()
-            textStream.WriteText(payload)
-            textStream.Position = 0
-            textStream.Type = 1
-            If textStream.Size > 0 Then
-               chunkBytes = textStream.Read
-               pDestStream.Write(chunkBytes)
-            End If
-            textStream.Close()
-            textStream = Unassigned
-         Else
-            pDestStream.Write(payload)
-         End If
+         HttpFileIo.WritePayload(pDestFile, payload)
       End Sub
 
-      Shared Sub ApplyHalt(pOptions As HttpDownloadOptions, pClient As HttpClient, pSavedWant As Boolean, pDest As String, ByRef pDestStream As Variant)
+      Shared Sub ApplyHalt(pOptions As HttpDownloadOptions, pClient As HttpClient, pSavedWant As Boolean, pDest As String, ByRef pDestFile As TFileStream)
          Dim gate As HttpTransferControl = Null
          If Not Assigned(pOptions) Then
             Exit Sub
@@ -193,43 +157,30 @@ Namespace http_download
          If Not Assigned(gate) Then
             Exit Sub
          End If
-         Forms.ProcessMessages()
-         If gate.CancelRequested() Then
-            gate.MarkCancelled()
-            HttpDownload.CloseDestStream(pDestStream)
+         HttpDownload.HonorHalt(gate, pClient, pSavedWant, pDest, pDestFile)
+         Try
+            Forms.ProcessMessages()
+         Catch pumpEx As Exception
+         End Try
+         HttpDownload.HonorHalt(gate, pClient, pSavedWant, pDest, pDestFile)
+      End Sub
+
+      Shared Sub HonorHalt(pGate As HttpTransferControl, pClient As HttpClient, pSavedWant As Boolean, pDest As String, ByRef pDestFile As TFileStream)
+         If pGate.CancelRequested() Then
+            pGate.MarkCancelled()
+            HttpFileIo.Release(pDestFile)
             If TFile.Exists(pDest) Then
                TFile.Delete(pDest)
             End If
             pClient.WantText = pSavedWant
             Throw New Exception(HttpDownload.CancelledMessage())
          End If
-         If gate.PauseRequested() Then
-            gate.MarkPaused()
-            HttpDownload.FinishDestStream(pDest, pDestStream)
+         If pGate.PauseRequested() Then
+            pGate.MarkPaused()
+            HttpFileIo.Release(pDestFile)
             pClient.WantText = pSavedWant
             Throw New Exception(HttpDownload.PausedMessage())
          End If
-      End Sub
-
-      Shared Sub FinishDestStream(pDest As String, ByRef pDestStream As Variant)
-         Dim kind As String = TypeName(pDestStream)
-         If (kind = "Empty") Or (kind = "Null") Or (kind = "Unassigned") Then
-            Exit Sub
-         End If
-         pDestStream.SaveToFile(pDest, 2)
-         HttpDownload.CloseDestStream(pDestStream)
-      End Sub
-
-      Shared Sub CloseDestStream(ByRef pDestStream As Variant)
-         Dim kind As String = TypeName(pDestStream)
-         If (kind = "Empty") Or (kind = "Null") Or (kind = "Unassigned") Then
-            Exit Sub
-         End If
-         Try
-            pDestStream.Close()
-         Catch ex As Exception
-         End Try
-         pDestStream = Unassigned
       End Sub
 
       Shared Function PausedMessage() As String
@@ -241,18 +192,7 @@ Namespace http_download
       End Function
 
       Shared Function LocalBytes(pPath As String) As Int64
-         Dim stream As Variant
-         If Not TFile.Exists(pPath) Then
-            LocalBytes = HttpRange.Zero64()
-            Exit Function
-         End If
-         stream = CreateObject("ADODB.Stream")
-         stream.Type = 1
-         stream.Open()
-         stream.LoadFromFile(pPath)
-         LocalBytes = HttpRange.ParseInt64(CStr(stream.Size))
-         stream.Close()
-         stream = Unassigned
+         LocalBytes = HttpFileIo.SizeOf(pPath)
       End Function
 
       Sub New()

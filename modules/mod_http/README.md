@@ -1,6 +1,6 @@
 # mod_http
 
-HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, RFC 7233 Range helpers, ranged download-to-file, and an optional localhost callback listener. It does **not** implement OAuth flows, cookie jars, or proxy configuration. **Retries** are opt-in on `HttpClient` (`RetryCount` default `0`). `FollowRedirects` stays transport-agnostic (needed when `308` is a status, not a redirect). Version **2.1.1** (`opcoes.versao` `2.1.1.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`.
+HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, RFC 7233 Range helpers, ranged download-to-file, and an optional localhost callback listener. It does **not** implement OAuth flows, cookie jars, or proxy configuration. **Retries** are opt-in on `HttpClient` (`RetryCount` default `0`). `FollowRedirects` stays transport-agnostic (needed when `308` is a status, not a redirect). Disk upload/download uses `TFileStream` (`mod_data7_utils`) so destination files are not loaded whole into an `ADODB.Stream`. Version **2.1.2** (`opcoes.versao` `2.1.2.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`, `mod_data7_utils` `2.0`.
 
 This file is the module contract. Consumers must be able to assemble, extend, and call the API from this README alone. Open a `.bas` file only to confirm a detail that is not stated here.
 
@@ -39,6 +39,7 @@ live.Free()
 | `src/lib/http_progress.bas` | `http_progress` | `HttpProgressDel` |
 | `src/lib/http_download_options.bas` | `http_download_options` | `HttpDownloadOptions` |
 | `src/lib/http_transfer_control.bas` | `http_transfer_control` | `HttpTransferControl` |
+| `src/lib/http_file_io.bas` | `http_file_io` | `HttpFileIo` (`TFileStream` helpers, `ToAdodbIStreamWindow` for one PUT chunk) |
 | `src/lib/http_download.bas` | `http_download` | `HttpDownload.ToFile` |
 | `src/lib/http_headers.bas` | `http_headers` | `HttpBaseList`, `HttpHeaders`, `HttpParams` |
 | `src/lib/http_form.bas` | `http_form` | `FormDataPart`, `FormData` |
@@ -285,7 +286,8 @@ Example input: `"https://x/y?a=1&b=2"` or `"a=1&b=2"`. Segment `flag` without `=
 | `"json"` | `FromJson(String)` / `FromJson(TJSONObject)` | `"application/json"` | json text | json text |
 | `"bytes"` | `FromBytes(pBytes, pContentType)` | `"application/octet-stream"` | byte payload | `""` |
 | `"file"` | `FromFile(pPath, pContentType)` | `"application/octet-stream"` | path string | `""` |
-| `"stream"` | `FromStream(pStream, pContentType, pOwnsStream)` | `"application/octet-stream"` | ADODB `IStream` | `""` |
+| `"stream"` | `FromStream(pStream, pContentType, pOwnsStream)` | `"application/octet-stream"` | ADODB `IStream` only | `""` |
+| `"diskstream"` | `FromDiskStream(pStream As TFileStream, …)` | `"application/octet-stream"` | `""` (typed field `DiskStream`) | `""` |
 | `"form"` | `FromForm(pForm, pOwnsForm)` | `pForm.ContentTypeHeader` | `Form.Data()` | `""` |
 
 ```basic
@@ -295,8 +297,14 @@ Shared Function FromJson(pJson As TJSONObject) As HttpBody
 Shared Function FromBytes(pBytes As Variant, pContentType As String = "application/octet-stream") As HttpBody
 Shared Function FromFile(pPath As String, pContentType As String = "application/octet-stream") As HttpBody
 Shared Function FromStream(pStream As Variant, pContentType As String = "application/octet-stream", pOwnsStream As Boolean = False) As HttpBody
-   ' WinHTTP Send(pStream) as IStream. Do not Read() into a Data7 String.
-   ' pOwnsStream False: caller still owns and Closes the stream (Drive chunk reuse).
+   ' ADODB IStream (TypeName Stream or Dispatch). A typed TFileStream argument cannot be
+   ' CType'd back from Variant. Prefer FromDiskStream / FromStreamWindow / FromFile.
+   ' pOwnsStream False: caller still owns and Closes the stream.
+Shared Function FromDiskStream(pStream As TFileStream, pContentType As String = "application/octet-stream", pOwnsStream As Boolean = False) As HttpBody
+   ' Typed TFileStream field. WinHTTP copies Size into one ADODB IStream (throws > 2 GiB).
+   ' Curl CopyTo 64 KiB into a temp file. Prefer FromFile(path) on Curl for multi-GB (no extra copy).
+Shared Function FromStreamWindow(pSource As TStream, pOffset As Int64, pLength As Integer, pContentType As String = "application/octet-stream") As HttpBody
+   ' Drive resumable PUT: copy only offset..offset+length (8 MiB) into a new ADODB IStream, own it.
 Shared Function FromForm(pForm As FormData, pOwnsForm As Boolean = False) As HttpBody
    ' pOwnsForm True: Dispose frees the FormData.
 
@@ -411,11 +419,11 @@ Sub New(pStatus As Integer, pStatusText As String, pHeaders As String, pBodyText
 
 ```basic
 Function SaveToFile(pPath As String, pOverWrite As Boolean = True, pAppend As Boolean = False) As String
-   ' text/*, json, xml, html, javascript String: UTF-8.
-   ' Other String payloads (typical binary mocked as latin-1): iso-8859-1 then binary write.
-   ' Non-String: binary ADODB.Stream.Write.
-   ' pAppend True: LoadFromFile if dest exists, then write, then overwrite save.
-   ' pOverWrite True -> SaveToFile mode 2; False -> mode 1 (fail if exists), unless appending.
+   ' text/*, json, xml, html, javascript String: UTF-8 via TFileStream.
+   ' Other String payloads: Latin1 via TFileStream.
+   ' Non-String: TFileStream.Write of the Variant (one response body, already in RAM).
+   ' pAppend True: open existing dest, Seek end, write (does not LoadFromFile the dest).
+   ' pOverWrite True: CreateFile. False: CreateNew (fails if dest exists).
    ' Returns pPath. Throws "Failed to save response to file: …".
 ```
 
@@ -441,9 +449,10 @@ Client certificate:
 
 Send:
 
-- `Body.IsStream`: `Position = 0` then `Send` the ADODB stream object (IStream). Does **not** `Read()`, does **not** write a temp file, does **not** Close the caller's stream.
-- `Body.IsFile`: `ADODB.Stream` `LoadFromFile` then `Send` the stream object (IStream), never a BSTR.
-- `Body.IsBytes`: copy into a binary `ADODB.Stream` (latin-1 if `Raw()` is a `String`) and `Send` the stream object. Do **not** `Send(stream.Read)` — Data7 often turns that into a `String` and WinHTTP recodes RAR/ZIP/PDF. Prefer `FromStream` for large binaries.
+- `Body.IsDiskStream`: `HttpFileIo.ToAdodbIStreamFrom(DiskStream)` — 64 KiB `Read` into a new ADODB IStream covering **the whole `Size`**, then `Send`. Throws if size > `2147483647`. Peak RAM is the whole file for that one request. Drive must **not** use this for a multi-gigabyte backup.
+- `Body.IsStream`: ADODB `IStream` is `Send` as-is (`Position = 0`). Boxed `TFileStream` / `TMemoryStream` throw. Drive resumable PUTs use `HttpBody.FromStreamWindow(src, offset, chunkBytes)` so each PUT holds **one chunk** (8 MiB default, adaptive ceiling 256 MiB) — never `FromDiskStream` / `FromFile` of the whole backup on WinHTTP.
+- `Body.IsFile`: empty file (`TFileStream.Size` = 0) sends no payload. Otherwise `HttpFileIo.ToAdodbIStream`: open with `TFileStream` (never `LoadFromFile`), copy 64 KiB chunks into a new `ADODB.Stream`, `Send` the IStream, then close the ADODB. Throws if size > `2147483647` (ADODB `Size` is 32-bit). WinHTTP `Send` still needs a complete IStream, so the ADODB buffer holds the assembled body for that one request. A 50 GB backup on WinHTTP is **chunked PUTs** (`FromStreamWindow`) or **`Http.Curl` + `FromFile`** (curl reads the path from disk).
+- `Body.IsBytes`: copy into a binary `ADODB.Stream` (latin-1 if `Raw()` is a `String`) and `Send` the stream object. Do **not** `Send(stream.Read)` — Data7 often turns that into a `String` and WinHTTP recodes RAR/ZIP/PDF. Prefer `FromFile` + Curl for large binaries.
 - Else `Body.Raw()`: non-empty `Array` or non-blank `String` is passed to `Send`; otherwise `Send()` with no payload.
 
 When `WantText` is False, `ResponseText` is not read (empty `Body.AsText`); `ResponseBody` is still assigned to `Raw()`.
@@ -456,9 +465,10 @@ Builds a `mod_curl.Curl` per `Send`: `Method = Verb`, `Url`, `TimeoutMs = Timeou
 
 - Multipart: does not forward the request `Content-Type` header (curl sets the multipart boundary).
 - Form files: path from `Value`, or a temp file from `ValueRaw` (tracked on the curl helper).
-- Stream: temp file from `SaveToFile` + `AddDataBinaryFile` (`curl.exe` cannot consume an IStream).
-- File: `AddDataBinaryFile(FilePath)` (no Variant round-trip).
-- Bytes: temp file + `AddDataBinaryFile`.
+- Disk stream: `HttpFileIo.SpoolDisk` (`TFileStream.CopyTo` 64 KiB into a temp file; source position restored) then `AddDataBinaryFile`. Extra disk copy of the whole payload — prefer `FromFile` for huge files.
+- Stream: `HttpFileIo.SpoolToTempFile` (ADODB `Read` 64 KiB) then `AddDataBinaryFile`. Boxed `TFileStream` throws.
+- File: `AddDataBinaryFile(FilePath)` (curl reads the path from disk; no RAM copy of the file).
+- Bytes: `HttpFileIo.WriteBytesToTemp` then `AddDataBinaryFile`.
 - Text/json: `AddBody` when trimmed text is non-empty.
 
 When `WantText` is False, `curlOut.ResponseText` is not copied (`AsText` empty); `ResponseData` still fills `Raw()`.
@@ -470,7 +480,7 @@ Same `"Request failed: …"` wrapper. Temp files are released with the curl help
 Native `THTTP`. Throws before send when:
 
 - Verb is not `GET` / `POST` / `PUT` (message includes the verb; `"Use WinHttp or Curl."`).
-- Body `IsBytes`, `IsForm`, `IsFile`, or `IsStream`.
+- Body `IsBytes`, `IsForm`, `IsFile`, `IsStream`, or `IsDiskStream`.
 - `Certificate.Use` and (`Locator` or `Path` is non-empty).
 
 Maps `Accept` and `Content-Type` onto `THTTP`; other headers via `AddCustomHeader("Name: value")`. Response headers exposed here are only `Content-Type` when native `ContentType <> ""`. `StatusText` is `"OK"` for 200..299, else `"Error"`. Body prefers `native.ResponseText` when non-empty, else the Get/Post/Put return value.
@@ -522,7 +532,7 @@ options.TransferControl = gate   ' optional HttpTransferControl
 HttpDownload.ToFile(client, "/files/id?alt=media", options)
 ```
 
-Sets `WantText = False` for the GETs and restores the previous value. Issues `Range` on a **request copy**. Cooperative **pause** / **cancel** uses `HttpDownloadOptions.TransferControl` (`HttpTransferControl`): the current GET always finishes; between ranges the helper calls `Forms.ProcessMessages()` and then honors the flag. **Pause** keeps the partial file and throws; call `ToFile` again with `ResumePartial = True`. **Cancel** deletes the partial file. The caller owns the control. Default chunk 8 MiB — still one `ResponseBody` per GET in RAM. Drive keeps its own downloader for export, Workspace MIME, and Drive query flags.
+Sets `WantText = False` for the GETs and restores the previous value. Issues `Range` on a **request copy**. Each chunk is **appended with `TFileStream.Write` + `Flush`** (`HttpFileIo`); the destination is never `LoadFromFile`/`SaveToFile` as a whole `ADODB.Stream`. Resume uses `TFileStream.Size` (not `LoadFromFile`). Cooperative **pause** / **cancel** uses `HttpDownloadOptions.TransferControl` (`HttpTransferControl`): the current GET always finishes; between ranges the helper calls `Forms.ProcessMessages()` and then honors the flag. **Pause** flushes/closes the `TFileStream` and keeps the partial file; call `ToFile` again with `ResumePartial = True`. **Cancel** closes and deletes the partial file. The caller owns the control. Default chunk 8 MiB — WinHTTP `ResponseBody` is still one GET in RAM; it is written to disk and then discarded. Drive keeps its own downloader for export, Workspace MIME, and Drive query flags.
 
 ## Interceptors
 
@@ -637,7 +647,7 @@ No UI types are registered by this module. `HttpCallback` is the only Forms-rela
 
 ## Tests
 
-- `tests.THttpTest.RunAll()` — enums, URL join/encode, headers/params (including `Content-Range` strings, case-insensitive names, `Define` Int64), `FollowRedirects` / `WantText` copied onto the request, extra headers without mutating the session, retry 503 then 200 and no-retry on 308, `HttpRange`, `ContentLengthText`, ranged `HttpDownload.ToFile` (including pause/cancel/resume), body (including `FromFile`/`FromStream`), form, `TCertificate` defaults, curl dump-header parse (redirect uses last status), `HttpResponse`, mock GET/POST/queue/last-request, Bearer/Basic, interceptor 401 replace, subclass hooks, factories (`Http.Mock`, `Http.FromTransport`).
+- `tests.THttpTest.RunAll()` — enums, URL join/encode, headers/params (including `Content-Range` strings, case-insensitive names, `Define` Int64), `FollowRedirects` / `WantText` copied onto the request, extra headers without mutating the session, retry 503 then 200 and no-retry on 308, `HttpRange`, `ContentLengthText`, ranged `HttpDownload.ToFile` (including pause/cancel/resume), `TFileStream`→ADODB upload proxy and `ToAdodbIStreamWindow`, body (including `FromFile`/`FromStream`/`FromDiskStream`/`FromStreamWindow`), form, `TCertificate` defaults, curl dump-header parse (redirect uses last status), `HttpResponse`, mock GET/POST/queue/last-request, Bearer/Basic, interceptor 401 replace, subclass hooks, factories (`Http.Mock`, `Http.FromTransport`).
 - `tests_live.THttpLiveTest.RunAll()` — optional network: `Http.WinHttp` and `Http.Curl` GET `https://httpbin.org/get`. Not part of `THttpTest.RunAll`.
 
 ## Module Notes
@@ -651,3 +661,4 @@ No UI types are registered by this module. `HttpCallback` is the only Forms-rela
 - `Http.DefaultKind` reads `Customizado_Projeto_ClientePadraoModuloHttp`; only `CURL` selects CURL, otherwise WinHttp.
 - `Data7Transport` supports GET/POST/PUT text only and rejects client certificates; `WinHttpTransport` / `CurlTransport` are the mTLS paths.
 - `HttpCallback` listens for a **single** request on `http://localhost:{port}/` and then stops.
+- Disk I/O for download, `SaveToFile`, and Curl temps goes through `HttpFileIo` / `TFileStream`. Do not use `TMemoryStream.ReadAll` / `ReadTextAll` / `ToArray` for payloads. Data7 cannot `CType(Variant, TFileStream)` — keep `TFileStream` in a typed field (`FromDiskStream`) or copy a window into ADODB (`FromStreamWindow`). WinHTTP `FromFile` / `FromDiskStream` read the disk with `TFileStream` in 64 KiB chunks into an `ADODB.Stream` IStream (no `LoadFromFile`); the IStream still holds the **whole** body until `Send` returns. Above 2 GiB, throw and use `Http.Curl` + `FromFile`. `FromStreamWindow` / `ToAdodbIStreamWindow` copies only `offset..offset+length` (Drive 8 MiB PUTs). `FormData.Data()` still concatenates the whole multipart in RAM (`LoadFromFile` on file parts) — not the Drive resumable path. Drive must not use `HttpDownload.ToFile` (export / Workspace MIME / query flags stay in the Drive downloader).

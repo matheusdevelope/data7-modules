@@ -1,7 +1,9 @@
 Imports Collections
 Imports http_headers
+Imports http_file_io
 Imports mod_strings
 Imports mod_tobject
+Imports mod_data7_utils_file_stream
 Imports TFile
 
 Namespace http_response
@@ -75,66 +77,38 @@ Namespace http_response
       End Function
 
       Function SaveToFile(pPath As String, pOverWrite As Boolean = True, pAppend As Boolean = False) As String
-         Dim destStream As Variant
-         Dim loadExisting As Boolean = False
+         Dim destFile As TFileStream = Null
+         Dim saveFailed As Boolean = False
+         Dim saveErr As String = ""
          Try
-            destStream = CreateObject("ADODB.Stream")
-            destStream.Type = 1
-            destStream.Open()
-            loadExisting = pAppend And TFile.Exists(pPath)
-            If loadExisting Then
-               destStream.LoadFromFile(pPath)
-               destStream.Position = destStream.Size
-            End If
-            me.WritePayload(destStream)
-            If loadExisting Or pOverWrite Then
-               destStream.SaveToFile(pPath, 2)
+            If pAppend Then
+               destFile = HttpFileIo.OpenForWrite(pPath, True)
+            ElseIf pOverWrite Then
+               destFile = HttpFileIo.OpenForWrite(pPath, False)
             Else
-               destStream.SaveToFile(pPath, 1)
+               destFile = HttpFileIo.OpenCreateNew(pPath)
             End If
-            destStream.Close()
-            destStream = Unassigned
-            SaveToFile = pPath
+            me.WritePayload(destFile)
          Catch ex As Exception
-            Throw New Exception("Failed to save response to file: " & ex._GetMessage())
+            saveFailed = True
+            saveErr = ex._GetMessage()
          End Try
+         HttpFileIo.Release(destFile)
+         If saveFailed Then
+            Throw New Exception("Failed to save response to file: " & saveErr)
+         End If
+         SaveToFile = pPath
       End Function
 
-      Private Sub WritePayload(pDestStream As Variant)
-         Dim textStream As Variant
-         Dim chunkBytes As Variant
+      Private Sub WritePayload(pDestFile As TFileStream)
          If TypeName(me._data) = "String" Then
             If me.IsTextualContent() Then
-               textStream = CreateObject("ADODB.Stream")
-               textStream.Type = 2
-               textStream.Charset = "utf-8"
-               textStream.Open()
-               textStream.WriteText(me._data)
-               textStream.Position = 0
-               textStream.Type = 1
-               If textStream.Size > 0 Then
-                  chunkBytes = textStream.Read
-                  pDestStream.Write(chunkBytes)
-               End If
-               textStream.Close()
-               textStream = Unassigned
+               HttpFileIo.WriteUtf8Text(pDestFile, CStr(me._data))
             Else
-               textStream = CreateObject("ADODB.Stream")
-               textStream.Type = 2
-               textStream.Charset = "iso-8859-1"
-               textStream.Open()
-               textStream.WriteText(me._data)
-               textStream.Position = 0
-               textStream.Type = 1
-               If textStream.Size > 0 Then
-                  chunkBytes = textStream.Read
-                  pDestStream.Write(chunkBytes)
-               End If
-               textStream.Close()
-               textStream = Unassigned
+               HttpFileIo.WritePayload(pDestFile, me._data)
             End If
          Else
-            pDestStream.Write(me._data)
+            HttpFileIo.WritePayload(pDestFile, me._data)
          End If
       End Sub
 

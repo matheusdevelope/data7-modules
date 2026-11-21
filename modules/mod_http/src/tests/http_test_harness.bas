@@ -16,6 +16,8 @@ Imports http_range
 Imports http_download
 Imports http_download_options
 Imports http_transfer_control
+Imports http_file_io
+Imports mod_data7_utils_file_stream
 Imports TFile
 Imports TPath
 
@@ -120,6 +122,7 @@ Namespace tests
          me.TestContentLengthText()
          me.TestDownloadToFile()
          me.TestDownloadPauseCancelResume()
+         me.TestAdodbFileProxy()
          me.PrintSummary()
       End Sub
 
@@ -259,6 +262,22 @@ Namespace tests
          streamBody.Free()
          binStream.Close()
          binStream = Unassigned
+         Dim diskPath As String = TPath.GetTempFileName()
+         Dim diskWriter As TFileStream = HttpFileIo.OpenForWrite(diskPath, False)
+         HttpFileIo.WritePayload(diskWriter, "HELLO")
+         HttpFileIo.Release(diskWriter)
+         Dim srcFile As TFileStream = HttpFileIo.OpenForRead(diskPath)
+         Dim diskStreamBody As HttpBody = HttpBody.FromDiskStream(srcFile, "application/octet-stream")
+         me.AssertEqBool(diskStreamBody.IsDiskStream, True, "FromDiskStream kind")
+         diskStreamBody.Free()
+         Dim windowBody As HttpBody = HttpBody.FromStreamWindow(srcFile, HttpRange.FromInteger(1), 3)
+         me.AssertEqBool(windowBody.IsStream, True, "FromStreamWindow kind")
+         me.AssertEqInt(windowBody.Raw().Size, 3, "FromStreamWindow size")
+         windowBody.Free()
+         srcFile.Free()
+         If TFile.Exists(diskPath) Then
+            TFile.Delete(diskPath)
+         End If
       End Sub
 
       Sub TestFormData()
@@ -338,6 +357,14 @@ Namespace tests
          me.AssertEqBool(res.Headers.Has("Content-Type"), True, "Headers Content-Type")
          Dim fail As New HttpResponse(404, "Not Found", "", "missing", "missing")
          me.AssertEqBool(fail.IsSuccessful, False, "404 not successful")
+         Dim savePath As String = TPath.GetTempFileName()
+         res.Body.SaveToFile(savePath, True, False)
+         me.AssertEq(TFile.ReadAllText(savePath), "{ok:1}", "SaveToFile")
+         res.Body.SaveToFile(savePath, True, True)
+         me.AssertEq(TFile.ReadAllText(savePath), "{ok:1}{ok:1}", "SaveToFile append")
+         If TFile.Exists(savePath) Then
+            TFile.Delete(savePath)
+         End If
          fail.Free()
          res.Free()
       End Sub
@@ -624,6 +651,34 @@ Namespace tests
          cancelOptions.Free()
          cancelGate.Free()
          client.Free()
+      End Sub
+
+      Sub TestAdodbFileProxy()
+         print("-- winhttp file proxy")
+         Dim path As String = TPath.GetTempFileName()
+         Dim writer As TFileStream = HttpFileIo.OpenForWrite(path, False)
+         HttpFileIo.WritePayload(writer, "HELLO")
+         HttpFileIo.Release(writer)
+         Dim iStream As Variant = HttpFileIo.ToAdodbIStream(path)
+         me.AssertEqInt(iStream.Size, 5, "chunked TFileStream fills ADODB")
+         HttpFileIo.ReleaseAdodb(iStream)
+         Dim srcFile As TFileStream = HttpFileIo.OpenForRead(path)
+         Dim sliceStream As Variant = HttpFileIo.ToAdodbIStreamWindow(srcFile, HttpRange.FromInteger(1), 3)
+         me.AssertEqInt(sliceStream.Size, 3, "window copies three bytes")
+         me.AssertEq(HttpRange.Int64Text(srcFile.Position), "0", "window restores position")
+         Dim slicePath As String = TPath.GetTempFileName()
+         Dim sliceDest As TFileStream = HttpFileIo.OpenForWrite(slicePath, False)
+         HttpFileIo.CopyAdodb(sliceStream, sliceDest)
+         HttpFileIo.Release(sliceDest)
+         me.AssertEq(TFile.ReadAllText(slicePath), "ELL", "window bytes")
+         HttpFileIo.ReleaseAdodb(sliceStream)
+         srcFile.Free()
+         If TFile.Exists(path) Then
+            TFile.Delete(path)
+         End If
+         If TFile.Exists(slicePath) Then
+            TFile.Delete(slicePath)
+         End If
       End Sub
 
       Sub TestHttpFactories()

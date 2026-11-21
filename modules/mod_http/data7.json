@@ -1,11 +1,11 @@
 {
   "nome": "mod_http",
   "language": "Basic",
-  "version": "2.1.1.0",
+  "version": "2.1.2.0",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
-    "versao": "2.1.1.0",
+    "versao": "2.1.2.0",
     "informacoes": "Lib HTTP com transports pluggáveis (WinHttp, CURL, Data7, Mock)\n",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -52,7 +52,7 @@
   },
   "virtualFolders": [
     {
-      "nome": "Unidades (46)",
+      "nome": "Unidades (58)",
       "id": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
       "pastaId": "",
       "aberta": "Sim"
@@ -164,23 +164,47 @@
       "id": "{3EEAA227-F65E-41A7-9E00-265DFF79E334}",
       "pastaId": "{5FE25F97-51BD-4F3C-9941-36662B253D9F}",
       "aberta": "Nao"
+    },
+    {
+      "nome": "mod_data7_utils",
+      "id": "{65A64A46-B8B3-458B-A87B-73EAF8ED16B1}",
+      "pastaId": "{3D0AA8C7-41DC-4CF9-99BD-8F1BD0065FBC}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{3FEC810E-3F29-406D-BF40-339D34DFF50D}",
+      "pastaId": "{65A64A46-B8B3-458B-A87B-73EAF8ED16B1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "runtime",
+      "id": "{71A985B9-67CA-4AC6-8870-357C9132872B}",
+      "pastaId": "{3FEC810E-3F29-406D-BF40-339D34DFF50D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "socket",
+      "id": "{7FDEBC55-5F90-4268-A562-235680FE5E94}",
+      "pastaId": "{3FEC810E-3F29-406D-BF40-339D34DFF50D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "stream",
+      "id": "{F145AF4D-E02B-4850-9CA0-4E07CDD8D1CF}",
+      "pastaId": "{3FEC810E-3F29-406D-BF40-339D34DFF50D}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{DD8F9A20-61B8-48C6-8CA1-3045CC02EDA0}",
+      "pastaId": "{65A64A46-B8B3-458B-A87B-73EAF8ED16B1}",
+      "aberta": "Nao"
     }
   ],
   "modulesMetadata": {
-    "curl_transport": {
-      "nome": "curl_transport",
-      "aberto": true,
-      "ordemAbertura": 0,
-      "pastaId": "{1A9E4B56-2C70-4F18-8D33-9E6A0C5B7D12}"
-    },
     "mock_transport": {
       "nome": "mock_transport",
-      "aberto": false,
-      "ordemAbertura": 0,
-      "pastaId": "{1A9E4B56-2C70-4F18-8D33-9E6A0C5B7D12}"
-    },
-    "winhttp_transport": {
-      "nome": "winhttp_transport",
       "aberto": false,
       "ordemAbertura": 0,
       "pastaId": "{1A9E4B56-2C70-4F18-8D33-9E6A0C5B7D12}"
@@ -212,6 +236,12 @@
     "http_enums": {
       "nome": "http_enums",
       "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_file_io": {
+      "nome": "http_file_io",
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
     },
@@ -275,12 +305,6 @@
       "ordemAbertura": 0,
       "pastaId": "{3D7C2E81-5A14-4B90-BE27-6F1D8C4A0E55}"
     },
-    "http_live_tests": {
-      "nome": "http_live_tests",
-      "aberto": false,
-      "ordemAbertura": 0,
-      "pastaId": "{9C4D1E70-3B28-4F52-9A16-8D5C0E2F7B41}"
-    },
     "http_test_harness": {
       "nome": "http_test_harness",
       "aberto": true,
@@ -293,7 +317,8 @@
     "mod_strings": "1.0.0.0",
     "mod_portable_exe": "1.0.0.0",
     "mod_curl": "1.0.0.0",
-    "mod_certificate": "1.0.0.0"
+    "mod_certificate": "1.0.0.0",
+    "mod_data7_utils": "2.0"
   },
   "module": {
     "enabled": true,

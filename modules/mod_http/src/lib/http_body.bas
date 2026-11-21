@@ -1,5 +1,8 @@
 Imports http_form
+Imports http_file_io
 Imports mod_tobject
+Imports mod_data7_utils_file_stream
+Imports mod_data7_utils_stream
 
 Namespace http_body
 
@@ -11,10 +14,12 @@ Namespace http_body
       Private _bytes As Variant
       Private _filePath As String
       Private _payloadStream As Variant
+      Private _diskStream As TFileStream
       Private _form As FormData
       Private _contentType As String
       Private _ownsForm As Boolean
       Private _ownsStream As Boolean
+      Private _ownsDisk As Boolean
 
       Sub New()
          MyBase.New()
@@ -22,7 +27,9 @@ Namespace http_body
          me._contentType = ""
          me._ownsForm = False
          me._ownsStream = False
+         me._ownsDisk = False
          me._payloadStream = Unassigned
+         me._diskStream = Null
       End Sub
 
       Shared Function FromText(pText As String, pContentType As String = "text/plain") As HttpBody
@@ -62,12 +69,35 @@ Namespace http_body
       End Function
 
       Shared Function FromStream(pStream As Variant, pContentType As String = "application/octet-stream", pOwnsStream As Boolean = False) As HttpBody
-         Dim body As New HttpBody()
+         Dim kind As String = TypeName(pStream)
+         Dim kindU As String = UCase(Trim(kind))
+         Dim body As HttpBody
+         If (kindU = "TFILESTREAM") Or (kindU = "TMEMORYSTREAM") Then
+            Throw New Exception("HttpBody.FromStream cannot hold TFileStream in a Variant. Use FromDiskStream, FromFile(path), or FromStreamWindow.")
+         End If
+         body = New HttpBody()
          body._kind = "stream"
          body._payloadStream = pStream
          body._ownsStream = pOwnsStream
          body._contentType = pContentType
          FromStream = body
+      End Function
+
+      Shared Function FromDiskStream(pStream As TFileStream, pContentType As String = "application/octet-stream", pOwnsStream As Boolean = False) As HttpBody
+         Dim body As New HttpBody()
+         If Not Assigned(pStream) Then
+            Throw New Exception("FromDiskStream requires a TFileStream.")
+         End If
+         body._kind = "diskstream"
+         body._diskStream = pStream
+         body._ownsDisk = pOwnsStream
+         body._contentType = pContentType
+         FromDiskStream = body
+      End Function
+
+      Shared Function FromStreamWindow(pSource As TStream, pOffset As Int64, pLength As Integer, pContentType As String = "application/octet-stream") As HttpBody
+         Dim iStream As Variant = HttpFileIo.ToAdodbIStreamWindow(pSource, pOffset, pLength)
+         FromStreamWindow = HttpBody.FromStream(iStream, pContentType, True)
       End Function
 
       Shared Function FromForm(pForm As FormData, pOwnsForm As Boolean = False) As HttpBody
@@ -133,6 +163,18 @@ Namespace http_body
          End Get
       End Property
 
+      Property IsDiskStream As Boolean
+         Get
+            IsDiskStream = me._kind = "diskstream"
+         End Get
+      End Property
+
+      Property DiskStream As TFileStream
+         Get
+            DiskStream = me._diskStream
+         End Get
+      End Property
+
       Property FilePath As String
          Get
             FilePath = me._filePath
@@ -162,6 +204,10 @@ Namespace http_body
             AsText = ""
             Exit Function
          End If
+         If me._kind = "diskstream" Then
+            AsText = ""
+            Exit Function
+         End If
          AsText = me._text
       End Function
 
@@ -181,6 +227,8 @@ Namespace http_body
             Raw = me._filePath
          ElseIf me._kind = "stream" Then
             Raw = me._payloadStream
+         ElseIf me._kind = "diskstream" Then
+            Raw = ""
          Else
             Raw = me._text
          End If
@@ -208,6 +256,7 @@ Namespace http_body
             me._form = NULL
          End If
          me.ReleaseStream()
+         me.ReleaseDisk()
          me._text = ""
          me._bytes = Unassigned
          me._filePath = ""
@@ -225,6 +274,16 @@ Namespace http_body
          End If
          me._payloadStream = Unassigned
          me._ownsStream = False
+      End Sub
+
+      Private Sub ReleaseDisk()
+         If me._ownsDisk Then
+            If Assigned(me._diskStream) Then
+               me._diskStream.Free()
+            End If
+         End If
+         me._diskStream = Null
+         me._ownsDisk = False
       End Sub
 
       Sub Free()

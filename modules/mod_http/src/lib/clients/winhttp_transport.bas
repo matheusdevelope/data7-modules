@@ -2,6 +2,8 @@ Imports Collections
 Imports http_transport
 Imports http_request
 Imports http_response
+Imports http_file_io
+Imports http_range
 Imports mod_certificate
 
 Namespace http_winhttp
@@ -68,6 +70,10 @@ Namespace http_winhttp
       Private Sub SendBody(pReq As HttpRequest)
          If Not Assigned(pReq.Body) Then
             me._http.Send()
+            Exit Sub
+         End If
+         If pReq.Body.IsDiskStream Then
+            me.SendAdodb(HttpFileIo.ToAdodbIStreamFrom(pReq.Body.DiskStream))
             Exit Sub
          End If
          If pReq.Body.IsStream Then
@@ -138,6 +144,9 @@ Namespace http_winhttp
             me._http.Send()
             Exit Sub
          End If
+         If (kind = "TFileStream") Or (kind = "TMemoryStream") Then
+            Throw New Exception("WinHTTP FromStream of TFileStream is not a Variant cast. Use HttpBody.FromStreamWindow on a typed TFileStream, FromDiskStream, or FromFile(path).")
+         End If
          pStream.Position = 0
          If pStream.Size > 0 Then
             me._http.Send(pStream)
@@ -147,18 +156,21 @@ Namespace http_winhttp
       End Sub
 
       Private Sub SendBinaryFile(pPath As String)
-         Dim binStream As Variant = CreateObject("ADODB.Stream")
-         binStream.Type = 1
-         binStream.Open()
-         binStream.LoadFromFile(pPath)
-         binStream.Position = 0
-         If binStream.Size > 0 Then
-            me._http.Send(binStream)
+         If HttpFileIo.SizeOf(pPath) <= HttpRange.Zero64() Then
+            me._http.Send()
+            Exit Sub
+         End If
+         me.SendAdodb(HttpFileIo.ToAdodbIStream(pPath))
+      End Sub
+
+      Private Sub SendAdodb(pStream As Variant)
+         If pStream.Size > 0 Then
+            pStream.Position = 0
+            me._http.Send(pStream)
          Else
             me._http.Send()
          End If
-         binStream.Close()
-         binStream = Unassigned
+         HttpFileIo.ReleaseAdodb(pStream)
       End Sub
 
       Private Sub ApplyRedirectPolicy(pReq As HttpRequest)
