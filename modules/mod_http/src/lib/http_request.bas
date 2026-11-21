@@ -13,11 +13,12 @@ Namespace http_request
       Url As String
       Timeout As Integer = 10000
       FollowRedirects As Boolean = True
+      WantText As Boolean = True
       ReadOnly Headers As HttpHeaders
       ReadOnly Body As HttpBody
       Certificate As TCertificate
 
-      Sub New(pMethod As HttpMethod, pUrl As String, pHeaders As HttpHeaders, pBody As HttpBody, pCertificate As TCertificate, pTimeout As Integer, pFollowRedirects As Boolean = True)
+      Sub New(pMethod As HttpMethod, pUrl As String, pHeaders As HttpHeaders, pBody As HttpBody, pCertificate As TCertificate, pTimeout As Integer, pFollowRedirects As Boolean = True, pWantText As Boolean = True)
          MyBase.New()
          me.Method = pMethod
          me.Url = pUrl
@@ -26,6 +27,7 @@ Namespace http_request
          me.Certificate = pCertificate
          me.Timeout = pTimeout
          me.FollowRedirects = pFollowRedirects
+         me.WantText = pWantText
       End Sub
 
       Property Verb As String
@@ -44,6 +46,7 @@ Namespace http_request
             .Prop("Url", me.Url)
             .Prop("Timeout", me.Timeout)
             .Prop("FollowRedirects", me.FollowRedirects)
+            .Prop("WantText", me.WantText)
             If Assigned(me.Headers) Then
                .Prop("Headers", me.Headers.ToString())
             End If

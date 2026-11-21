@@ -30,6 +30,10 @@ Namespace http_headers
          Define = me.Define(pName, pValue.ToString())
       End Function
 
+      Function Define(pName As String, pValue As Int64) As String
+         Define = me.Define(pName, pValue.ToString())
+      End Function
+
       Function Define(pName As String, pValue As String) As String
          me.Remove(pName)
          Dim line As String = pName & me._separator & pValue
@@ -38,7 +42,7 @@ Namespace http_headers
       End Function
 
       Function Remove(pName As String) As Boolean
-         Dim idx As Integer = me._IndexOf(pName)
+         Dim idx As Integer = me.IndexOfName(pName)
          If idx >= 0 Then
             me._values.Delete(idx)
             Remove = True
@@ -69,14 +73,15 @@ Namespace http_headers
       End Function
 
       Function Value(pName As String) As String
-         If Not me.Has(pName) Then
+         Dim idx As Integer = me.IndexOfName(pName)
+         If idx < 0 Then
             Throw New Exception("No value found for the provided name: " & pName)
          End If
-         Value = me._values.Values(pName)
+         Value = me._values.Values(me.Name(idx))
       End Function
 
       Function Has(pName As String) As Boolean
-         Has = me._IndexOf(pName) >= 0
+         Has = me.IndexOfName(pName) >= 0
       End Function
 
       Sub Join(pValues As HttpBaseList)
@@ -128,8 +133,8 @@ Namespace http_headers
          MyBase.Free()
       End Sub
 
-      Private Function _IndexOf(pName As String) As Integer
-         _IndexOf = me._values.IndexOfName(pName)
+      Overridable Function IndexOfName(pName As String) As Integer
+         IndexOfName = me._values.IndexOfName(pName)
       End Function
 
       Private Sub _ValidateIndex(pIndex As Integer)
@@ -173,6 +178,24 @@ Namespace http_headers
 
       Function Copy() As HttpHeaders
          Copy = New HttpHeaders(me.AsText())
+      End Function
+
+      Overrides Function IndexOfName(pName As String) As Integer
+         Dim needle As String = LCase(Trim(pName))
+         Dim i As Integer
+         Dim stored As String = ""
+         If needle = "" Then
+            IndexOfName = -1
+            Exit Function
+         End If
+         For i = 0 To me.Count - 1
+            stored = LCase(Trim(me.Name(i)))
+            If stored = needle Then
+               IndexOfName = i
+               Exit Function
+            End If
+         Next
+         IndexOfName = -1
       End Function
 
       Sub Free()

@@ -1,6 +1,6 @@
 # mod_http
 
-HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, and an optional localhost callback listener. It does **not** implement OAuth flows, retries, cookie jars, or proxy configuration — those belong to the consumer. It **does** expose transport-agnostic request options such as `FollowRedirects` (needed when `308` is a status, not a redirect). Version **2.0** (`opcoes.versao` `2.0.0.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`.
+HTTP client library for Data7 with pluggable transports (`WinHttp`, `CURL`, native `THTTP`, `Mock`), request/response types, interceptors, multipart form bodies, RFC 7233 Range helpers, ranged download-to-file, and an optional localhost callback listener. It does **not** implement OAuth flows, cookie jars, or proxy configuration. **Retries** are opt-in on `HttpClient` (`RetryCount` default `0`). `FollowRedirects` stays transport-agnostic (needed when `308` is a status, not a redirect). Version **2.1** (`opcoes.versao` `2.1.0.0`). Dependencies: `mod_io` `1.0.0.0`, `mod_strings` `1.0.0.0`, `mod_portable_exe` `1.0.0.0`, `mod_curl` `1.0.0.0`, `mod_certificate` `1.0.0.0`.
 
 This file is the module contract. Consumers must be able to assemble, extend, and call the API from this README alone. Open a `.bas` file only to confirm a detail that is not stated here.
 
@@ -35,6 +35,10 @@ live.Free()
 | --- | --- | --- |
 | `src/lib/http_enums.bas` | `http_enums` | `HttpMethod`, `HttpClientKind` |
 | `src/lib/http_url.bas` | `http_url` | `Encode`, `Decode`, `IsAbsolute`, `NormalizePath`, `Join`, `WithQuery`, `Build` |
+| `src/lib/http_range.bas` | `http_range` | `HttpRange` (RFC 7233 `bytes=` / `Content-Range`) |
+| `src/lib/http_progress.bas` | `http_progress` | `HttpProgressDel` |
+| `src/lib/http_download_options.bas` | `http_download_options` | `HttpDownloadOptions` |
+| `src/lib/http_download.bas` | `http_download` | `HttpDownload.ToFile` |
 | `src/lib/http_headers.bas` | `http_headers` | `HttpBaseList`, `HttpHeaders`, `HttpParams` |
 | `src/lib/http_form.bas` | `http_form` | `FormDataPart`, `FormData` |
 | `src/lib/http_body.bas` | `http_body` | `HttpBody` |
@@ -87,7 +91,10 @@ Session that builds `HttpRequest`, runs interceptors, and delegates `Send` to an
 | `BaseUrl` | `""` (or factory argument) | Joined with the endpoint by `http_url.Build` |
 | `Timeout` | `10000` | Milliseconds, copied onto each `HttpRequest` |
 | `FollowRedirects` | `True` | Copied onto each `HttpRequest`. `False` returns `3xx` (including Google/tus `308 Resume Incomplete`) instead of following. WinHTTP sets `WinHttpRequestOption_EnableRedirects`; CURL omits `-L`. |
-| `Headers` | empty `HttpHeaders` | Copied per request |
+| `WantText` | `True` | Copied onto each `HttpRequest`. `False` skips WinHTTP `ResponseText` / CURL `ResponseText` so large binary GETs do not duplicate the body as a Data7 `String`. Always read bytes from `Body.Raw()`. |
+| `RetryCount` | `0` | Extra tries after the first `Send` when status is 429/500/502/503/504. **308 is not retried.** Default off. |
+| `RetryBaseDelayMs` | `1000` | Exponential backoff between retries. `Retry-After` (delta-seconds) wins when present. |
+| `Headers` | empty `HttpHeaders` | Copied per request. Extra headers are merged onto that **copy**, never onto the session. |
 | `Params` | empty `HttpParams` | Merged into the URL query |
 | `Certificate` | `New TCertificate()` | Shared onto every request; owned by the client |
 | `Transport` | constructor arg | Read-only |
@@ -117,7 +124,14 @@ Function Request(pMethod As HttpMethod, pEndpoint As String, pBody As TJSONObjec
 Function Request(pMethod As HttpMethod, pEndpoint As String, pBody As HttpBody) As HttpResponse
    ' Caller owns pBody. This is the Send path.
 
+Function Request(pMethod As HttpMethod, pEndpoint As String, pExtra As HttpHeaders) As HttpResponse
+   ' Empty body + per-request headers (Range, Content-Range, Idempotency-Key). Session Headers unchanged.
+
+Function Request(pMethod As HttpMethod, pEndpoint As String, pBody As HttpBody, pExtra As HttpHeaders) As HttpResponse
+   ' Send path with extra headers joined onto the request copy.
+
 Function Gett(pEndpoint As String = "") As HttpResponse
+Function Gett(pEndpoint As String, pExtra As HttpHeaders) As HttpResponse
 Function Post(pEndpoint As String) As HttpResponse
 Function Post(pEndpoint As String, pBody As HttpBody) As HttpResponse
 Function Post(pEndpoint As String, pBody As String) As HttpResponse
@@ -125,6 +139,7 @@ Function Post(pEndpoint As String, pBody As FormData) As HttpResponse
 Function Post(pEndpoint As String, pBody As TJSONObject) As HttpResponse
 Function Put(pEndpoint As String) As HttpResponse
 Function Put(pEndpoint As String, pBody As HttpBody) As HttpResponse
+Function Put(pEndpoint As String, pBody As HttpBody, pExtra As HttpHeaders) As HttpResponse
 Function Put(pEndpoint As String, pBody As String) As HttpResponse
 Function Put(pEndpoint As String, pBody As FormData) As HttpResponse
 Function Patch(pEndpoint As String) As HttpResponse
@@ -212,7 +227,8 @@ Function Build(pBaseUrl As String, pEndpoint As String, pParams As HttpParams) A
 Name/value list. `HttpHeaders` separator `":"`. `HttpParams` separator `"="`.
 
 ```basic
-Function Define(pName As String, pValue As Integer) As String   ' ToString then Define — 32-bit only; do not pass Int64
+Function Define(pName As String, pValue As Integer) As String   ' ToString then Define — 32-bit only
+Function Define(pName As String, pValue As Int64) As String     ' ToString; use this for Content-Range sizes
 Function Define(pName As String, pValue As String) As String    ' Remove(name) then append with `&`; returns the stored line
 Function Remove(pName As String) As Boolean                     ' True if deleted
 Function Take(pName As String) As String                        ' throws if missing
@@ -230,7 +246,7 @@ Sub Clear()
 
 Throws: `"No value found for the provided name: " & pName`; `"Invalid index: " & pIndex`. `Load` / `AsText` on the base class throw `"Load must be implemented."` / `"AsText must be implemented."` — only subclasses are used.
 
-Name lookup is `StringList.IndexOfName` (separator-aware, not documented as case-insensitive here).
+`HttpHeaders` name lookup is **case-insensitive** (RFC 7230). `HttpParams` stays case-sensitive (`StringList.IndexOfName`).
 
 ### `HttpHeaders`
 
@@ -267,6 +283,8 @@ Example input: `"https://x/y?a=1&b=2"` or `"a=1&b=2"`. Segment `flag` without `=
 | `"text"` | `FromText(pText, pContentType)` | `"text/plain"` | text | text |
 | `"json"` | `FromJson(String)` / `FromJson(TJSONObject)` | `"application/json"` | json text | json text |
 | `"bytes"` | `FromBytes(pBytes, pContentType)` | `"application/octet-stream"` | byte payload | `""` |
+| `"file"` | `FromFile(pPath, pContentType)` | `"application/octet-stream"` | path string | `""` |
+| `"stream"` | `FromStream(pStream, pContentType, pOwnsStream)` | `"application/octet-stream"` | ADODB `IStream` | `""` |
 | `"form"` | `FromForm(pForm, pOwnsForm)` | `pForm.ContentTypeHeader` | `Form.Data()` | `""` |
 
 ```basic
@@ -274,6 +292,10 @@ Shared Function FromText(pText As String, pContentType As String = "text/plain")
 Shared Function FromJson(pJson As String) As HttpBody
 Shared Function FromJson(pJson As TJSONObject) As HttpBody
 Shared Function FromBytes(pBytes As Variant, pContentType As String = "application/octet-stream") As HttpBody
+Shared Function FromFile(pPath As String, pContentType As String = "application/octet-stream") As HttpBody
+Shared Function FromStream(pStream As Variant, pContentType As String = "application/octet-stream", pOwnsStream As Boolean = False) As HttpBody
+   ' WinHTTP Send(pStream) as IStream. Do not Read() into a Data7 String.
+   ' pOwnsStream False: caller still owns and Closes the stream (Drive chunk reuse).
 Shared Function FromForm(pForm As FormData, pOwnsForm As Boolean = False) As HttpBody
    ' pOwnsForm True: Dispose frees the FormData.
 
@@ -334,7 +356,7 @@ Function StringToBytes(pText As String) As Variant
 Built by `HttpClient`; also constructible for a custom transport.
 
 ```basic
-Sub New(pMethod As HttpMethod, pUrl As String, pHeaders As HttpHeaders, pBody As HttpBody, pCertificate As TCertificate, pTimeout As Integer, pFollowRedirects As Boolean = True)
+Sub New(pMethod As HttpMethod, pUrl As String, pHeaders As HttpHeaders, pBody As HttpBody, pCertificate As TCertificate, pTimeout As Integer, pFollowRedirects As Boolean = True, pWantText As Boolean = True)
 ```
 
 | Member | Default / ownership |
@@ -343,6 +365,7 @@ Sub New(pMethod As HttpMethod, pUrl As String, pHeaders As HttpHeaders, pBody As
 | `Url` | constructor |
 | `Timeout` | `10000` if not set |
 | `FollowRedirects` | `True` if not set; transports must honor this |
+| `WantText` | `True` if not set; WinHTTP/CURL skip `ResponseText` when False |
 | `Headers` | constructor; **freed** on `Dispose` |
 | `Body` | constructor; **not** freed |
 | `Certificate` | constructor; **not** freed |
@@ -363,8 +386,11 @@ Sub New(pStatus As Integer, pStatusText As String, pHeaders As String, pBodyText
 | `Status` | HTTP status |
 | `StatusText` | Reason phrase |
 | `IsSuccessful` | `Status >= 200 And Status < 300` |
-| `Headers` | Parsed response headers |
+| `IsResumeIncomplete` | `Status = 308` |
+| `Headers` | Parsed response headers (names case-insensitive) |
 | `ContentType` | From `Content-Type` header (may be `""`) |
+| `ContentLength` | Integer 32-bit; values that do not fit become `0` |
+| `ContentLengthText` | Raw `Content-Length` header (or body-text length). Use this for sizes above 2 GiB. |
 | `Body` | `HttpResponseData` |
 | `Data` | Same object as `Body` |
 
@@ -383,9 +409,12 @@ Sub New(pStatus As Integer, pStatusText As String, pHeaders As String, pBodyText
 | `Raw()` | Original payload (`Variant`; string or bytes depending on transport) |
 
 ```basic
-Function SaveToFile(pPath As String, pOverWrite As Boolean = True) As String
-   ' String payload: UTF-8 text stream. Else binary ADODB.Stream.
-   ' pOverWrite True -> SaveToFile mode 2; False -> mode 1 (fail if exists).
+Function SaveToFile(pPath As String, pOverWrite As Boolean = True, pAppend As Boolean = False) As String
+   ' text/*, json, xml, html, javascript String: UTF-8.
+   ' Other String payloads (typical binary mocked as latin-1): iso-8859-1 then binary write.
+   ' Non-String: binary ADODB.Stream.Write.
+   ' pAppend True: LoadFromFile if dest exists, then write, then overwrite save.
+   ' pOverWrite True -> SaveToFile mode 2; False -> mode 1 (fail if exists), unless appending.
    ' Returns pPath. Throws "Failed to save response to file: …".
 ```
 
@@ -400,7 +429,7 @@ Overridable Function Send(pReq As HttpRequest) As HttpResponse
 
 ### `WinHttpTransport`
 
-`WinHttp.WinHttpRequest.5.1`, synchronous `Open`. Timeouts: all four WinHttp slots = `pReq.Timeout`.
+`WinHttp.WinHttpRequest.5.1`, synchronous `Open`. Timeouts: all four WinHttp slots = `pReq.Timeout`. The same COM object is reused across `Send` calls on one transport (keep-alive). It is recreated after a failed request.
 
 Client certificate:
 
@@ -409,7 +438,16 @@ Client certificate:
 3. If none succeed and (`Path <> ""` or `Locator` is non-blank), throw `"Não foi possível selecionar o certificado do cliente no WinHttp. Locator=" & Locator & " Name=" & Name`.
 4. If `Use` is False, or no path/locator, certificate setup is a no-op.
 
-Send: `Body.Raw()` — non-empty `Array` or non-blank `String` is passed to `Send`; otherwise `Send()` with no payload. Failures wrap as `"Request failed: " & message & CHAR(13) & "URL: " & url`.
+Send:
+
+- `Body.IsStream`: `Position = 0` then `Send` the ADODB stream object (IStream). Does **not** `Read()`, does **not** write a temp file, does **not** Close the caller's stream.
+- `Body.IsFile`: `ADODB.Stream` `LoadFromFile` then `Send` the stream object (IStream), never a BSTR.
+- `Body.IsBytes`: copy into a binary `ADODB.Stream` (latin-1 if `Raw()` is a `String`) and `Send` the stream object. Do **not** `Send(stream.Read)` — Data7 often turns that into a `String` and WinHTTP recodes RAR/ZIP/PDF. Prefer `FromStream` for large binaries.
+- Else `Body.Raw()`: non-empty `Array` or non-blank `String` is passed to `Send`; otherwise `Send()` with no payload.
+
+When `WantText` is False, `ResponseText` is not read (empty `Body.AsText`); `ResponseBody` is still assigned to `Raw()`.
+
+Failures wrap as `"Request failed: " & message & CHAR(13) & "URL: " & url`.
 
 ### `CurlTransport`
 
@@ -417,8 +455,12 @@ Builds a `mod_curl.Curl` per `Send`: `Method = Verb`, `Url`, `TimeoutMs = Timeou
 
 - Multipart: does not forward the request `Content-Type` header (curl sets the multipart boundary).
 - Form files: path from `Value`, or a temp file from `ValueRaw` (tracked on the curl helper).
+- Stream: temp file from `SaveToFile` + `AddDataBinaryFile` (`curl.exe` cannot consume an IStream).
+- File: `AddDataBinaryFile(FilePath)` (no Variant round-trip).
 - Bytes: temp file + `AddDataBinaryFile`.
 - Text/json: `AddBody` when trimmed text is non-empty.
+
+When `WantText` is False, `curlOut.ResponseText` is not copied (`AsText` empty); `ResponseData` still fills `Raw()`.
 
 Same `"Request failed: …"` wrapper. Temp files are released with the curl helper.
 
@@ -427,7 +469,7 @@ Same `"Request failed: …"` wrapper. Temp files are released with the curl help
 Native `THTTP`. Throws before send when:
 
 - Verb is not `GET` / `POST` / `PUT` (message includes the verb; `"Use WinHttp or Curl."`).
-- Body `IsBytes` or `IsForm`.
+- Body `IsBytes`, `IsForm`, `IsFile`, or `IsStream`.
 - `Certificate.Use` and (`Locator` or `Path` is non-empty).
 
 Maps `Accept` and `Content-Type` onto `THTTP`; other headers via `AddCustomHeader("Name: value")`. Response headers exposed here are only `Content-Type` when native `ContentType <> ""`. `StatusText` is `"OK"` for 200..299, else `"Error"`. Body prefers `native.ResponseText` when non-empty, else the Get/Post/Put return value.
@@ -441,7 +483,7 @@ Maps `Accept` and `Content-Type` onto `THTTP`; other headers via `AddCustomHeade
 | `DefaultHeaders` | `"Content-Type: application/json"` |
 | `DefaultBody` | `"{}"` |
 | `CallCount` | `0` |
-| `LastMethod` / `LastUrl` / `LastHeadersText` / `LastBodyText` / `LastTimeout` | last `Send` |
+| `LastMethod` / `LastUrl` / `LastHeadersText` / `LastBodyText` / `LastTimeout` / `LastFollowRedirects` / `LastWantText` | last `Send` |
 
 ```basic
 Sub Enqueue(pStatus As Integer, pBody As String, pHeaders As String = "Content-Type: application/json", pStatusText As String = "OK")
@@ -450,6 +492,35 @@ Sub Enqueue(pStatus As Integer, pBody As String, pHeaders As String = "Content-T
 `Send`: increment `CallCount`, record verb/url/headers/`Body.AsText()` (empty for form/bytes)/timeout. If the queue is non-empty, dequeue FIFO; else use defaults. Response `pBodyData` is the same string as `pBody`. Never throws.
 
 `LastBodyText` for multipart/bytes is `""` because `HttpBody.AsText` returns `""` for those kinds.
+
+## Range (RFC 7233)
+
+```basic
+HttpRange.Download(start, endInclusive)     ' bytes=0-8388607
+HttpRange.ContentRange(start, endInclusive, total)  ' bytes 0-8388607/221421568
+HttpRange.ResumeProbe(total)                ' bytes */221421568
+HttpRange.ParseEnd("bytes 0-4/10")          ' 4
+HttpRange.ParseTotal("bytes 0-4/10")        ' 10
+HttpRange.DefaultChunkBytes()               ' 8388608
+```
+
+Use `Int64` offsets. `ParseTotal` returns `-1` when the total is missing or `*`.
+
+## Download to file
+
+```basic
+Imports http_download
+Imports http_download_options
+
+Dim options As New HttpDownloadOptions()
+options.DestinationPath = destPath
+options.ChunkSizeBytes = HttpRange.DefaultChunkBytes()
+options.TotalBytes = totalBytes   ' optional; Content-Range / Content-Length fill it
+options.OnProgress = me.OnDownloadProgress
+HttpDownload.ToFile(client, "/files/id?alt=media", options)
+```
+
+Sets `WantText = False` for the GETs and restores the previous value. Issues `Range` on a **request copy**. Pause/cancel stay in the consumer (Drive). Default chunk 8 MiB — still one `ResponseBody` per GET in RAM.
 
 ## Interceptors
 
@@ -564,12 +635,13 @@ No UI types are registered by this module. `HttpCallback` is the only Forms-rela
 
 ## Tests
 
-- `tests.THttpTest.RunAll()` — enums, URL join/encode, headers/params (including `Content-Range` strings), `FollowRedirects` copied onto the request, body, form, `TCertificate` defaults, curl dump-header parse (redirect uses last status), `HttpResponse`, mock GET/POST/queue/last-request, Bearer/Basic, interceptor 401 replace, subclass hooks, factories (`Http.Mock`, `Http.FromTransport`).
+- `tests.THttpTest.RunAll()` — enums, URL join/encode, headers/params (including `Content-Range` strings, case-insensitive names, `Define` Int64), `FollowRedirects` / `WantText` copied onto the request, extra headers without mutating the session, retry 503 then 200 and no-retry on 308, `HttpRange`, `ContentLengthText`, ranged `HttpDownload.ToFile`, body (including `FromFile`/`FromStream`), form, `TCertificate` defaults, curl dump-header parse (redirect uses last status), `HttpResponse`, mock GET/POST/queue/last-request, Bearer/Basic, interceptor 401 replace, subclass hooks, factories (`Http.Mock`, `Http.FromTransport`).
 - `tests_live.THttpLiveTest.RunAll()` — optional network: `Http.WinHttp` and `Http.Curl` GET `https://httpbin.org/get`. Not part of `THttpTest.RunAll`.
 
 ## Module Notes
 
-- `HttpClient` owns `Headers`, `Params`, `Certificate`, interceptor list, and `Transport` when `pOwnsTransport` is True (all facade factories).
+- `HttpClient` owns `Headers`, `Params`, `Certificate`, interceptor list, and `Transport` when `pOwnsTransport` is True (all facade factories). Extra headers are joined onto the per-request copy only.
+- `RetryCount` default `0`. Retries 429/500/502/503/504 only; honors `Retry-After` delta-seconds; does not retry `308`.
 - `HttpRequest.Dispose` frees only the header copy. `Body` and `Certificate` stay with the caller / client.
 - `HttpBody.FromForm(..., False)` (client overloads) does not take ownership of `FormData`.
 - `FormData.Entries()` is the live internal `StringList`; `Keys()` / `GetAll()` allocate new lists.

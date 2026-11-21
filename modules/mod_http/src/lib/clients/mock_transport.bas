@@ -40,6 +40,7 @@ Namespace http_mock
       LastBodyText As String
       LastTimeout As Integer
       LastFollowRedirects As Boolean
+      LastWantText As Boolean
       CallCount As Integer = 0
 
       Private _queue As StringList
@@ -66,6 +67,7 @@ Namespace http_mock
          End If
          me.LastTimeout = pReq.Timeout
          me.LastFollowRedirects = pReq.FollowRedirects
+         me.LastWantText = pReq.WantText
 
          Dim status As Integer = me.DefaultStatus
          Dim statusText As String = me.DefaultStatusText

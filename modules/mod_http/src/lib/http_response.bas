@@ -2,6 +2,7 @@ Imports Collections
 Imports http_headers
 Imports mod_strings
 Imports mod_tobject
+Imports TFile
 
 Namespace http_response
 
@@ -73,31 +74,77 @@ Namespace http_response
          Raw = me._data
       End Function
 
-      Function SaveToFile(pPath As String, pOverWrite As Boolean = True) As String
+      Function SaveToFile(pPath As String, pOverWrite As Boolean = True, pAppend As Boolean = False) As String
+         Dim destStream As Variant
+         Dim loadExisting As Boolean = False
          Try
-            Dim stream As Variant = CreateObject("ADODB.Stream")
-            With stream
-               .Open()
-               If TypeName(me._data) = "String" Then
-                  .Type = 2
-                  .CharSet = "utf-8"
-                  .WriteText(me._data)
-               Else
-                  .Type = 1
-                  .Write(me._data)
-               End If
-               If pOverWrite Then
-                  .SaveToFile(pPath, 2)
-               Else
-                  .SaveToFile(pPath, 1)
-               End If
-               .Close()
-            End With
-            stream = ""
+            destStream = CreateObject("ADODB.Stream")
+            destStream.Type = 1
+            destStream.Open()
+            loadExisting = pAppend And TFile.Exists(pPath)
+            If loadExisting Then
+               destStream.LoadFromFile(pPath)
+               destStream.Position = destStream.Size
+            End If
+            me.WritePayload(destStream)
+            If loadExisting Or pOverWrite Then
+               destStream.SaveToFile(pPath, 2)
+            Else
+               destStream.SaveToFile(pPath, 1)
+            End If
+            destStream.Close()
+            destStream = Unassigned
             SaveToFile = pPath
          Catch ex As Exception
             Throw New Exception("Failed to save response to file: " & ex._GetMessage())
          End Try
+      End Function
+
+      Private Sub WritePayload(pDestStream As Variant)
+         Dim textStream As Variant
+         Dim chunkBytes As Variant
+         If TypeName(me._data) = "String" Then
+            If me.IsTextualContent() Then
+               textStream = CreateObject("ADODB.Stream")
+               textStream.Type = 2
+               textStream.Charset = "utf-8"
+               textStream.Open()
+               textStream.WriteText(me._data)
+               textStream.Position = 0
+               textStream.Type = 1
+               If textStream.Size > 0 Then
+                  chunkBytes = textStream.Read
+                  pDestStream.Write(chunkBytes)
+               End If
+               textStream.Close()
+               textStream = Unassigned
+            Else
+               textStream = CreateObject("ADODB.Stream")
+               textStream.Type = 2
+               textStream.Charset = "iso-8859-1"
+               textStream.Open()
+               textStream.WriteText(me._data)
+               textStream.Position = 0
+               textStream.Type = 1
+               If textStream.Size > 0 Then
+                  chunkBytes = textStream.Read
+                  pDestStream.Write(chunkBytes)
+               End If
+               textStream.Close()
+               textStream = Unassigned
+            End If
+         Else
+            pDestStream.Write(me._data)
+         End If
+      End Sub
+
+      Private Function IsTextualContent() As Boolean
+         Dim raw As String = LCase(Trim(me._contentType))
+         If raw = "" Then
+            IsTextualContent = False
+            Exit Function
+         End If
+         IsTextualContent = raw.StartsWith("text/") Or raw.Contains("json") Or raw.Contains("xml") Or raw.Contains("javascript") Or raw.Contains("html")
       End Function
 
       Overrides Function ToString() As String
@@ -150,6 +197,7 @@ Namespace http_response
       Private _statusText As String
       Private _contentType As String
       Private _contentLength As Integer
+      Private _contentLengthText As String
       Private _data As HttpResponseData
       Private _headers As HttpHeaders
 
@@ -157,13 +205,16 @@ Namespace http_response
          MyBase.New()
          me._status = pStatus
          me._statusText = pStatusText
+         me._contentLengthText = ""
          me._headers = New HttpHeaders(pHeaders)
          If me._headers.Has("Content-Type") Then
             me._contentType = me._headers.Value("Content-Type")
          End If
          If me._headers.Has("Content-Length") Then
-            me._contentLength = me.ParseContentLength(me._headers.Value("Content-Length"))
+            me._contentLengthText = Trim(me._headers.Value("Content-Length"))
+            me._contentLength = me.ParseContentLength(me._contentLengthText)
          Else
+            me._contentLengthText = CStr(pBodyText.Length)
             me._contentLength = pBodyText.Length
          End If
          me._data = New HttpResponseData(pBodyText, pBodyData, me._contentType, me._contentLength)
@@ -184,6 +235,24 @@ Namespace http_response
       Property IsSuccessful As Boolean
          Get
             IsSuccessful = me._status >= 200 And me._status < 300
+         End Get
+      End Property
+
+      Property IsResumeIncomplete As Boolean
+         Get
+            IsResumeIncomplete = me._status = 308
+         End Get
+      End Property
+
+      Property ContentLengthText As String
+         Get
+            ContentLengthText = me._contentLengthText
+         End Get
+      End Property
+
+      Property ContentLength As Integer
+         Get
+            ContentLength = me._contentLength
          End Get
       End Property
 

@@ -42,6 +42,12 @@ Namespace http_curl
             If Assigned(pReq.Body) And Not pReq.Body.IsEmpty Then
                If pReq.Body.IsForm Then
                   me.AddFormParts(curlCli, pReq.Body.Form)
+               ElseIf pReq.Body.IsStream Then
+                  Dim streamPath As String = me.WriteTempStream(pReq.Body.Raw())
+                  curlCli.TrackTemp(streamPath)
+                  curlCli.AddDataBinaryFile(streamPath)
+               ElseIf pReq.Body.IsFile Then
+                  curlCli.AddDataBinaryFile(pReq.Body.FilePath)
                ElseIf pReq.Body.IsBytes Then
                   Dim binPath As String = me.WriteTempBytes(pReq.Body.Raw())
                   curlCli.TrackTemp(binPath)
@@ -55,7 +61,11 @@ Namespace http_curl
             End If
 
             curlOut = curlCli.Exec()
-            Send = New HttpResponse(curlOut.StatusCode, curlOut.StatusText, curlOut.Headers.Text, curlOut.ResponseText, curlOut.ResponseData)
+            Dim _bodyText As String = ""
+            If pReq.WantText Then
+               _bodyText = curlOut.ResponseText
+            End If
+            Send = New HttpResponse(curlOut.StatusCode, curlOut.StatusText, curlOut.Headers.Text, _bodyText, curlOut.ResponseData)
             me.ReleaseCurl(curlCli, curlOut)
          Catch ex As Exception
             me.ReleaseCurl(curlCli, curlOut)
@@ -98,6 +108,16 @@ Namespace http_curl
             End If
          Next
       End Sub
+
+      Private Function WriteTempStream(pStream As Variant) As String
+         Dim fso As Variant = CreateObject("Scripting.FileSystemObject")
+         Dim path As String = fso.GetSpecialFolder(2) & "\" & fso.GetTempName
+         fso = Unassigned
+         pStream.Position = 0
+         pStream.SaveToFile(path, 2)
+         pStream.Position = 0
+         WriteTempStream = path
+      End Function
 
       Private Function WriteTempBytes(pData As Variant) As String
          Dim fso As Variant = CreateObject("Scripting.FileSystemObject")

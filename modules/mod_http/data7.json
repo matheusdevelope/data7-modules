@@ -1,11 +1,11 @@
 {
   "nome": "mod_http",
   "language": "Basic",
-  "version": "2.0.0.1",
+  "version": "2.1.0.0",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
-    "versao": "2.0.0.1",
+    "versao": "2.1.0.0",
     "informacoes": "Lib HTTP com transports pluggáveis (WinHttp, CURL, Data7, Mock)\n",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -52,7 +52,7 @@
   },
   "virtualFolders": [
     {
-      "nome": "Unidades (41)",
+      "nome": "Unidades (45)",
       "id": "{1F241EF3-1E14-436D-8374-B5C8F126C988}",
       "pastaId": "",
       "aberta": "Sim"
@@ -169,7 +169,7 @@
   "modulesMetadata": {
     "curl_transport": {
       "nome": "curl_transport",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{1A9E4B56-2C70-4F18-8D33-9E6A0C5B7D12}"
     },
@@ -197,6 +197,18 @@
       "ordemAbertura": 0,
       "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
     },
+    "http_download": {
+      "nome": "http_download",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_download_options": {
+      "nome": "http_download_options",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
     "http_enums": {
       "nome": "http_enums",
       "aberto": false,
@@ -211,19 +223,31 @@
     },
     "http_headers": {
       "nome": "http_headers",
-      "aberto": true,
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_progress": {
+      "nome": "http_progress",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
+    },
+    "http_range": {
+      "nome": "http_range",
+      "aberto": false,
       "ordemAbertura": 0,
       "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
     },
     "http_request": {
       "nome": "http_request",
-      "aberto": true,
+      "aberto": false,
       "ordemAbertura": 0,
       "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
     },
     "http_response": {
       "nome": "http_response",
-      "aberto": true,
+      "aberto": false,
       "ordemAbertura": 0,
       "pastaId": "{8F3A1C20-6B47-4D91-A2E8-5C7D9B1E4F03}"
     },
@@ -253,7 +277,7 @@
     },
     "http_test_harness": {
       "nome": "http_test_harness",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{9C4D1E70-3B28-4F52-9A16-8D5C0E2F7B41}"
     }

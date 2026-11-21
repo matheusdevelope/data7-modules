@@ -21,6 +21,9 @@ Namespace http_client
       BaseUrl As String
       Timeout As Integer = 10000
       FollowRedirects As Boolean = True
+      WantText As Boolean = True
+      RetryCount As Integer = 0
+      RetryBaseDelayMs As Integer = 1000
       ReadOnly Headers As HttpHeaders
       ReadOnly Params As HttpParams
       ReadOnly Certificate As TCertificate
@@ -45,6 +48,9 @@ Namespace http_client
          me.Accept = "application/json"
          me.UserAgent = "Data7/1.0"
          me.FollowRedirects = True
+         me.WantText = True
+         me.RetryCount = 0
+         me.RetryBaseDelayMs = 1000
       End Sub
 
       Property Transport As IHttpTransport
@@ -125,14 +131,44 @@ Namespace http_client
       End Function
 
       Function Request(pMethod As HttpMethod, pEndpoint As String, pBody As HttpBody) As HttpResponse
-         Dim req As HttpRequest = me.BuildRequest(pMethod, pEndpoint, pBody)
-         me.OnRequest(req)
+         Request = me.Request(pMethod, pEndpoint, pBody, Null)
+      End Function
+
+      Function Request(pMethod As HttpMethod, pEndpoint As String, pExtra As HttpHeaders) As HttpResponse
+         Dim emptyBody As HttpBody = New HttpBody()
+         Dim result As HttpResponse = me.Request(pMethod, pEndpoint, emptyBody, pExtra)
+         emptyBody.Free()
+         Request = result
+      End Function
+
+      Function Request(pMethod As HttpMethod, pEndpoint As String, pBody As HttpBody, pExtra As HttpHeaders) As HttpResponse
+         Dim req As HttpRequest = me.BuildRequest(pMethod, pEndpoint, pBody, pExtra)
          Dim i As Integer
          Dim n As Integer = me._interceptors.Length
+         Dim res As HttpResponse = Null
+         Dim attempt As Integer = 0
+         Dim maxTries As Integer = me.RetryCount + 1
+         If maxTries < 1 Then
+            maxTries = 1
+         End If
+         me.OnRequest(req)
          For i = 0 To n - 1
             me._interceptors.Take(i).OnRequest(req)
          Next
-         Dim res As HttpResponse = me._transport.Send(req)
+         While attempt < maxTries
+            If Assigned(res) Then
+               res.Free()
+               res = Null
+            End If
+            res = me._transport.Send(req)
+            If Not me.ShouldRetry(res.Status) Then
+               Exit While
+            End If
+            attempt = attempt + 1
+            If attempt < maxTries Then
+               me.Backoff(res, attempt)
+            End If
+         End While
          res = me.AfterRequest(req, res)
          For i = 0 To n - 1
             res = me._interceptors.Take(i).AfterRequest(req, res)
@@ -143,6 +179,10 @@ Namespace http_client
 
       Function Gett(pEndpoint As String = "") As HttpResponse
          Gett = me.Request(HttpMethod.Gett(), pEndpoint)
+      End Function
+
+      Function Gett(pEndpoint As String, pExtra As HttpHeaders) As HttpResponse
+         Gett = me.Request(HttpMethod.Gett(), pEndpoint, pExtra)
       End Function
 
       Function Post(pEndpoint As String) As HttpResponse
@@ -175,6 +215,10 @@ Namespace http_client
 
       Function Put(pEndpoint As String, pBody As HttpBody) As HttpResponse
          Put = me.Request(HttpMethod.Put(), pEndpoint, pBody)
+      End Function
+
+      Function Put(pEndpoint As String, pBody As HttpBody, pExtra As HttpHeaders) As HttpResponse
+         Put = me.Request(HttpMethod.Put(), pEndpoint, pBody, pExtra)
       End Function
 
       Function Put(pEndpoint As String, pBody As String) As HttpResponse
@@ -217,7 +261,7 @@ Namespace http_client
          Delete = me.Request(HttpMethod.Delete(), pEndpoint, pBody)
       End Function
 
-      Private Function BuildRequest(pMethod As HttpMethod, pEndpoint As String, pBody As HttpBody) As HttpRequest
+      Private Function BuildRequest(pMethod As HttpMethod, pEndpoint As String, pBody As HttpBody, pExtra As HttpHeaders) As HttpRequest
          Dim headers As HttpHeaders = me.Headers.Copy()
          Dim body As HttpBody
          If Assigned(pBody) Then
@@ -234,9 +278,50 @@ Namespace http_client
          ElseIf body.ContentType <> "" Then
             headers.Define("Content-Type", body.ContentType)
          End If
+         If Assigned(pExtra) Then
+            headers.Join(pExtra)
+         End If
          Dim url As String = http_url.Build(me.BaseUrl, pEndpoint, me.Params)
-         BuildRequest = New HttpRequest(pMethod, url, headers, body, me.Certificate, me.Timeout, me.FollowRedirects)
+         BuildRequest = New HttpRequest(pMethod, url, headers, body, me.Certificate, me.Timeout, me.FollowRedirects, me.WantText)
       End Function
+
+      Function ShouldRetry(pStatus As Integer) As Boolean
+         ShouldRetry = (pStatus = 429) Or (pStatus = 500) Or (pStatus = 502) Or (pStatus = 503) Or (pStatus = 504)
+      End Function
+
+      Private Sub Backoff(pResponse As HttpResponse, pAttempt As Integer)
+         Dim delayMs As Integer = me.RetryBaseDelayMs
+         Dim retryAfter As String = ""
+         Dim i As Integer
+         If delayMs < 1 Then
+            delayMs = 1000
+         End If
+         If Assigned(pResponse) Then
+            If Assigned(pResponse.Headers) Then
+               If pResponse.Headers.Has("Retry-After") Then
+                  retryAfter = Trim(pResponse.Headers.Value("Retry-After"))
+               End If
+            End If
+         End If
+         If Trim(retryAfter) <> "" Then
+            Try
+               delayMs = CInt(CLng(retryAfter) * 1000)
+            Catch ex As Exception
+               delayMs = me.RetryBaseDelayMs
+               If delayMs < 1 Then
+                  delayMs = 1000
+               End If
+            End Try
+         Else
+            For i = 2 To pAttempt
+               delayMs = delayMs * 2
+            Next
+         End If
+         If delayMs < 1 Then
+            delayMs = 1
+         End If
+         Sleep(delayMs)
+      End Sub
 
       Sub Free()
          If me._ownsTransport And Assigned(me._transport) Then

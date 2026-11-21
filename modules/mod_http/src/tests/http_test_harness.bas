@@ -12,6 +12,11 @@ Imports http_response
 Imports http_interceptor
 Imports http_mock
 Imports http_transport
+Imports http_range
+Imports http_download
+Imports http_download_options
+Imports TFile
+Imports TPath
 
 Namespace tests
 
@@ -68,12 +73,14 @@ Namespace tests
       Passed As Integer
       Failed As Integer
       Private _failures As StringList
+      Private _progressTicks As Integer
 
       Sub New()
          MyBase.New()
          me.Passed = 0
          me.Failed = 0
          me._failures = New StringList()
+         me._progressTicks = 0
       End Sub
 
       Shared Sub RunAll()
@@ -103,6 +110,13 @@ Namespace tests
          me.TestReplace401()
          me.TestClientSubclassHooks()
          me.TestHttpFactories()
+         me.TestHeaderCaseAndInt64()
+         me.TestExtraHeaders()
+         me.TestWantText()
+         me.TestRetry()
+         me.TestHttpRange()
+         me.TestContentLengthText()
+         me.TestDownloadToFile()
          me.PrintSummary()
       End Sub
 
@@ -229,6 +243,19 @@ Namespace tests
          Dim jsonBody As HttpBody = HttpBody.FromJson("{id:1}")
          me.AssertEqBool(jsonBody.IsJson, True, "FromJson")
          jsonBody.Free()
+         Dim diskBody As HttpBody = HttpBody.FromFile("C:\temp\chunk.bin", "application/octet-stream")
+         me.AssertEqBool(diskBody.IsFile, True, "FromFile kind")
+         me.AssertEq(diskBody.FilePath, "C:\temp\chunk.bin", "FromFile path")
+         diskBody.Free()
+         Dim binStream As Variant = CreateObject("ADODB.Stream")
+         binStream.Type = 1
+         binStream.Open()
+         Dim streamBody As HttpBody = HttpBody.FromStream(binStream, "application/octet-stream")
+         me.AssertEqBool(streamBody.IsStream, True, "FromStream kind")
+         me.AssertTrue(TypeName(streamBody.Raw()) <> "Empty", "FromStream payload")
+         streamBody.Free()
+         binStream.Close()
+         binStream = Unassigned
       End Sub
 
       Sub TestFormData()
@@ -411,6 +438,125 @@ Namespace tests
          me.AssertTrue(client.LastUrl.Contains("/hooked"), "hook saw url")
          me.AssertTrue(transport.LastHeadersText.Contains("X-Hook"), "hook header")
          res.Free()
+         client.Free()
+      End Sub
+
+      Sub CountDownloadProgress(pBytesReceived As Int64, pTotalBytes As Int64)
+         me._progressTicks = me._progressTicks + 1
+      End Sub
+
+      Sub TestHeaderCaseAndInt64()
+         print("-- header case and int64")
+         Dim headers As New HttpHeaders()
+         headers.Define("Content-Type", "application/octet-stream")
+         me.AssertEqBool(headers.Has("content-type"), True, "Has case-insensitive")
+         me.AssertEq(headers.Value("CONTENT-TYPE"), "application/octet-stream", "Value case-insensitive")
+         Dim sizeValue As Int64 = HttpRange.ParseInt64("5497558138880")
+         ' data7:disable-next-line type-mismatch
+         headers.Define("X-Size", sizeValue)
+         me.AssertEq(headers.Value("X-Size"), "5497558138880", "Define Int64")
+         headers.Free()
+      End Sub
+
+      Sub TestExtraHeaders()
+         print("-- extra headers")
+         Dim client As HttpClient = Http.Mock()
+         client.Headers.Define("X-App", "erp")
+         Dim extra As New HttpHeaders()
+         extra.Define("Range", "bytes=0-7")
+         Dim res As HttpResponse = client.Gett("/bin", extra)
+         Dim recorded As MockTransport = MockTransport(client.Transport)
+         me.AssertTrue(recorded.LastHeadersText.Contains("Range"), "request has Range")
+         me.AssertTrue(recorded.LastHeadersText.Contains("X-App"), "request keeps session header")
+         me.AssertEqBool(client.Headers.Has("Range"), False, "session headers unchanged")
+         extra.Free()
+         res.Free()
+         client.Free()
+      End Sub
+
+      Sub TestWantText()
+         print("-- want text")
+         Dim client As HttpClient = Http.Mock()
+         me.AssertEqBool(client.WantText, True, "WantText default")
+         Dim res As HttpResponse = client.Gett("/json")
+         Dim recorded As MockTransport = MockTransport(client.Transport)
+         me.AssertEqBool(recorded.LastWantText, True, "request WantText true")
+         res.Free()
+         client.WantText = False
+         Dim binaryRes As HttpResponse = client.Gett("/bin")
+         me.AssertEqBool(recorded.LastWantText, False, "request WantText false")
+         binaryRes.Free()
+         client.Free()
+      End Sub
+
+      Sub TestRetry()
+         print("-- retry")
+         Dim transport As New MockTransport()
+         transport.Enqueue(503, "busy", "Retry-After: 0", "Service Unavailable")
+         transport.Enqueue(200, "{ok:1}")
+         Dim client As HttpClient = Http.FromTransport(transport)
+         client.RetryCount = 2
+         client.RetryBaseDelayMs = 1
+         Dim res As HttpResponse = client.Gett("/flaky")
+         me.AssertEqInt(res.Status, 200, "retry then 200")
+         me.AssertEqInt(transport.CallCount, 2, "retried once")
+         res.Free()
+         client.Free()
+         Dim resumeTransport As New MockTransport()
+         resumeTransport.Enqueue(308, "", "Range: bytes=0-5")
+         Dim resumeClient As HttpClient = Http.FromTransport(resumeTransport)
+         resumeClient.RetryCount = 3
+         resumeClient.RetryBaseDelayMs = 1
+         Dim incomplete As HttpResponse = resumeClient.Gett("/upload")
+         me.AssertEqBool(incomplete.IsResumeIncomplete, True, "308 is resume incomplete")
+         me.AssertEqInt(resumeTransport.CallCount, 1, "308 is not retried")
+         incomplete.Free()
+         resumeClient.Free()
+      End Sub
+
+      Sub TestHttpRange()
+         print("-- http range")
+         Dim startOff As Int64 = HttpRange.Zero64()
+         Dim endOff As Int64 = HttpRange.FromInteger(7)
+         Dim total As Int64 = HttpRange.FromInteger(100)
+         me.AssertEq(HttpRange.Download(startOff, endOff), "bytes=0-7", "download range")
+         me.AssertEq(HttpRange.ContentRange(startOff, endOff, total), "bytes 0-7/100", "content-range")
+         me.AssertEq(HttpRange.ResumeProbe(total), "bytes */100", "resume probe")
+         me.AssertEq(HttpRange.ParseEnd("bytes 0-5").ToString(), "5", "parse end")
+         me.AssertEq(HttpRange.ParseEnd("bytes 0-4/10").ToString(), "4", "parse end with total")
+         me.AssertEq(HttpRange.ParseTotal("bytes 0-4/10").ToString(), "10", "parse total")
+      End Sub
+
+      Sub TestContentLengthText()
+         print("-- content length text")
+         Dim res As New HttpResponse(200, "OK", "Content-Length: 5497558138880", "", "")
+         me.AssertEq(res.ContentLengthText, "5497558138880", "ContentLengthText keeps Int64")
+         me.AssertEqInt(res.ContentLength, 0, "ContentLength Integer overflows to 0")
+         res.Free()
+      End Sub
+
+      Sub TestDownloadToFile()
+         print("-- download to file")
+         Dim transport As New MockTransport()
+         transport.Enqueue(206, "HELLO", "Content-Range: bytes 0-4/10" & CHAR(13) & CHAR(10) & "Content-Type: application/octet-stream")
+         transport.Enqueue(206, "WORLD", "Content-Range: bytes 5-9/10" & CHAR(13) & CHAR(10) & "Content-Type: application/octet-stream")
+         Dim client As HttpClient = Http.FromTransport(transport)
+         Dim dest As String = TPath.GetTempFileName()
+         Dim options As New HttpDownloadOptions()
+         options.DestinationPath = dest
+         options.ChunkSizeBytes = 5
+         options.TotalBytes = HttpRange.FromInteger(10)
+         me._progressTicks = 0
+         options.OnProgress = me.CountDownloadProgress
+         Dim saved As String = HttpDownload.ToFile(client, "/file.bin", options)
+         me.AssertEq(saved, dest, "download path")
+         me.AssertEq(TFile.ReadAllText(dest), "HELLOWORLD", "ranged body")
+         me.AssertTrue(me._progressTicks > 0, "download progress")
+         me.AssertEqBool(client.WantText, True, "WantText restored")
+         If TFile.Exists(dest) Then
+            TFile.Delete(dest)
+         End If
+         options.Free()
          client.Free()
       End Sub
 

@@ -23,7 +23,7 @@ Namespace http_winhttp
                End If
             End If
 
-            me._http = CreateObject("WinHttp.WinHttpRequest.5.1")
+            me.EnsureWinHttp()
             me._http.Open(pReq.Verb.ToUpper(), pReq.Url, False)
             me.ApplyRedirectPolicy(pReq)
             me.ApplyClientCertificate(pReq)
@@ -31,44 +31,135 @@ Namespace http_winhttp
             me._http.SetTimeouts(pReq.Timeout, pReq.Timeout, pReq.Timeout, pReq.Timeout)
 
             Dim i As Integer
-            Dim count As Integer = pReq.Headers.Count
-            For i = 0 To count - 1
+            Dim headerCount As Integer = pReq.Headers.Count
+            For i = 0 To headerCount - 1
                me._http.SetRequestHeader(pReq.Headers.Name(i), pReq.Headers.Value(i))
             Next
 
-            Dim payload As Variant
-            If Assigned(pReq.Body) Then
-               payload = pReq.Body.Raw()
-            Else
-               payload = ""
-            End If
-            If TypeName(payload) = "Array" Then
-               If Not IsEmpty(payload) Then
-                  me._http.Send(payload)
-               Else
-                  me._http.Send()
-               End If
-            ElseIf TypeName(payload) = "String" Then
-               If Trim(payload) <> "" Then
-                  me._http.Send(payload)
-               Else
-                  me._http.Send()
-               End If
-            Else
-               me._http.Send()
-            End If
+            me.SendBody(pReq)
 
             Dim statusCode As Integer = me._http.Status
             Dim statusText As String = me._http.StatusText
             Dim headersText As String = me._http.GetAllResponseHeaders
-            Dim bodyText As String = me._http.ResponseText
-            Dim bodyData As Variant = me._http.ResponseBody
-            me._http = ""
+            Dim bodyText As String = ""
+            Dim bodyData As Variant
+            If pReq.WantText Then
+               bodyText = me._http.ResponseText
+            End If
+            bodyData = me._http.ResponseBody
             Send = New HttpResponse(statusCode, statusText, headersText, bodyText, bodyData)
          Catch ex As Exception
+            me.ResetWinHttp()
             Throw New Exception("Request failed: " & ex._GetMessage() & CHAR(13) & "URL: " & pReq.Url)
          End Try
       End Function
+
+      Private Sub EnsureWinHttp()
+         Dim kind As String = TypeName(me._http)
+         If (kind = "Empty") Or (kind = "Null") Or (kind = "Unassigned") Or (kind = "String") Then
+            me._http = CreateObject("WinHttp.WinHttpRequest.5.1")
+         End If
+      End Sub
+
+      Private Sub ResetWinHttp()
+         me._http = Unassigned
+      End Sub
+
+      Private Sub SendBody(pReq As HttpRequest)
+         If Not Assigned(pReq.Body) Then
+            me._http.Send()
+            Exit Sub
+         End If
+         If pReq.Body.IsStream Then
+            me.SendBinaryStream(pReq.Body.Raw())
+            Exit Sub
+         End If
+         If pReq.Body.IsFile Then
+            me.SendBinaryFile(pReq.Body.FilePath)
+            Exit Sub
+         End If
+         If pReq.Body.IsBytes Then
+            me.SendBinary(pReq.Body.Raw())
+            Exit Sub
+         End If
+         Dim payload As Variant = pReq.Body.Raw()
+         If TypeName(payload) = "Array" Then
+            If Not IsEmpty(payload) Then
+               me._http.Send(payload)
+            Else
+               me._http.Send()
+            End If
+            Exit Sub
+         End If
+         If TypeName(payload) = "String" Then
+            If Trim(payload) <> "" Then
+               me._http.Send(payload)
+            Else
+               me._http.Send()
+            End If
+            Exit Sub
+         End If
+         me._http.Send()
+      End Sub
+
+      Private Sub SendBinary(pData As Variant)
+         Dim binStream As Variant = CreateObject("ADODB.Stream")
+         binStream.Type = 1
+         binStream.Open()
+         If TypeName(pData) = "String" Then
+            Dim textStream As Variant = CreateObject("ADODB.Stream")
+            textStream.Type = 2
+            textStream.Charset = "iso-8859-1"
+            textStream.Open()
+            textStream.WriteText(pData)
+            textStream.Position = 0
+            textStream.Type = 1
+            If textStream.Size > 0 Then
+               binStream.Write(textStream.Read)
+            End If
+            textStream.Close()
+            textStream = Unassigned
+         ElseIf Not IsEmpty(pData) Then
+            binStream.Write(pData)
+         End If
+         binStream.Position = 0
+         If binStream.Size > 0 Then
+            me._http.Send(binStream)
+         Else
+            me._http.Send()
+         End If
+         binStream.Close()
+         binStream = Unassigned
+      End Sub
+
+      Private Sub SendBinaryStream(pStream As Variant)
+         Dim kind As String = TypeName(pStream)
+         If (kind = "Empty") Or (kind = "Null") Or (kind = "Unassigned") Then
+            me._http.Send()
+            Exit Sub
+         End If
+         pStream.Position = 0
+         If pStream.Size > 0 Then
+            me._http.Send(pStream)
+         Else
+            me._http.Send()
+         End If
+      End Sub
+
+      Private Sub SendBinaryFile(pPath As String)
+         Dim binStream As Variant = CreateObject("ADODB.Stream")
+         binStream.Type = 1
+         binStream.Open()
+         binStream.LoadFromFile(pPath)
+         binStream.Position = 0
+         If binStream.Size > 0 Then
+            me._http.Send(binStream)
+         Else
+            me._http.Send()
+         End If
+         binStream.Close()
+         binStream = Unassigned
+      End Sub
 
       Private Sub ApplyRedirectPolicy(pReq As HttpRequest)
          If pReq.FollowRedirects Then
@@ -94,7 +185,7 @@ Namespace http_winhttp
                me._http.SetClientCertificate(locators.Strings(i))
                locators.Free()
                Exit Sub
-            Catch
+            Catch ex As Exception
             End Try
          Next
          locators.Free()
@@ -104,7 +195,7 @@ Namespace http_winhttp
       End Sub
 
       Sub Free()
-         me._http = ""
+         me.ResetWinHttp()
          MyBase.Free()
       End Sub
 

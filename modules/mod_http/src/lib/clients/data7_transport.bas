@@ -17,7 +17,7 @@ Namespace http_data7
             Throw New Exception("Data7 THTTP does not support " & pReq.Verb & ". Use WinHttp or Curl.")
          End If
          If Assigned(pReq.Body) Then
-            If pReq.Body.IsBytes Or pReq.Body.IsForm Then
+            If pReq.Body.IsBytes Or pReq.Body.IsForm Or pReq.Body.IsFile Or pReq.Body.IsStream Then
                Throw New Exception("Data7 THTTP does not support binary or multipart bodies.")
             End If
          End If

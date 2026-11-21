@@ -9,15 +9,20 @@ Namespace http_body
       Private _kind As String
       Private _text As String
       Private _bytes As Variant
+      Private _filePath As String
+      Private _payloadStream As Variant
       Private _form As FormData
       Private _contentType As String
       Private _ownsForm As Boolean
+      Private _ownsStream As Boolean
 
       Sub New()
          MyBase.New()
          me._kind = "empty"
          me._contentType = ""
          me._ownsForm = False
+         me._ownsStream = False
+         me._payloadStream = Unassigned
       End Sub
 
       Shared Function FromText(pText As String, pContentType As String = "text/plain") As HttpBody
@@ -46,6 +51,23 @@ Namespace http_body
          body._bytes = pBytes
          body._contentType = pContentType
          FromBytes = body
+      End Function
+
+      Shared Function FromFile(pPath As String, pContentType As String = "application/octet-stream") As HttpBody
+         Dim body As New HttpBody()
+         body._kind = "file"
+         body._filePath = pPath
+         body._contentType = pContentType
+         FromFile = body
+      End Function
+
+      Shared Function FromStream(pStream As Variant, pContentType As String = "application/octet-stream", pOwnsStream As Boolean = False) As HttpBody
+         Dim body As New HttpBody()
+         body._kind = "stream"
+         body._payloadStream = pStream
+         body._ownsStream = pOwnsStream
+         body._contentType = pContentType
+         FromStream = body
       End Function
 
       Shared Function FromForm(pForm As FormData, pOwnsForm As Boolean = False) As HttpBody
@@ -99,6 +121,24 @@ Namespace http_body
          End Get
       End Property
 
+      Property IsFile As Boolean
+         Get
+            IsFile = me._kind = "file"
+         End Get
+      End Property
+
+      Property IsStream As Boolean
+         Get
+            IsStream = me._kind = "stream"
+         End Get
+      End Property
+
+      Property FilePath As String
+         Get
+            FilePath = me._filePath
+         End Get
+      End Property
+
       Property Form As FormData
          Get
             Form = me._form
@@ -111,6 +151,14 @@ Namespace http_body
             Exit Function
          End If
          If me._kind = "form" Then
+            AsText = ""
+            Exit Function
+         End If
+         If me._kind = "file" Then
+            AsText = ""
+            Exit Function
+         End If
+         If me._kind = "stream" Then
             AsText = ""
             Exit Function
          End If
@@ -129,6 +177,10 @@ Namespace http_body
             Raw = me._form.Data()
          ElseIf me._kind = "bytes" Then
             Raw = me._bytes
+         ElseIf me._kind = "file" Then
+            Raw = me._filePath
+         ElseIf me._kind = "stream" Then
+            Raw = me._payloadStream
          Else
             Raw = me._text
          End If
@@ -155,8 +207,24 @@ Namespace http_body
             me._form.Free()
             me._form = NULL
          End If
+         me.ReleaseStream()
          me._text = ""
-         me._bytes = ""
+         me._bytes = Unassigned
+         me._filePath = ""
+      End Sub
+
+      Private Sub ReleaseStream()
+         If me._ownsStream Then
+            Dim kind As String = TypeName(me._payloadStream)
+            If (kind <> "Empty") And (kind <> "Null") And (kind <> "Unassigned") Then
+               Try
+                  me._payloadStream.Close()
+               Catch ex As Exception
+               End Try
+            End If
+         End If
+         me._payloadStream = Unassigned
+         me._ownsStream = False
       End Sub
 
       Sub Free()
