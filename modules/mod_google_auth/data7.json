@@ -1,11 +1,11 @@
 {
   "nome": "mod_google_auth",
   "language": "Basic",
-  "version": "1.0.0.0",
+  "version": "1.0.0.1",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Administrador",
-    "versao": "1.0.0.0",
+    "versao": "1.0.0.1",
     "informacoes": "Google OAuth 2.0 authentication module (user consent, token refresh, pluggable stores)",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -52,7 +52,7 @@
   },
   "virtualFolders": [
     {
-      "nome": "Unidades (75)",
+      "nome": "Unidades (93)",
       "id": "{D26E6FE8-16DE-4E69-80A1-14B3F36509E2}",
       "pastaId": "",
       "aberta": "Sim"
@@ -266,6 +266,42 @@
       "id": "{B718DAF0-29C6-4B0F-D8A3-0F60718293B4}",
       "pastaId": "{D26E6FE8-16DE-4E69-80A1-14B3F36509E2}",
       "aberta": "Sim"
+    },
+    {
+      "nome": "mod_data7_utils",
+      "id": "{D538A25A-2048-4EF0-8572-B4783141853C}",
+      "pastaId": "{C362F4D5-DB1C-4B70-84DC-C4A0903370DD}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{8EFCBDE5-841F-4BA1-BA90-A1FB9C07A6A7}",
+      "pastaId": "{D538A25A-2048-4EF0-8572-B4783141853C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "runtime",
+      "id": "{044A03AA-672A-4919-A3B8-EB079E1024A0}",
+      "pastaId": "{8EFCBDE5-841F-4BA1-BA90-A1FB9C07A6A7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "socket",
+      "id": "{B63A49F8-79C6-450E-B2D0-43A11B860CAF}",
+      "pastaId": "{8EFCBDE5-841F-4BA1-BA90-A1FB9C07A6A7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "stream",
+      "id": "{B9D71DF8-B558-4158-98D7-AC7DD405605B}",
+      "pastaId": "{8EFCBDE5-841F-4BA1-BA90-A1FB9C07A6A7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{51190E72-7F79-46D5-87B4-FEDF97F545D7}",
+      "pastaId": "{D538A25A-2048-4EF0-8572-B4783141853C}",
+      "aberta": "Nao"
     }
   ],
   "modulesMetadata": {
@@ -359,6 +395,12 @@
       "ordemAbertura": 0,
       "pastaId": "{40A16389-B25F-4498-613C-38F90A1B2C4D}"
     },
+    "google_auth_grant_service": {
+      "nome": "google_auth_grant_service",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{40A16389-B25F-4498-613C-38F90A1B2C4D}"
+    },
     "google_auth_http": {
       "nome": "google_auth_http",
       "aberto": false,
@@ -413,6 +455,12 @@
       "ordemAbertura": 0,
       "pastaId": "{84E5A7CD-F693-48DC-A570-7C3D4E5F6081}"
     },
+    "google_auth_connect": {
+      "nome": "google_auth_connect",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{84E5A7CD-F693-48DC-A570-7C3D4E5F6081}"
+    },
     "google_auth_store": {
       "nome": "google_auth_store",
       "aberto": false,
@@ -437,15 +485,27 @@
       "ordemAbertura": 0,
       "pastaId": "{51B2749A-C360-45A9-724D-490A1B2C3D5E}"
     },
+    "google_auth_store_memory": {
+      "nome": "google_auth_store_memory",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{51B2749A-C360-45A9-724D-490A1B2C3D5E}"
+    },
     "google_auth_validation": {
       "nome": "google_auth_validation",
       "aberto": false,
       "ordemAbertura": 0,
       "pastaId": "{95F6B8DE-07A4-49ED-B681-8D4E5F607192}"
+    },
+    "google_auth_tests": {
+      "nome": "google_auth_tests",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{B718DAF0-29C6-4B0F-D8A3-0F60718293B4}"
     }
   },
   "dependencies": {
-    "mod_http": "2.0",
+    "mod_http": "2.1.3.0",
     "mod_winapi": "1.0.0.0",
     "mod_certificate": "1.0.0.0"
   },

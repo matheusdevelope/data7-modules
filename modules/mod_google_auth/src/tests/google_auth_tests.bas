@@ -20,6 +20,7 @@ Imports google_auth_consent
 Imports google_auth_grant_service
 Imports google_auth_validation
 Imports google_auth_session_result
+Imports google_auth_connect
 
 Namespace google_auth_tests
 
@@ -91,6 +92,9 @@ Namespace google_auth_tests
          me.TestServiceAccountBlocked()
          me.TestBearerInterceptor()
          me.TestSessionResult()
+         me.TestConnectReusesStore()
+         me.TestConnectRequiresStore()
+         me.TestConnectRequiresCredentialsWhenSilent()
          me.PrintSummary()
       End Sub
 
@@ -411,6 +415,55 @@ Namespace google_auth_tests
          End Try
          me.AssertTrue(grantThrew, "grant slot throws")
          grant.Free()
+         cfg.Free()
+      End Sub
+
+      Sub TestConnectReusesStore()
+         print("-- connect reuses store")
+         Dim cfg As GoogleAuthConfig = me.SampleConfig()
+         Dim tokenStore As GoogleTokenStore = GoogleTokenStores.Memory()
+         Dim seed As New GoogleTokenSet()
+         seed.AccessToken = "ya29.live"
+         seed.RefreshToken = "1//r"
+         seed.ExpiresIn = 3600
+         tokenStore.Save(cfg.StoreKey(), seed)
+         Dim auth As GoogleAuthService = GoogleAuthConnect.Run(cfg, tokenStore, True, False)
+         me.AssertTrue(auth.IsAuthorized(), "connect authorized from store")
+         me.AssertEq(auth.GetAccessToken(), "ya29.live", "connect access from store")
+         seed.Free()
+         auth.Free()
+         cfg.Free()
+      End Sub
+
+      Sub TestConnectRequiresStore()
+         print("-- connect requires store")
+         Dim cfg As GoogleAuthConfig = me.SampleConfig()
+         Dim threw As Boolean = False
+         Try
+            Dim auth As GoogleAuthService = GoogleAuthConnect.Run(cfg, Null, True, False)
+            auth.Free()
+         Catch ex As Exception
+            threw = InStr(ex._GetMessage(), "GoogleTokenStore") > 0
+         End Try
+         me.AssertTrue(threw, "connect null store throws")
+         cfg.Free()
+      End Sub
+
+      Sub TestConnectRequiresCredentialsWhenSilent()
+         print("-- connect silent needs credentials")
+         Dim cfg As New GoogleAuthConfig()
+         cfg.Scopes.Add("openid")
+         Dim tokenStore As GoogleTokenStore = GoogleTokenStores.Memory()
+         Dim threw As Boolean = False
+         Try
+            Dim auth As GoogleAuthService = GoogleAuthConnect.Run(cfg, tokenStore, True, False)
+            auth.Free()
+         Catch ex As Exception
+            threw = InStr(ex._GetMessage(), "Client ID") > 0
+         End Try
+         me.AssertTrue(threw, "connect silent without client id throws")
+         me.AssertTrue(cfg.HasClientCredentials() = False, "empty config has no credentials")
+         tokenStore.Free()
          cfg.Free()
       End Sub
 

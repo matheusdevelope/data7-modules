@@ -2,7 +2,7 @@
 
 Google OAuth 2.0 authentication for Data7: user consent, authorization-code exchange with PKCE, access-token refresh/rotation, revocation, and a Bearer interceptor for any Google API. It does **not** call Drive, Gmail, or other product APIs, and it does **not** implement Service Account JWT or a SQL token store — those stay in the consumer or a later version.
 
-Version **1.0.0.0**. Dependencies (`data7.json`): `mod_http` `2.0`, `mod_winapi` `1.0.0.0`, `mod_certificate` `1.0.0.0` (`mod_io` also comes transitively with `mod_http`). PKCE SHA-256 uses `TCertUtil.HashFile`.
+Version **1.0.0.1**. Dependencies (`data7.json`): `mod_http` `2.1.3.0`, `mod_winapi` `1.0.0.0`, `mod_certificate` `1.0.0.0` (`mod_io` also comes transitively with `mod_http`). PKCE SHA-256 uses `TCertUtil.HashFile`.
 
 This file is the module contract. Consumers must be able to assemble, extend, and call the API from this README alone. Open a `.bas` file only to confirm a detail that is not stated here. Never edit files under `data7_modules/`.
 
@@ -11,18 +11,21 @@ This file is the module contract. Consumers must be able to assemble, extend, an
 ```basic
 Imports google_auth
 Imports google_auth_config
+Imports google_auth_connect
 Imports google_auth_store
 Imports google_auth_stores
 
 Dim cfg As GoogleAuthConfig = GoogleAuthConfig.FromFile("google-oauth.json")
 cfg.Scopes.Add("https://www.googleapis.com/auth/drive")
 
-Dim store As GoogleTokenStore = GoogleTokenStores.Json("google-tokens.json")
-Dim auth As GoogleAuthService = GoogleAuthService.Load(cfg, store)
+Dim tokenStore As GoogleTokenStore = GoogleTokenStores.Json("google-tokens.json")
+Dim auth As GoogleAuthService = GoogleAuthConnect.Run(cfg, tokenStore)
 
 Dim accessToken As String = auth.GetAccessToken()
 httpClient.Use(auth.CreateBearerInterceptor())
 ```
+
+`GoogleAuthConnect.Run` is the uniform entry for any `GoogleTokenStore` (JSON, memory, or a consumer SQL store). If the store already has tokens it loads silently; if Client ID/secret are present it opens a **locked** form; if credentials are missing it opens the **editable** setup form. Tokens are saved into the injected store.
 
 `Load` throws if `pStore` is unassigned. `GetAccessToken()` returns a valid access token, refreshing or running the browser consent flow when needed.
 
@@ -60,6 +63,7 @@ httpClient.Use(auth.CreateBearerInterceptor())
 | `src/lib/consent/google_auth_consent_manual.bas` | `google_auth_consent_manual` | `GoogleConsentManual` |
 | `src/lib/interceptors/google_auth_bearer.bas` | `google_auth_bearer` | `GoogleBearerInterceptor` |
 | `src/lib/runtime/google_auth.bas` | `google_auth` | `GoogleAuthService` |
+| `src/lib/runtime/google_auth_connect.bas` | `google_auth_connect` | `GoogleAuthConnect` |
 | `src/lib/validation/google_auth_validation.bas` | `google_auth_validation` | `GoogleAuthValidator` |
 | `src/forms/google_auth_form.bas` | `google_auth_form` | `GoogleAuthForm` |
 | `src/tests/google_auth_tests.bas` | `google_auth_tests` | `GoogleAuthTests`, `GoogleAuthConsentFake` |
@@ -124,6 +128,29 @@ Expiry uses `GoogleAuthConfig.ExpirySkewSeconds` (default `60`).
 
 **Ownership:** `Free()` frees HTTP, consent, grants, and the store when `pOwnsStore` is True. It does **not** free the config passed to `Load`.
 
+## Connect (`GoogleAuthConnect`)
+
+```basic
+Shared Function Run(pConfig As GoogleAuthConfig, pStore As GoogleTokenStore, pOwnsStore As Boolean = True, pInteractive As Boolean = True, pTitle As String = "Autenticação Google") As GoogleAuthService
+```
+
+| Situation | Behavior |
+| --- | --- |
+| Store already has access or refresh token for `cfg.StoreKey()` | `GoogleAuthService.Load` (no form) |
+| `cfg` has Client ID and secret, no tokens, `pInteractive = True` | `GoogleAuthForm.ForConsent(cfg, pStore)` (locked) |
+| Same, `pInteractive = False` | `GoogleAuthForm.RunHeadless(cfg, pStore)` (browser only) |
+| Missing Client ID/secret, `pInteractive = True` | `GoogleAuthForm.ForSetup(title, pStore)` (editable; JSON pre-fill if present) |
+| Missing Client ID/secret, `pInteractive = False` | throws `ClientIdRequired` |
+
+The form is given `pOwnsStore = False` so the returned `GoogleAuthService` can own the store. Cancelled consent throws `ConsentCancelled`. Scopes stay on `cfg` — add Drive/Gmail/etc. **before** `Run`.
+
+Any store that inherits `GoogleTokenStore` works the same way:
+
+```basic
+Dim tokenStore As GoogleTokenStore = GoogleDriveSqlStores.Open(cfg)
+Dim auth As GoogleAuthService = GoogleAuthConnect.Run(cfg, tokenStore)
+```
+
 ## UI modes (`GoogleAuthForm`)
 
 The setup screen is optional. Authorization itself always opens the Google browser; “headless” means **no Data7 form**.
@@ -131,15 +158,15 @@ The setup screen is optional. Authorization itself always opens the Google brows
 | Mode | Factory | Behavior |
 | --- | --- | --- |
 | **Headless** | `GoogleAuthForm.RunHeadless(config, store)` | No form. Opens the browser, waits on loopback, returns `GoogleAuthSessionResult`. Same as `GoogleAuthService.Load` + `Authorize()`. |
-| **Locked** | `GoogleAuthForm.ForConsent(config, storePath)` | Form opens with Client ID, secret and scopes filled and **disabled**. User only clicks Autorizar / Extrair. On success the form **closes** and `Execute()` returns the result. The token JSON path is not shown; the caller injects the store. |
-| **Editable** | `New GoogleAuthForm()` / `ForSetup()` | Current setup UI: user types credentials, window stays open. |
+| **Locked** | `GoogleAuthForm.ForConsent(config, store)` or `ForConsent(config, storePath)` | Form opens with Client ID, secret and scopes filled and **disabled**. User only clicks Autorizar / Extrair. On success the form **closes** and `Execute()` returns the result. Prefer the store overload so tokens go to SQL/memory/JSON without a file path. |
+| **Editable** | `New GoogleAuthForm()` / `ForSetup(title)` / `ForSetup(title, store)` | Setup UI: user types credentials, window stays open. With an injected store, tokens are saved there and `google-oauth.json` is **not** written. |
 
 ```basic
 Imports google_auth_form
 Imports google_auth_session_result
 
-' Caller already has client id, secret and scopes:
-Dim consentForm As GoogleAuthForm = GoogleAuthForm.ForConsent(cfg, "google-tokens.json")
+' Caller already has client id, secret and scopes; tokens go to the injected store:
+Dim consentForm As GoogleAuthForm = GoogleAuthForm.ForConsent(cfg, tokenStore)
 Dim sessionResult As GoogleAuthSessionResult = consentForm.Execute()
 If sessionResult.Succeeded Then
    print(sessionResult.Email)
@@ -148,10 +175,10 @@ consentForm.Free()
 sessionResult.Free()
 
 ' No form at all:
-Dim silentResult As GoogleAuthSessionResult = GoogleAuthForm.RunHeadless(cfg, store)
+Dim silentResult As GoogleAuthSessionResult = GoogleAuthForm.RunHeadless(cfg, tokenStore)
 ```
 
-`GoogleAuthSessionResult`: `Succeeded`, `Cancelled`, `Email`, `Name`, `ErrorMessage`, `Tokens()` (clone; caller must `Free`). Locked/headless do **not** write `google-oauth.json`; tokens still go to the injected store.
+`GoogleAuthSessionResult`: `Succeeded`, `Cancelled`, `Email`, `Name`, `ErrorMessage`, `Tokens()` (clone; caller must `Free`). Locked/headless, and editable with an injected store, do **not** write `google-oauth.json`; tokens go to the injected store (or to `google-tokens.json` when `ForConsent` is called with a path).
 
 ## Token stores (required injection)
 
@@ -223,7 +250,7 @@ Dim auth As GoogleAuthService = GoogleAuthService.Load(cfg, New MyErpTokenStore(
 
 ## Tests
 
-`google_auth_tests.GoogleAuthTests.RunAll()` uses `Http.Mock` only — no live Google network. Coverage: enums, auth URL, token JSON, expiry skew, PKCE RFC 7636 vector, code extract, memory/JSON stores, refresh rotation, authorize exchange, complete from pasted redirect URL, custom store injection, null store, invalid callback state, service-account slot, Bearer interceptor, session result.
+`google_auth_tests.GoogleAuthTests.RunAll()` uses `Http.Mock` only — no live Google network. Coverage: enums, auth URL, token JSON, expiry skew, PKCE RFC 7636 vector, code extract, memory/JSON stores, refresh rotation, authorize exchange, complete from pasted redirect URL, custom store injection, null store, invalid callback state, service-account slot, Bearer interceptor, session result, `GoogleAuthConnect` silent reuse and missing credentials.
 
 ## Module Notes
 

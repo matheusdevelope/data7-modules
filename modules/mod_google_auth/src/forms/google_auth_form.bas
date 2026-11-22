@@ -59,8 +59,12 @@ Namespace google_auth_form
          me.ApplyModeUi()
       End Sub
 
-      Shared Function ForSetup(pTitle As String = "Autenticação Google") As GoogleAuthForm
-         ForSetup = New GoogleAuthForm(pTitle)
+      Shared Function ForSetup(pTitle As String = "Autenticação Google", pStore As GoogleTokenStore = Null, pOwnsStore As Boolean = False) As GoogleAuthForm
+         Dim setupForm As New GoogleAuthForm(pTitle)
+         If Assigned(pStore) Then
+            setupForm.Configure(GoogleAuthUiMode.Editable(), Null, "", pStore, pOwnsStore)
+         End If
+         ForSetup = setupForm
       End Function
 
       Shared Function ForConsent(pConfig As GoogleAuthConfig, pStorePath As String = "google-tokens.json", pTitle As String = "Autenticação Google") As GoogleAuthForm
@@ -69,6 +73,18 @@ Namespace google_auth_form
          End If
          Dim setupForm As New GoogleAuthForm(pTitle)
          setupForm.Configure(GoogleAuthUiMode.Locked(), pConfig, pStorePath, Null, False)
+         ForConsent = setupForm
+      End Function
+
+      Shared Function ForConsent(pConfig As GoogleAuthConfig, pStore As GoogleTokenStore, pOwnsStore As Boolean = False, pTitle As String = "Autenticação Google") As GoogleAuthForm
+         If Not Assigned(pConfig) Then
+            Throw New Exception(GoogleAuthErrors.ConfigRequired())
+         End If
+         If Not Assigned(pStore) Then
+            Throw New Exception(GoogleAuthErrors.StoreRequired())
+         End If
+         Dim setupForm As New GoogleAuthForm(pTitle)
+         setupForm.Configure(GoogleAuthUiMode.Locked(), pConfig, "", pStore, pOwnsStore)
          ForConsent = setupForm
       End Function
 
@@ -409,8 +425,10 @@ Namespace google_auth_form
 
       Private Sub PersistAndShowUser()
          If me.IsEditable() Then
-            If Assigned(me._cfg) Then
-               me._cfg.ToFile(me.ConfigFilePath())
+            If Not Assigned(me._injectedStore) Then
+               If Assigned(me._cfg) Then
+                  me._cfg.ToFile(me.ConfigFilePath())
+               End If
             End If
          End If
          me.ShowUserInfo()

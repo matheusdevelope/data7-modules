@@ -43,6 +43,18 @@ Namespace google_auth_config
          StoreKey = Trim(me.Credentials.ClientId) & "|" & account
       End Function
 
+      Function HasClientCredentials() As Boolean
+         If Not Assigned(me.Credentials) Then
+            HasClientCredentials = False
+            Exit Function
+         End If
+         If Trim(me.Credentials.ClientId) = "" Then
+            HasClientCredentials = False
+            Exit Function
+         End If
+         HasClientCredentials = Trim(me.Credentials.ClientSecret) <> ""
+      End Function
+
       Function ResolveRedirectUri() As String
          If Trim(me.RedirectUri) <> "" Then
             ResolveRedirectUri = Trim(me.RedirectUri)
