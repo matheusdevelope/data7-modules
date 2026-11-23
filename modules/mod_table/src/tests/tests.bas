@@ -779,6 +779,8 @@ Namespace tests
          ddl.DropTable("_libtest_expr")
          ddl.DropTable("_libtest_arquivo")
          ddl.DropTable("_libtest_dialect")
+         ddl.DropTable("SchemaCustomizado", "_libtest_cfg_backup")
+         ddl.DropTable("_libtest_sch", "_libtest_sch_tab")
          ddl.DropTable("_tables_bench")
          ddl.DropSequence("_libtest_item_seq")
          ddl.DropSequence("_libtest_pedido_seq")
@@ -1745,6 +1747,7 @@ Namespace tests
          Dim seqName As String = "_libtest_dialect_seq"
          me.AssertTrue(pDialect.QuoteIdent("Id") <> "", pLabel & " QuoteIdent")
          me.AssertTrue(pDialect.QuoteTable("", "_libtest_dialect") <> "", pLabel & " QuoteTable")
+         me.AssertTrue(me.SqlHas(pDialect.QuoteTable("SchemaCustomizado", "_libtest_dialect"), pDialect.QuoteIdent("SchemaCustomizado")), pLabel & " QuoteTable schema")
          me.AssertTrue(pDialect.QuoteSequence(seqName) <> "", pLabel & " QuoteSequence")
          me.AssertTrue(pDialect.DefaultSchema() <> "", pLabel & " DefaultSchema")
          me.AssertTrue(pDialect.ParamToken("Id") <> "", pLabel & " ParamToken")
@@ -1776,9 +1779,11 @@ Namespace tests
          me.AssertTrue(pDialect.SqlTypedParam("Id", "INTEGER") <> "", pLabel & " SqlTypedParam")
          me.AssertTrue(pDialect.ApplyLimit("SELECT 1 AS ok", 1) <> "", pLabel & " ApplyLimit")
          me.AssertTrue(pDialect.SqlTableExists("_libtest_dialect") <> "", pLabel & " SqlTableExists")
+         me.AssertTrue(pDialect.SqlTableExists("_libtest_dialect", "SchemaCustomizado") <> "", pLabel & " SqlTableExists schema")
          me.AssertTrue(pDialect.SqlColumnExists("_libtest_dialect", "Id") <> "", pLabel & " SqlColumnExists")
          me.AssertTrue(pDialect.SqlListColumns("_libtest_dialect") <> "", pLabel & " SqlListColumns")
          me.AssertTrue(pDialect.SqlDescribeColumns("", "_libtest_dialect") <> "", pLabel & " SqlDescribeColumns")
+         me.AssertTrue(pDialect.SqlSchemaExists("SchemaCustomizado") <> "", pLabel & " SqlSchemaExists")
          me.AssertTrue(pDialect.SqlSequenceExists(seqName) <> "", pLabel & " SqlSequenceExists")
          me.AssertTrue(pDialect.SqlRoutineExists(TFieldCache.ResourceView(), "_libtest_dialect_vw") <> "", pLabel & " SqlRoutineExists view")
          me.AssertTrue(pDialect.SqlRoutineExists(TFieldCache.ResourceIndex(), "IX_libtest_dialect") <> "", pLabel & " SqlRoutineExists index")
@@ -1786,6 +1791,11 @@ Namespace tests
          me.AssertTrue(pDialect.SqlRoutineExists(TFieldCache.ResourceFunc(), "_libtest_dialect_fn") <> "", pLabel & " SqlRoutineExists function")
          me.AssertTrue(pDialect.SqlRoutineExists(TFieldCache.ResourceTrigger(), "_libtest_dialect_trg") <> "", pLabel & " SqlRoutineExists trigger")
          me.AssertTrue(pDialect.SqlCreateTable(schema) <> "", pLabel & " SqlCreateTable")
+         schema.SchemaName = "SchemaCustomizado"
+         me.AssertTrue(me.SqlHas(pDialect.SqlCreateTable(schema), pDialect.QuoteTable("SchemaCustomizado", "_libtest_dialect")), pLabel & " SqlCreateTable qualifica schema")
+         me.AssertTrue(me.SqlHas(pDialect.SqlDropTable("_libtest_dialect", "SchemaCustomizado"), pDialect.QuoteTable("SchemaCustomizado", "_libtest_dialect")), pLabel & " SqlDropTable qualifica schema")
+         me.AssertTrue(me.SqlHas(pDialect.SqlAddColumn("_libtest_dialect", nome, "SchemaCustomizado"), pDialect.QuoteTable("SchemaCustomizado", "_libtest_dialect")), pLabel & " SqlAddColumn qualifica schema")
+         schema.SchemaName = ""
          me.AssertTrue(pDialect.SqlDropTable("_libtest_dialect") <> "", pLabel & " SqlDropTable")
          me.AssertTrue(pDialect.SqlAddColumn("_libtest_dialect", nome) <> "", pLabel & " SqlAddColumn")
          me.AssertTrue(pDialect.SqlDropColumn("_libtest_dialect", "Nome") <> "", pLabel & " SqlDropColumn")
@@ -1843,6 +1853,10 @@ Namespace tests
          me.AssertTrue(me.SqlHas(peekSql, "SYSSEQUENCE"), "ASA SqlPeekSequence usa SYSSEQUENCE")
          me.AssertTrue(Not me.SqlHas(peekSql, "current_identity"), "ASA SqlPeekSequence sem current_identity")
          me.AssertTrue(me.SqlHas(asa.SqlAllocateSequence("_libtest_dialect_seq", 1), "resume_at"), "ASA SqlAllocateSequence usa resume_at")
+         me.AssertTrue(me.SqlHas(asa.SqlTableExists("ConfiguracaoBackup", "SchemaCustomizado"), "USER_NAME"), "ASA SqlTableExists filtra owner")
+         me.AssertTrue(Not me.SqlHas(asa.SqlTableExists("ConfiguracaoBackup"), "USER_NAME"), "ASA SqlTableExists sem schema não filtra owner")
+         me.AssertTrue(me.SqlHas(asa.SqlSequenceExists("SchemaCustomizado.ConfiguracaoBackup_Sequencia"), "USER_NAME"), "ASA SqlSequenceExists filtra owner")
+         me.AssertEq(asa.SqlCreateSchema("SchemaCustomizado"), "", "ASA não cria USER/schema automaticamente")
          Dim seqSql As String = mssql.SqlNextSequence("EscritaFiscal.TipoNotaFiscalServico_Sequencia")
          me.AssertTrue(Not me.SqlHas(seqSql, "[EscritaFiscal.TipoNotaFiscalServico_Sequencia]"), "MSSQL sequence sem colchetes no nome composto")
          me.AssertTrue(me.SqlHas(seqSql, "CREATE SEQUENCE EscritaFiscal.TipoNotaFiscalServico_Sequencia"), "MSSQL CREATE SEQUENCE schema.objeto")
@@ -1873,6 +1887,7 @@ Namespace tests
          me.AssertQuery("SqlColumnExists", d.SqlColumnExists(tableName, "Id"))
          me.AssertQuery("SqlListColumns", d.SqlListColumns(tableName))
          me.AssertQuery("SqlDescribeColumns", d.SqlDescribeColumns("", tableName))
+         me.AssertQuery("SqlSchemaExists default", d.SqlSchemaExists(d.DefaultSchema()))
          me.AssertExec("SqlAddColumn", d.SqlAddColumn(tableName, nota))
          me.AssertExec("SqlCastCopy", d.SqlCastCopy(tableName, "Nota", "Nome", nota))
          me.AssertExec("SqlAlterColumnType", d.SqlAlterColumnType(tableName, nome))
@@ -1910,6 +1925,40 @@ Namespace tests
          me.AssertExec("SqlDropRoutine procedure", d.SqlDropRoutine(TFieldCache.ResourceProcedure(), "_libtest_dialect_sp"))
          me.AssertExec("SqlDropRoutine function", d.SqlDropRoutine(TFieldCache.ResourceFunc(), "_libtest_dialect_fn"))
          me.AssertExec("SqlDropTable", d.SqlDropTable(tableName))
+
+         Dim schName As String = "_libtest_sch"
+         Dim schCreate As String = d.SqlCreateSchema(schName)
+         If Trim(schCreate) <> "" Then
+            ddl.EnsureSchema(schName)
+            Dim schTab As New TTableSchema()
+            schTab.SchemaName = schName
+            schTab.TableName = "_libtest_sch_tab"
+            schTab.Field("Id").AsInteger().PrimaryKeyField()
+            ddl.DropTable(schName, "_libtest_sch_tab")
+            ddl.CreateTable(schTab)
+            me.AssertTrue(ddl.TableExists(schName, "_libtest_sch_tab"), "CreateTable no schema " & schName)
+            me.AssertTrue(me.SqlHas(d.SqlCreateTable(schTab), d.QuoteTable(schName, "_libtest_sch_tab")), "SqlCreateTable live qualifica schema")
+            ddl.DropTable(schName, "_libtest_sch_tab")
+            me.AssertTrue(Not ddl.TableExists(schName, "_libtest_sch_tab"), "DropTable no schema " & schName)
+            Dim schDrop As String = d.SqlDropSchema(schName)
+            If Trim(schDrop) <> "" Then
+               TSql.ExecScript(schDrop)
+            End If
+            schTab.Free()
+         ElseIf ddl.SchemaExists("SchemaCustomizado") Then
+            Dim cfgTab As New TTableSchema()
+            cfgTab.SchemaName = "SchemaCustomizado"
+            cfgTab.TableName = "_libtest_cfg_backup"
+            cfgTab.Field("Id").AsInteger().PrimaryKeyField()
+            ddl.DropTable("SchemaCustomizado", "_libtest_cfg_backup")
+            ddl.CreateTable(cfgTab)
+            me.AssertTrue(ddl.TableExists("SchemaCustomizado", "_libtest_cfg_backup"), "CreateTable no owner SchemaCustomizado")
+            me.AssertTrue(me.SqlHas(d.SqlCreateTable(cfgTab), d.QuoteTable("SchemaCustomizado", "_libtest_cfg_backup")), "ASA CREATE TABLE qualifica SchemaCustomizado")
+            ddl.DropTable("SchemaCustomizado", "_libtest_cfg_backup")
+            me.AssertTrue(Not ddl.TableExists("SchemaCustomizado", "_libtest_cfg_backup"), "DropTable no owner SchemaCustomizado")
+            cfgTab.Free()
+         End If
+
          schema.Free()
          routine.Free()
          ddl.Free()

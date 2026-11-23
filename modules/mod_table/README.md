@@ -1,6 +1,6 @@
 # mod_table
 
-Runtime to map tables, persist rows, migrate schema, and generate `TTableOf<T>` subclasses from the catalog. It does **not** ship business tables: the consumer owns `DefineSchema`, property wrappers, migration ids, and when to call DDL. Version `1.0.0.6` (`data7.json`). `data7.json` `"dependencies"` is empty; source `Imports` used here are `Collections`, `mod_tobject`, `mod_tlist`, `mod_tenum`, and `IO` (codegen). Persistence goes through `SQL.Command` / `SQL.Connection`.
+Runtime to map tables, persist rows, migrate schema, and generate `TTableOf<T>` subclasses from the catalog. It does **not** ship business tables: the consumer owns `DefineSchema`, property wrappers, migration ids, and when to call DDL. Version `1.0.0.8` (`data7.json`). `data7.json` `"dependencies"` is empty; source `Imports` used here are `Collections`, `mod_tobject`, `mod_tlist`, `mod_tenum`, and `IO` (codegen). Persistence goes through `SQL.Command` / `SQL.Connection`.
 
 This file is the module contract. Do not open `.bas` files to call the API. Open implementation only to confirm a detail that is missing here.
 
@@ -145,7 +145,7 @@ Holds field defs for one table class. First `TTable` construction with a given c
 |---|---|---|
 | `CacheKey` | `""` | Set from `TTable.New(pName)` |
 | `TableName` | `""` | Physical table |
-| `SchemaName` | `""` | Empty / dialect default → no schema prefix on sequences/tables |
+| `SchemaName` | `""` | Empty → no schema prefix (session owner on ASA, typically `dba`). Non-empty is used in DML **and** DDL (`CREATE`/`ALTER`/`DROP`, catalog lookups). |
 | `Sequence` | `""` | Explicit sequence name; wins over AutoCode `WithSequence` |
 | `FromClause` | `""` | If empty, `TTable` sets it to `TableName`. Non-table SQL (JOIN) is used as-is in SELECT |
 | `Fields` | owned `StringList` | Keys are `UCase(name)` |
@@ -353,7 +353,7 @@ WHERE/ORDER are appended via dialect `NormalizeWhere` / `NormalizeOrderBy`. Empt
 | ASA | `dba` | `LONG BINARY` | quoted parts |
 | Postgres | `dbo` | `BYTEA` | quoted lowercase parts |
 
-`IsDefaultSchema("")` is True. Empty `SchemaName` on a table uses the dialect default for sequence/table qualification.
+`IsDefaultSchema("")` is True. Empty `SchemaName` on a table uses the dialect default for sequence names; DML/`CREATE TABLE` omit the schema prefix (ASA then creates the table under the session user, usually `dba`). Set `SchemaName = "Customizado"` to emit `"Customizado"."ConfiguracaoBackup"`. On ASA a schema is a **user/owner**; this module does not `CREATE USER`. Ensure the owner exists (your schema migration) before migrating tables. MSSQL/Postgres `TDdl.EnsureSchema` emits `CREATE SCHEMA` when missing.
 
 ### `TSql` (Shared)
 
@@ -402,17 +402,21 @@ SQL builders (`QuoteIdent`, `QuoteTable`, `QuoteSequence`, `TypeName`, `SqlCreat
 Idempotent physical ops. No-ops: `CreateTable` if exists; `DropTable` if missing (when dialect has no `IF EXISTS`); `AddColumn` if exists; `DropColumn` if missing; `RenameColumn` if target exists or source missing.
 
 ```
-Function TableExists/ColumnExists/SequenceExists(...) As Boolean
-Function ListColumnNames(pTable As String) As StringList   ' UCase names
+Function TableExists(pTable) / TableExists(pSchemaName, pTable) As Boolean
+Function ColumnExists(pTable, pCol) / ColumnExists(pSchemaName, pTable, pCol) As Boolean
+Function SequenceExists(pName As String) As Boolean
+Function SchemaExists(pSchemaName As String) As Boolean   ' empty → True; ASA uses USER_ID
+Function ListColumnNames(pTable) / ListColumnNames(pSchemaName, pTable) As StringList   ' UCase names
 Function HasColumnName(pColNames As StringList, pCol As String) As Boolean
-Sub CreateTable(pSchema As TTableSchema)
-Sub DropTable(pTable As String)
-Sub AddColumn(pTable As String, pField As TFieldDef)
-Sub DropColumn(pTable As String, pCol As String)
-Sub RenameColumn(pTable, pFrom, pTo)
-Sub AlterColumn(pTable, pField, pMode As TAlterColumnMode)
-Sub RebuildColumn(pTable, pField)          ' {DbName}_tmp + CAST copy + drop + rename
-Sub SetNullability(pTable, pCol, pRequired As Boolean)
+Sub EnsureSchema(pSchemaName As String)   ' no-op if empty/default/exists; ASA does not create users
+Sub CreateTable(pSchema As TTableSchema)  ' qualifies SchemaName; EnsureSchema first
+Sub DropTable(pTable) / DropTable(pSchemaName, pTable)
+Sub AddColumn(pTable, pField) / AddColumn(pSchemaName, pTable, pField)
+Sub DropColumn(pTable, pCol) / DropColumn(pSchemaName, pTable, pCol)
+Sub RenameColumn(pTable, pFrom, pTo) / RenameColumn(pSchemaName, pTable, pFrom, pTo)
+Sub AlterColumn(pTable, pField, pMode) / AlterColumn(pSchemaName, pTable, pField, pMode)
+Sub RebuildColumn(pTable, pField) / RebuildColumn(pSchemaName, pTable, pField)
+Sub SetNullability(pTable, pCol, pRequired) / SetNullability(pSchemaName, pTable, pCol, pRequired)
 Sub CreateSequence/DropSequence(pName As String)
 Function OpCreateTable/OpDropTable/OpAddColumn/OpDropColumn/OpAlterColumn/OpEnsureSequence(...)
 Function OpsFromSchema(pSchema As TTableSchema) As TTList<TDdlOp>
@@ -420,7 +424,7 @@ Sub ApplyOp(pOp As TDdlOp)
 Sub ApplyOps(pOps[] As TDdlOp)
 ```
 
-`OpsFromSchema`: if the table has no columns → `CreateTable`; else `AddColumn` for each persist field missing in the catalog. If `ExplicitSequenceName` is non-empty and the sequence does not exist → `EnsureSequence`. Does not drop extra columns.
+`OpsFromSchema`: `EnsureSchema` when `SchemaName` is set; catalog lookups use that schema/owner (ASA `USER_NAME(creator)`). If the table has no columns in **that** schema → `CreateTable` (`QuoteTable(SchemaName, TableName)`); else `AddColumn` for each persist field missing in the catalog. If `ExplicitSequenceName` is non-empty and the sequence does not exist → `EnsureSequence`. Does not drop extra columns. A table with the same name under `dba` does not skip creating `Customizado.ConfiguracaoBackup`.
 
 `ApplyOp` handles CreateTable, DropTable, AddColumn, DropColumn, RenameColumn, AlterColumn, EnsureSequence, DropSequence, CustomSql. `CreateOrAlterRoutine` / `DropRoutine` kinds are not applied here (`TRoutine` does routines).
 
@@ -595,7 +599,8 @@ There is no UI in this module.
 - Field names are matched with `UCase` (`"codpedido"` = `"CodPedido"`). Generated properties keep catalog case.
 - `Fetch` / `FetchRows` lists do not own row objects (`OwnsObjects = False`).
 - Boolean columns persist as text (`S`/`N` unless `TrueValue`/`FalseValue`). Binary files persist with `AsBase64` and `SQL.Param`/`SQL.Field.AsBase64`.
-- Sequences: default schema `Tabela_Sequencia`; otherwise `Schema.Tabela_Sequencia` and optional `_CodEmpresa`. MSSQL does not wrap the dotted name in a single pair of brackets.
+- Sequences: default schema `Tabela_Sequencia`; otherwise `Schema.Tabela_Sequencia` and optional `_CodEmpresa`. MSSQL does not wrap the dotted name in a single pair of brackets. ASA sequence catalog/nextval filter by owner when the name is `Schema.Objeto`.
+- Sybase (ASA): `SchemaName` is the table owner. Migrations emit `CREATE TABLE "Customizado"."ConfiguracaoBackup"`. Unqualified DDL would land in the session user (`dba`). Create the owner first; `EnsureSchema` will not `GRANT CONNECT` / `CREATE USER`.
 - `TSql.CommandFor` caches `SQL.Command` by key; `ExecScript` clears that pool.
 - History table is always `_developer_table_migrations`. Register migrations with `Registerr`.
 - Canonical suite: `src/Principal.bas` calls `TTablesTest.Setup`, then `StageMigrations`, `StageCodegen`, `StageDdl`, `StageRoutines`, `StageCrud`, `StageCompositePk`, `StageJoin`, `StageExecutor`, `StageRollback`, `StageLoad`, `StageDialect`, then `TTablesTest.Teardown`. Covers schema/codegen naming, DDL, routines, CRUD/upsert/merge, composite PK, JOIN `SelectOnly`, executor, migration rollback, load bench `_tables_bench`, and dialect SQL. There is no `RunAll`.

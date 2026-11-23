@@ -72,6 +72,14 @@ Namespace TablesSql
          End If
       End Function
 
+      Function CatalogObject(pSchemaName As String, pTable As String) As String
+         If Trim(pSchemaName) = "" Then
+            CatalogObject = pTable
+         Else
+            CatalogObject = Trim(pSchemaName) & "." & pTable
+         End If
+      End Function
+
       Function SequenceSchemaOf(pName As String) As String
          Dim n As String = Trim(pName)
          Dim at As Integer = n.Pos(".")
@@ -157,16 +165,28 @@ Namespace TablesSql
          End If
       End Function
 
-      Overridable Function SqlTableExists(pTable As String) As String
+      Overridable Function SqlTableExists(pTable As String, pSchemaName As String = "") As String
          SqlTableExists = "SELECT 0 AS ok"
       End Function
 
-      Overridable Function SqlColumnExists(pTable As String, pCol As String) As String
+      Overridable Function SqlColumnExists(pTable As String, pCol As String, pSchemaName As String = "") As String
          SqlColumnExists = "SELECT 0 AS ok"
       End Function
 
-      Overridable Function SqlListColumns(pTable As String) As String
+      Overridable Function SqlListColumns(pTable As String, pSchemaName As String = "") As String
          SqlListColumns = "SELECT CAST('' AS VARCHAR(1)) AS col WHERE 1 = 0"
+      End Function
+
+      Overridable Function SqlSchemaExists(pSchemaName As String) As String
+         SqlSchemaExists = "SELECT 0 AS ok"
+      End Function
+
+      Overridable Function SqlCreateSchema(pSchemaName As String) As String
+         SqlCreateSchema = ""
+      End Function
+
+      Overridable Function SqlDropSchema(pSchemaName As String) As String
+         SqlDropSchema = ""
       End Function
 
       Overridable Function SqlDescribeColumns(pSchemaName As String, pTable As String) As String
@@ -259,7 +279,7 @@ Namespace TablesSql
       End Function
 
       Overridable Function SqlCreateTable(pSchema As TTableSchema) As String
-         Dim sqlText As String = "CREATE TABLE " & me.QuoteIdent(pSchema.TableName) & " ("
+         Dim sqlText As String = "CREATE TABLE " & me.QuoteTable(pSchema.SchemaName, pSchema.TableName) & " ("
          Dim pk As String = ""
          Dim i As Integer
          Dim first As Boolean = True
@@ -288,35 +308,35 @@ Namespace TablesSql
          SqlCreateTable = sqlText
       End Function
 
-      Overridable Function SqlDropTable(pTable As String) As String
-         SqlDropTable = "DROP TABLE " & me.QuoteIdent(pTable)
+      Overridable Function SqlDropTable(pTable As String, pSchemaName As String = "") As String
+         SqlDropTable = "DROP TABLE " & me.QuoteTable(pSchemaName, pTable)
       End Function
 
-      Overridable Function SqlAddColumn(pTable As String, pField As TFieldDef) As String
-         Dim sqlText As String = "ALTER TABLE " & me.QuoteIdent(pTable) & " ADD " & me.QuoteIdent(pField.DbName) & " " & me.TypeName(pField)
+      Overridable Function SqlAddColumn(pTable As String, pField As TFieldDef, pSchemaName As String = "") As String
+         Dim sqlText As String = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " ADD " & me.QuoteIdent(pField.DbName) & " " & me.TypeName(pField)
          If pField.Required Then
             sqlText = sqlText & " NOT NULL"
          End If
          SqlAddColumn = sqlText
       End Function
 
-      Overridable Function SqlDropColumn(pTable As String, pCol As String) As String
-         SqlDropColumn = "ALTER TABLE " & me.QuoteIdent(pTable) & " DROP COLUMN " & me.QuoteIdent(pCol)
+      Overridable Function SqlDropColumn(pTable As String, pCol As String, pSchemaName As String = "") As String
+         SqlDropColumn = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " DROP COLUMN " & me.QuoteIdent(pCol)
       End Function
 
-      Overridable Function SqlRenameColumn(pTable As String, pFrom As String, pTo As String) As String
-         SqlRenameColumn = "ALTER TABLE " & me.QuoteIdent(pTable) & " RENAME COLUMN " & me.QuoteIdent(pFrom) & " TO " & me.QuoteIdent(pTo)
+      Overridable Function SqlRenameColumn(pTable As String, pFrom As String, pTo As String, pSchemaName As String = "") As String
+         SqlRenameColumn = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " RENAME COLUMN " & me.QuoteIdent(pFrom) & " TO " & me.QuoteIdent(pTo)
       End Function
 
-      Overridable Function SqlAlterColumnType(pTable As String, pField As TFieldDef) As String
-         SqlAlterColumnType = "ALTER TABLE " & me.QuoteIdent(pTable) & " ALTER COLUMN " & me.QuoteIdent(pField.DbName) & " TYPE " & me.TypeName(pField)
+      Overridable Function SqlAlterColumnType(pTable As String, pField As TFieldDef, pSchemaName As String = "") As String
+         SqlAlterColumnType = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " ALTER COLUMN " & me.QuoteIdent(pField.DbName) & " TYPE " & me.TypeName(pField)
       End Function
 
-      Overridable Function SqlSetNullability(pTable As String, pCol As String, pRequired As Boolean) As String
+      Overridable Function SqlSetNullability(pTable As String, pCol As String, pRequired As Boolean, pSchemaName As String = "") As String
          If pRequired Then
-            SqlSetNullability = "ALTER TABLE " & me.QuoteIdent(pTable) & " ALTER COLUMN " & me.QuoteIdent(pCol) & " SET NOT NULL"
+            SqlSetNullability = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " ALTER COLUMN " & me.QuoteIdent(pCol) & " SET NOT NULL"
          Else
-            SqlSetNullability = "ALTER TABLE " & me.QuoteIdent(pTable) & " ALTER COLUMN " & me.QuoteIdent(pCol) & " DROP NOT NULL"
+            SqlSetNullability = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " ALTER COLUMN " & me.QuoteIdent(pCol) & " DROP NOT NULL"
          End If
       End Function
 
@@ -382,11 +402,11 @@ Namespace TablesSql
          SqlCallIntFunction = me.QuoteIdent(pName) & "(" & CStr(pArg) & ")"
       End Function
 
-      Overridable Function SqlCreateIndexOnTable(pIndex As String, pTable As String, pColumn As String) As String
-         SqlCreateIndexOnTable = "CREATE INDEX " & me.QuoteIdent(pIndex) & " ON " & me.QuoteIdent(pTable) & " (" & me.QuoteIdent(pColumn) & ")"
+      Overridable Function SqlCreateIndexOnTable(pIndex As String, pTable As String, pColumn As String, pSchemaName As String = "") As String
+         SqlCreateIndexOnTable = "CREATE INDEX " & me.QuoteIdent(pIndex) & " ON " & me.QuoteTable(pSchemaName, pTable) & " (" & me.QuoteIdent(pColumn) & ")"
       End Function
 
-      Overridable Function SqlDropIndexOnTable(pIndex As String, pTable As String) As String
+      Overridable Function SqlDropIndexOnTable(pIndex As String, pTable As String, pSchemaName As String = "") As String
          SqlDropIndexOnTable = "DROP INDEX " & me.QuoteIdent(pIndex)
       End Function
 
@@ -418,8 +438,8 @@ Namespace TablesSql
          End If
       End Function
 
-      Overridable Function SqlCastCopy(pTable As String, pTmp As String, pOld As String, pField As TFieldDef) As String
-         SqlCastCopy = "UPDATE " & me.QuoteIdent(pTable) & " SET " & me.QuoteIdent(pTmp) & " = CAST(" & me.QuoteIdent(pOld) & " AS " & me.TypeName(pField) & ")"
+      Overridable Function SqlCastCopy(pTable As String, pTmp As String, pOld As String, pField As TFieldDef, pSchemaName As String = "") As String
+         SqlCastCopy = "UPDATE " & me.QuoteTable(pSchemaName, pTable) & " SET " & me.QuoteIdent(pTmp) & " = CAST(" & me.QuoteIdent(pOld) & " AS " & me.TypeName(pField) & ")"
       End Function
 
       Overridable Function SqlMergeSourceFrom() As String
@@ -622,16 +642,28 @@ Namespace TablesSql
          End If
       End Function
 
-      Overrides Function SqlTableExists(pTable As String) As String
-         SqlTableExists = "SELECT CASE WHEN OBJECT_ID(N'" & pTable & "', N'U') IS NULL THEN 0 ELSE 1 END AS ok"
+      Overrides Function SqlTableExists(pTable As String, pSchemaName As String = "") As String
+         SqlTableExists = "SELECT CASE WHEN OBJECT_ID(N'" & me.CatalogObject(pSchemaName, pTable) & "', N'U') IS NULL THEN 0 ELSE 1 END AS ok"
       End Function
 
-      Overrides Function SqlColumnExists(pTable As String, pCol As String) As String
-         SqlColumnExists = "SELECT CASE WHEN COL_LENGTH(N'" & pTable & "', N'" & pCol & "') IS NULL THEN 0 ELSE 1 END AS ok"
+      Overrides Function SqlColumnExists(pTable As String, pCol As String, pSchemaName As String = "") As String
+         SqlColumnExists = "SELECT CASE WHEN COL_LENGTH(N'" & me.CatalogObject(pSchemaName, pTable) & "', N'" & pCol & "') IS NULL THEN 0 ELSE 1 END AS ok"
       End Function
 
-      Overrides Function SqlListColumns(pTable As String) As String
-         SqlListColumns = "SELECT name AS col FROM sys.columns WHERE object_id = OBJECT_ID(N'" & pTable & "')"
+      Overrides Function SqlListColumns(pTable As String, pSchemaName As String = "") As String
+         SqlListColumns = "SELECT name AS col FROM sys.columns WHERE object_id = OBJECT_ID(N'" & me.CatalogObject(pSchemaName, pTable) & "')"
+      End Function
+
+      Overrides Function SqlSchemaExists(pSchemaName As String) As String
+         SqlSchemaExists = "SELECT CASE WHEN SCHEMA_ID(N'" & pSchemaName & "') IS NULL THEN 0 ELSE 1 END AS ok"
+      End Function
+
+      Overrides Function SqlCreateSchema(pSchemaName As String) As String
+         SqlCreateSchema = "IF SCHEMA_ID(N'" & pSchemaName & "') IS NULL EXEC(N'CREATE SCHEMA " & me.QuoteIdent(pSchemaName) & "')"
+      End Function
+
+      Overrides Function SqlDropSchema(pSchemaName As String) As String
+         SqlDropSchema = "DROP SCHEMA " & me.QuoteIdent(pSchemaName)
       End Function
 
       Overrides Function SqlDescribeColumns(pSchemaName As String, pTable As String) As String
@@ -662,26 +694,27 @@ Namespace TablesSql
          End If
       End Function
 
-      Overrides Function SqlRenameColumn(pTable As String, pFrom As String, pTo As String) As String
-         SqlRenameColumn = "EXEC sp_rename N'" & pTable & "." & pFrom & "', N'" & pTo & "', N'COLUMN'"
+      Overrides Function SqlRenameColumn(pTable As String, pFrom As String, pTo As String, pSchemaName As String = "") As String
+         SqlRenameColumn = "EXEC sp_rename N'" & me.CatalogObject(pSchemaName, pTable) & "." & pFrom & "', N'" & pTo & "', N'COLUMN'"
       End Function
 
-      Overrides Function SqlAlterColumnType(pTable As String, pField As TFieldDef) As String
-         SqlAlterColumnType = "ALTER TABLE " & me.QuoteIdent(pTable) & " ALTER COLUMN " & me.QuoteIdent(pField.DbName) & " " & me.TypeName(pField)
+      Overrides Function SqlAlterColumnType(pTable As String, pField As TFieldDef, pSchemaName As String = "") As String
+         SqlAlterColumnType = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " ALTER COLUMN " & me.QuoteIdent(pField.DbName) & " " & me.TypeName(pField)
       End Function
 
-      Overrides Function SqlSetNullability(pTable As String, pCol As String, pRequired As Boolean) As String
+      Overrides Function SqlSetNullability(pTable As String, pCol As String, pRequired As Boolean, pSchemaName As String = "") As String
          Dim nullSql As String = "NULL"
          If pRequired Then
             nullSql = "NOT NULL"
          End If
+         Dim objName As String = me.CatalogObject(pSchemaName, pTable)
          Dim sqlText As String = "DECLARE @def nvarchar(200); SELECT @def = ty.name"
          sqlText = sqlText & " + CASE WHEN ty.name IN (N'varchar', N'char', N'varbinary', N'binary') THEN N'(' + CASE WHEN c.max_length = -1 THEN N'MAX' ELSE CONVERT(nvarchar(10), c.max_length) END + N')'"
          sqlText = sqlText & " WHEN ty.name IN (N'nvarchar', N'nchar') THEN N'(' + CASE WHEN c.max_length = -1 THEN N'MAX' ELSE CONVERT(nvarchar(10), c.max_length / 2) END + N')'"
          sqlText = sqlText & " WHEN ty.name IN (N'decimal', N'numeric') THEN N'(' + CONVERT(nvarchar(10), c.precision) + N',' + CONVERT(nvarchar(10), c.scale) + N')' ELSE N'' END"
          sqlText = sqlText & " FROM sys.columns c INNER JOIN sys.types ty ON ty.user_type_id = c.user_type_id"
-         sqlText = sqlText & " WHERE c.object_id = OBJECT_ID(N'" & pTable & "') AND c.name = N'" & pCol & "'; "
-         sqlText = sqlText & "EXEC(N'ALTER TABLE " & me.QuoteIdent(pTable) & " ALTER COLUMN " & me.QuoteIdent(pCol) & " ' + @def + N' " & nullSql & "')"
+         sqlText = sqlText & " WHERE c.object_id = OBJECT_ID(N'" & objName & "') AND c.name = N'" & pCol & "'; "
+         sqlText = sqlText & "EXEC(N'ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " ALTER COLUMN " & me.QuoteIdent(pCol) & " ' + @def + N' " & nullSql & "')"
          SqlSetNullability = sqlText
       End Function
 
@@ -698,8 +731,8 @@ Namespace TablesSql
          SqlAllocateSequence = "SELECT CAST(current_value AS INT) AS v FROM sys.sequences WHERE object_id = OBJECT_ID(N'" & pName & "', N'SO')"
       End Function
 
-      Overrides Function SqlDropColumn(pTable As String, pCol As String) As String
-         SqlDropColumn = "ALTER TABLE " & me.QuoteIdent(pTable) & " DROP COLUMN " & me.QuoteIdent(pCol)
+      Overrides Function SqlDropColumn(pTable As String, pCol As String, pSchemaName As String = "") As String
+         SqlDropColumn = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " DROP COLUMN " & me.QuoteIdent(pCol)
       End Function
 
       Overrides Function SqlCreateOrAlter(pKind As TResourceKind, pName As String, pBody As String) As String
@@ -726,8 +759,8 @@ Namespace TablesSql
          SupportsDropIfExists = True
       End Function
 
-      Overrides Function SqlDropTable(pTable As String) As String
-         SqlDropTable = "DROP TABLE IF EXISTS " & me.QuoteIdent(pTable)
+      Overrides Function SqlDropTable(pTable As String, pSchemaName As String = "") As String
+         SqlDropTable = "DROP TABLE IF EXISTS " & me.QuoteTable(pSchemaName, pTable)
       End Function
 
       Overrides Function SqlDropSequence(pName As String) As String
@@ -752,8 +785,8 @@ Namespace TablesSql
          End If
       End Function
 
-      Overrides Function SqlDropIndexOnTable(pIndex As String, pTable As String) As String
-         SqlDropIndexOnTable = "DROP INDEX IF EXISTS " & me.QuoteIdent(pIndex) & " ON " & me.QuoteIdent(pTable)
+      Overrides Function SqlDropIndexOnTable(pIndex As String, pTable As String, pSchemaName As String = "") As String
+         SqlDropIndexOnTable = "DROP INDEX IF EXISTS " & me.QuoteIdent(pIndex) & " ON " & me.QuoteTable(pSchemaName, pTable)
       End Function
 
       Overrides Function SqlMergeTarget(pTable As String) As String
@@ -815,16 +848,28 @@ Namespace TablesSql
          End If
       End Function
 
-      Overrides Function SqlTableExists(pTable As String) As String
-         SqlTableExists = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM SYS.SYSTABLE WHERE table_name = '" & pTable & "'"
+      Function AsaOwnerPred(pUserIdExpr As String, pSchemaName As String) As String
+         If Trim(pSchemaName) = "" Then
+            AsaOwnerPred = ""
+         Else
+            AsaOwnerPred = " AND USER_NAME(" & pUserIdExpr & ") = '" & Trim(pSchemaName) & "'"
+         End If
       End Function
 
-      Overrides Function SqlColumnExists(pTable As String, pCol As String) As String
-         SqlColumnExists = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM SYS.SYSCOLUMN c JOIN SYS.SYSTABLE t ON t.table_id = c.table_id WHERE t.table_name = '" & pTable & "' AND c.column_name = '" & pCol & "'"
+      Overrides Function SqlTableExists(pTable As String, pSchemaName As String = "") As String
+         SqlTableExists = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM SYS.SYSTABLE WHERE table_name = '" & pTable & "'" & me.AsaOwnerPred("creator", pSchemaName)
       End Function
 
-      Overrides Function SqlListColumns(pTable As String) As String
-         SqlListColumns = "SELECT c.column_name AS col FROM SYS.SYSCOLUMN c JOIN SYS.SYSTABLE t ON t.table_id = c.table_id WHERE t.table_name = '" & pTable & "'"
+      Overrides Function SqlColumnExists(pTable As String, pCol As String, pSchemaName As String = "") As String
+         SqlColumnExists = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM SYS.SYSCOLUMN c JOIN SYS.SYSTABLE t ON t.table_id = c.table_id WHERE t.table_name = '" & pTable & "' AND c.column_name = '" & pCol & "'" & me.AsaOwnerPred("t.creator", pSchemaName)
+      End Function
+
+      Overrides Function SqlListColumns(pTable As String, pSchemaName As String = "") As String
+         SqlListColumns = "SELECT c.column_name AS col FROM SYS.SYSCOLUMN c JOIN SYS.SYSTABLE t ON t.table_id = c.table_id WHERE t.table_name = '" & pTable & "'" & me.AsaOwnerPred("t.creator", pSchemaName)
+      End Function
+
+      Overrides Function SqlSchemaExists(pSchemaName As String) As String
+         SqlSchemaExists = "SELECT CAST(CASE WHEN USER_ID('" & Trim(pSchemaName) & "') IS NULL THEN 0 ELSE 1 END AS INTEGER) AS ok FROM SYS.DUMMY"
       End Function
 
       Overrides Function SqlDescribeColumns(pSchemaName As String, pTable As String) As String
@@ -848,7 +893,7 @@ Namespace TablesSql
       End Function
 
       Overrides Function SqlSequenceExists(pName As String) As String
-         SqlSequenceExists = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM SYS.SYSSEQUENCE WHERE sequence_name = '" & me.SequenceObjectOf(pName) & "'"
+         SqlSequenceExists = "SELECT CAST(COUNT(*) AS INTEGER) AS ok FROM SYS.SYSSEQUENCE WHERE sequence_name = '" & me.SequenceObjectOf(pName) & "'" & me.AsaOwnerPred("owner", me.SequenceSchemaOf(pName))
       End Function
 
       Overrides Function SqlRoutineExists(pKind As TResourceKind, pName As String) As String
@@ -862,21 +907,22 @@ Namespace TablesSql
       End Function
 
       Overrides Function SqlPeekSequence(pName As String) As String
-         SqlPeekSequence = "SELECT CAST(COALESCE(resume_at, start_with, 0) AS INTEGER) AS v FROM SYS.SYSSEQUENCE WHERE sequence_name = '" & me.SequenceObjectOf(pName) & "'"
+         SqlPeekSequence = "SELECT CAST(COALESCE(resume_at, start_with, 0) AS INTEGER) AS v FROM SYS.SYSSEQUENCE WHERE sequence_name = '" & me.SequenceObjectOf(pName) & "'" & me.AsaOwnerPred("owner", me.SequenceSchemaOf(pName))
       End Function
 
       Overrides Function SqlNextSequence(pName As String) As String
          Dim q As String = me.QuoteSequence(pName)
          Dim obj As String = me.SequenceObjectOf(pName)
-         SqlNextSequence = "BEGIN IF NOT EXISTS(SELECT 1 FROM SYS.SYSSEQUENCE WHERE sequence_name = '" & obj & "') THEN EXECUTE IMMEDIATE 'CREATE SEQUENCE " & q & " START WITH 1 INCREMENT BY 1'; END IF; SELECT " & q & ".NEXTVAL AS v; END"
+         Dim ownerPred As String = me.AsaOwnerPred("owner", me.SequenceSchemaOf(pName))
+         SqlNextSequence = "BEGIN IF NOT EXISTS(SELECT 1 FROM SYS.SYSSEQUENCE WHERE sequence_name = '" & obj & "'" & ownerPred & ") THEN EXECUTE IMMEDIATE 'CREATE SEQUENCE " & q & " START WITH 1 INCREMENT BY 1'; END IF; SELECT " & q & ".NEXTVAL AS v; END"
       End Function
 
       Overrides Function SqlAllocateSequence(pName As String, pCount As Integer) As String
          SqlAllocateSequence = me.SqlPeekSequence(pName)
       End Function
 
-      Overrides Function SqlAlterColumnType(pTable As String, pField As TFieldDef) As String
-         SqlAlterColumnType = "ALTER TABLE " & me.QuoteIdent(pTable) & " ALTER " & me.QuoteIdent(pField.DbName) & " " & me.TypeName(pField)
+      Overrides Function SqlAlterColumnType(pTable As String, pField As TFieldDef, pSchemaName As String = "") As String
+         SqlAlterColumnType = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " ALTER " & me.QuoteIdent(pField.DbName) & " " & me.TypeName(pField)
       End Function
 
       Overrides Function SupportsDdlInTransaction() As Boolean
@@ -887,28 +933,28 @@ Namespace TablesSql
          SqlCreateOrAlter = pBody
       End Function
 
-      Overrides Function SqlDropColumn(pTable As String, pCol As String) As String
-         SqlDropColumn = "ALTER TABLE " & me.QuoteIdent(pTable) & " DROP " & me.QuoteIdent(pCol)
+      Overrides Function SqlDropColumn(pTable As String, pCol As String, pSchemaName As String = "") As String
+         SqlDropColumn = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " DROP " & me.QuoteIdent(pCol)
       End Function
 
-      Overrides Function SqlSetNullability(pTable As String, pCol As String, pRequired As Boolean) As String
+      Overrides Function SqlSetNullability(pTable As String, pCol As String, pRequired As Boolean, pSchemaName As String = "") As String
          If pRequired Then
-            SqlSetNullability = "ALTER TABLE " & me.QuoteIdent(pTable) & " ALTER " & me.QuoteIdent(pCol) & " NOT NULL"
+            SqlSetNullability = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " ALTER " & me.QuoteIdent(pCol) & " NOT NULL"
          Else
-            SqlSetNullability = "ALTER TABLE " & me.QuoteIdent(pTable) & " ALTER " & me.QuoteIdent(pCol) & " NULL"
+            SqlSetNullability = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " ALTER " & me.QuoteIdent(pCol) & " NULL"
          End If
       End Function
 
-      Overrides Function SqlRenameColumn(pTable As String, pFrom As String, pTo As String) As String
-         SqlRenameColumn = "ALTER TABLE " & me.QuoteIdent(pTable) & " RENAME " & me.QuoteIdent(pFrom) & " TO " & me.QuoteIdent(pTo)
+      Overrides Function SqlRenameColumn(pTable As String, pFrom As String, pTo As String, pSchemaName As String = "") As String
+         SqlRenameColumn = "ALTER TABLE " & me.QuoteTable(pSchemaName, pTable) & " RENAME " & me.QuoteIdent(pFrom) & " TO " & me.QuoteIdent(pTo)
       End Function
 
       Overrides Function SupportsDropIfExists() As Boolean
          SupportsDropIfExists = False
       End Function
 
-      Overrides Function SqlDropTable(pTable As String) As String
-         SqlDropTable = "DROP TABLE " & me.QuoteIdent(pTable)
+      Overrides Function SqlDropTable(pTable As String, pSchemaName As String = "") As String
+         SqlDropTable = "DROP TABLE " & me.QuoteTable(pSchemaName, pTable)
       End Function
 
       Overrides Function SqlDropSequence(pName As String) As String
@@ -929,7 +975,7 @@ Namespace TablesSql
          End If
       End Function
 
-      Overrides Function SqlDropIndexOnTable(pIndex As String, pTable As String) As String
+      Overrides Function SqlDropIndexOnTable(pIndex As String, pTable As String, pSchemaName As String = "") As String
          SqlDropIndexOnTable = "DROP INDEX " & me.QuoteIdent(pIndex)
       End Function
 
@@ -992,16 +1038,40 @@ Namespace TablesSql
          SqlParam = me.SqlTypedParam(pField.ParamName, me.TypeName(pField))
       End Function
 
-      Overrides Function SqlTableExists(pTable As String) As String
-         SqlTableExists = "SELECT CASE WHEN to_regclass('" & LCase(pTable) & "') IS NULL THEN 0 ELSE 1 END AS ok"
+      Overrides Function SqlTableExists(pTable As String, pSchemaName As String = "") As String
+         Dim obj As String = LCase(pTable)
+         If Trim(pSchemaName) <> "" Then
+            obj = LCase(Trim(pSchemaName) & "." & pTable)
+         End If
+         SqlTableExists = "SELECT CASE WHEN to_regclass('" & obj & "') IS NULL THEN 0 ELSE 1 END AS ok"
       End Function
 
-      Overrides Function SqlColumnExists(pTable As String, pCol As String) As String
-         SqlColumnExists = "SELECT CASE WHEN EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name IN ('" & pTable & "', '" & LCase(pTable) & "') AND column_name IN ('" & pCol & "', '" & LCase(pCol) & "')) THEN 1 ELSE 0 END AS ok"
+      Overrides Function SqlColumnExists(pTable As String, pCol As String, pSchemaName As String = "") As String
+         Dim schemaFilter As String = ""
+         If Trim(pSchemaName) <> "" Then
+            schemaFilter = " AND table_schema IN ('" & pSchemaName & "', '" & LCase(pSchemaName) & "')"
+         End If
+         SqlColumnExists = "SELECT CASE WHEN EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name IN ('" & pTable & "', '" & LCase(pTable) & "') AND column_name IN ('" & pCol & "', '" & LCase(pCol) & "')" & schemaFilter & ") THEN 1 ELSE 0 END AS ok"
       End Function
 
-      Overrides Function SqlListColumns(pTable As String) As String
-         SqlListColumns = "SELECT column_name AS col FROM information_schema.columns WHERE table_name IN ('" & pTable & "', '" & LCase(pTable) & "')"
+      Overrides Function SqlListColumns(pTable As String, pSchemaName As String = "") As String
+         Dim schemaFilter As String = ""
+         If Trim(pSchemaName) <> "" Then
+            schemaFilter = " AND table_schema IN ('" & pSchemaName & "', '" & LCase(pSchemaName) & "')"
+         End If
+         SqlListColumns = "SELECT column_name AS col FROM information_schema.columns WHERE table_name IN ('" & pTable & "', '" & LCase(pTable) & "')" & schemaFilter
+      End Function
+
+      Overrides Function SqlSchemaExists(pSchemaName As String) As String
+         SqlSchemaExists = "SELECT CASE WHEN EXISTS(SELECT 1 FROM pg_namespace WHERE nspname IN ('" & pSchemaName & "', '" & LCase(pSchemaName) & "')) THEN 1 ELSE 0 END AS ok"
+      End Function
+
+      Overrides Function SqlCreateSchema(pSchemaName As String) As String
+         SqlCreateSchema = "CREATE SCHEMA IF NOT EXISTS " & me.QuoteIdent(pSchemaName)
+      End Function
+
+      Overrides Function SqlDropSchema(pSchemaName As String) As String
+         SqlDropSchema = "DROP SCHEMA IF EXISTS " & me.QuoteIdent(pSchemaName)
       End Function
 
       Overrides Function SqlDescribeColumns(pSchemaName As String, pTable As String) As String
@@ -1072,8 +1142,8 @@ Namespace TablesSql
          SupportsDropIfExists = True
       End Function
 
-      Overrides Function SqlDropTable(pTable As String) As String
-         SqlDropTable = "DROP TABLE IF EXISTS " & me.QuoteIdent(pTable)
+      Overrides Function SqlDropTable(pTable As String, pSchemaName As String = "") As String
+         SqlDropTable = "DROP TABLE IF EXISTS " & me.QuoteTable(pSchemaName, pTable)
       End Function
 
       Overrides Function SqlDropSequence(pName As String) As String
@@ -1106,7 +1176,7 @@ Namespace TablesSql
          SqlCreateOrReplaceIntFunction = "CREATE OR REPLACE FUNCTION " & me.QuoteIdent(pName) & "(n INTEGER) RETURNS INTEGER LANGUAGE sql AS $$ SELECT n * 2 $$"
       End Function
 
-      Overrides Function SqlDropIndexOnTable(pIndex As String, pTable As String) As String
+      Overrides Function SqlDropIndexOnTable(pIndex As String, pTable As String, pSchemaName As String = "") As String
          SqlDropIndexOnTable = "DROP INDEX IF EXISTS " & me.QuoteIdent(pIndex)
       End Function
 

@@ -47,16 +47,54 @@ Namespace TablesDdl
       End Sub
 
       Function TableExists(pTable As String) As Boolean
-         TableExists = TSql.ExistsFlag(TSql.Dialect().SqlTableExists(pTable))
+         TableExists = me.TableExists("", pTable)
+      End Function
+
+      Function TableExists(pSchemaName As String, pTable As String) As Boolean
+         TableExists = TSql.ExistsFlag(TSql.Dialect().SqlTableExists(pTable, pSchemaName))
       End Function
 
       Function ColumnExists(pTable As String, pCol As String) As Boolean
-         ColumnExists = TSql.ExistsFlag(TSql.Dialect().SqlColumnExists(pTable, pCol))
+         ColumnExists = me.ColumnExists("", pTable, pCol)
+      End Function
+
+      Function ColumnExists(pSchemaName As String, pTable As String, pCol As String) As Boolean
+         ColumnExists = TSql.ExistsFlag(TSql.Dialect().SqlColumnExists(pTable, pCol, pSchemaName))
       End Function
 
       Function ListColumnNames(pTable As String) As StringList
-         ListColumnNames = TSql.FetchStringColumn(TSql.Dialect().SqlListColumns(pTable), "col")
+         ListColumnNames = me.ListColumnNames("", pTable)
       End Function
+
+      Function ListColumnNames(pSchemaName As String, pTable As String) As StringList
+         ListColumnNames = TSql.FetchStringColumn(TSql.Dialect().SqlListColumns(pTable, pSchemaName), "col")
+      End Function
+
+      Function SchemaExists(pSchemaName As String) As Boolean
+         If Trim(pSchemaName) = "" Then
+            SchemaExists = True
+            Exit Function
+         End If
+         SchemaExists = TSql.ExistsFlag(TSql.Dialect().SqlSchemaExists(pSchemaName))
+      End Function
+
+      Sub EnsureSchema(pSchemaName As String)
+         Dim name As String = Trim(pSchemaName)
+         If name = "" Then
+            Exit Sub
+         End If
+         If TSql.Dialect().IsDefaultSchema(name) Then
+            Exit Sub
+         End If
+         If me.SchemaExists(name) Then
+            Exit Sub
+         End If
+         Dim sqlText As String = TSql.Dialect().SqlCreateSchema(name)
+         If Trim(sqlText) = "" Then
+            Exit Sub
+         End If
+         TSql.ExecScript(sqlText)
+      End Sub
 
       Function HasColumnName(pColNames As StringList, pCol As String) As Boolean
          HasColumnName = pColNames.IndexOf(UCase(Trim(pCol))) >= 0
@@ -67,39 +105,56 @@ Namespace TablesDdl
       End Function
 
       Sub CreateTable(pSchema As TTableSchema)
-         If me.TableExists(pSchema.TableName) Then
+         me.EnsureSchema(pSchema.SchemaName)
+         If me.TableExists(pSchema.SchemaName, pSchema.TableName) Then
             Exit Sub
          End If
          TSql.ExecScript(TSql.Dialect().SqlCreateTable(pSchema))
       End Sub
 
       Sub DropTable(pTable As String)
+         me.DropTable("", pTable)
+      End Sub
+
+      Sub DropTable(pSchemaName As String, pTable As String)
          If TSql.Dialect().SupportsDropIfExists() Then
-            TSql.ExecScript(TSql.Dialect().SqlDropTable(pTable))
+            TSql.ExecScript(TSql.Dialect().SqlDropTable(pTable, pSchemaName))
          Else
-            If Not me.TableExists(pTable) Then
+            If Not me.TableExists(pSchemaName, pTable) Then
                Exit Sub
             End If
-            TSql.ExecScript(TSql.Dialect().SqlDropTable(pTable))
+            TSql.ExecScript(TSql.Dialect().SqlDropTable(pTable, pSchemaName))
          End If
       End Sub
 
       Sub AddColumn(pTable As String, pField As TFieldDef)
-         If me.ColumnExists(pTable, pField.DbName) Then
+         me.AddColumn("", pTable, pField)
+      End Sub
+
+      Sub AddColumn(pSchemaName As String, pTable As String, pField As TFieldDef)
+         If me.ColumnExists(pSchemaName, pTable, pField.DbName) Then
             Exit Sub
          End If
-         TSql.ExecScript(TSql.Dialect().SqlAddColumn(pTable, pField))
+         TSql.ExecScript(TSql.Dialect().SqlAddColumn(pTable, pField, pSchemaName))
       End Sub
 
       Sub DropColumn(pTable As String, pCol As String)
-         If Not me.ColumnExists(pTable, pCol) Then
+         me.DropColumn("", pTable, pCol)
+      End Sub
+
+      Sub DropColumn(pSchemaName As String, pTable As String, pCol As String)
+         If Not me.ColumnExists(pSchemaName, pTable, pCol) Then
             Exit Sub
          End If
-         TSql.ExecScript(TSql.Dialect().SqlDropColumn(pTable, pCol))
+         TSql.ExecScript(TSql.Dialect().SqlDropColumn(pTable, pCol, pSchemaName))
       End Sub
 
       Sub RenameColumn(pTable As String, pFrom As String, pTo As String)
-         Dim colNames As StringList = me.ListColumnNames(pTable)
+         me.RenameColumn("", pTable, pFrom, pTo)
+      End Sub
+
+      Sub RenameColumn(pSchemaName As String, pTable As String, pFrom As String, pTo As String)
+         Dim colNames As StringList = me.ListColumnNames(pSchemaName, pTable)
          If me.HasColumnName(colNames, pTo) Then
             colNames.Free()
             Exit Sub
@@ -109,12 +164,16 @@ Namespace TablesDdl
             Exit Sub
          End If
          colNames.Free()
-         TSql.ExecScript(TSql.Dialect().SqlRenameColumn(pTable, pFrom, pTo))
+         TSql.ExecScript(TSql.Dialect().SqlRenameColumn(pTable, pFrom, pTo, pSchemaName))
       End Sub
 
       Sub AlterColumn(pTable As String, pField As TFieldDef, pMode As TAlterColumnMode)
-         If Not me.ColumnExists(pTable, pField.DbName) Then
-            me.AddColumn(pTable, pField)
+         me.AlterColumn("", pTable, pField, pMode)
+      End Sub
+
+      Sub AlterColumn(pSchemaName As String, pTable As String, pField As TFieldDef, pMode As TAlterColumnMode)
+         If Not me.ColumnExists(pSchemaName, pTable, pField.DbName) Then
+            me.AddColumn(pSchemaName, pTable, pField)
             Exit Sub
          End If
          Dim useRebuild As Boolean = pMode = _alterRebuild
@@ -122,26 +181,34 @@ Namespace TablesDdl
             useRebuild = Not TSql.Dialect().SupportsInPlaceAlterType(pField, pField)
          End If
          If useRebuild Then
-            me.RebuildColumn(pTable, pField)
+            me.RebuildColumn(pSchemaName, pTable, pField)
          Else
-            TSql.ExecScript(TSql.Dialect().SqlAlterColumnType(pTable, pField))
+            TSql.ExecScript(TSql.Dialect().SqlAlterColumnType(pTable, pField, pSchemaName))
          End If
       End Sub
 
       Sub RebuildColumn(pTable As String, pField As TFieldDef)
+         me.RebuildColumn("", pTable, pField)
+      End Sub
+
+      Sub RebuildColumn(pSchemaName As String, pTable As String, pField As TFieldDef)
          Dim tmp As String = pField.DbName & "_tmp"
          Dim tmpDef As TFieldDef = TFieldDef(pField.Clone())
          tmpDef.DbName = tmp
          tmpDef.Name = tmp
-         me.AddColumn(pTable, tmpDef)
-         TSql.ExecScript(TSql.Dialect().SqlCastCopy(pTable, tmp, pField.DbName, pField))
-         me.DropColumn(pTable, pField.DbName)
-         me.RenameColumn(pTable, tmp, pField.DbName)
+         me.AddColumn(pSchemaName, pTable, tmpDef)
+         TSql.ExecScript(TSql.Dialect().SqlCastCopy(pTable, tmp, pField.DbName, pField, pSchemaName))
+         me.DropColumn(pSchemaName, pTable, pField.DbName)
+         me.RenameColumn(pSchemaName, pTable, tmp, pField.DbName)
          tmpDef.Free()
       End Sub
 
       Sub SetNullability(pTable As String, pCol As String, pRequired As Boolean)
-         TSql.ExecScript(TSql.Dialect().SqlSetNullability(pTable, pCol, pRequired))
+         me.SetNullability("", pTable, pCol, pRequired)
+      End Sub
+
+      Sub SetNullability(pSchemaName As String, pTable As String, pCol As String, pRequired As Boolean)
+         TSql.ExecScript(TSql.Dialect().SqlSetNullability(pTable, pCol, pRequired, pSchemaName))
       End Sub
 
       Sub CreateSequence(pName As String)
@@ -158,19 +225,30 @@ Namespace TablesDdl
 
       Function OpCreateTable(pSchema As TTableSchema) As TDdlOp
          Dim op As New TDdlOp(_ddlCreateTable)
+         op.SchemaName = pSchema.SchemaName
          op.TableName = pSchema.TableName
          op.SqlText = TSql.Dialect().SqlCreateTable(pSchema)
          OpCreateTable = op
       End Function
 
       Function OpDropTable(pTable As String) As TDdlOp
+         OpDropTable = me.OpDropTable("", pTable)
+      End Function
+
+      Function OpDropTable(pSchemaName As String, pTable As String) As TDdlOp
          Dim op As New TDdlOp(_ddlDropTable)
+         op.SchemaName = pSchemaName
          op.TableName = pTable
          OpDropTable = op
       End Function
 
       Function OpAddColumn(pTable As String, pField As TFieldDef) As TDdlOp
+         OpAddColumn = me.OpAddColumn("", pTable, pField)
+      End Function
+
+      Function OpAddColumn(pSchemaName As String, pTable As String, pField As TFieldDef) As TDdlOp
          Dim op As New TDdlOp(_ddlAddColumn)
+         op.SchemaName = pSchemaName
          op.TableName = pTable
          op.ColumnName = pField.DbName
          op.FieldDef = pField
@@ -178,14 +256,24 @@ Namespace TablesDdl
       End Function
 
       Function OpDropColumn(pTable As String, pCol As String) As TDdlOp
+         OpDropColumn = me.OpDropColumn("", pTable, pCol)
+      End Function
+
+      Function OpDropColumn(pSchemaName As String, pTable As String, pCol As String) As TDdlOp
          Dim op As New TDdlOp(_ddlDropColumn)
+         op.SchemaName = pSchemaName
          op.TableName = pTable
          op.ColumnName = pCol
          OpDropColumn = op
       End Function
 
       Function OpAlterColumn(pTable As String, pField As TFieldDef) As TDdlOp
+         OpAlterColumn = me.OpAlterColumn("", pTable, pField)
+      End Function
+
+      Function OpAlterColumn(pSchemaName As String, pTable As String, pField As TFieldDef) As TDdlOp
          Dim op As New TDdlOp(_ddlAlterColumn)
+         op.SchemaName = pSchemaName
          op.TableName = pTable
          op.ColumnName = pField.DbName
          op.FieldDef = pField
@@ -200,7 +288,8 @@ Namespace TablesDdl
 
       Function OpsFromSchema(pSchema As TTableSchema) As TTList<TDdlOp>
          Dim ops[] As TDdlOp = []
-         Dim colNames As StringList = me.ListColumnNames(pSchema.TableName)
+         me.EnsureSchema(pSchema.SchemaName)
+         Dim colNames As StringList = me.ListColumnNames(pSchema.SchemaName, pSchema.TableName)
          If colNames.Count = 0 Then
             ops.Push(me.OpCreateTable(pSchema))
          Else
@@ -210,7 +299,7 @@ Namespace TablesDdl
             For i = 0 To persist.Length - 1
                Dim fieldDef As TFieldDef = persist.Take(i)
                If Not me.HasColumnName(colNames, fieldDef.DbName) Then
-                  ops.Push(me.OpAddColumn(pSchema.TableName, fieldDef))
+                  ops.Push(me.OpAddColumn(pSchema.SchemaName, pSchema.TableName, fieldDef))
                End If
             Next
          End If
@@ -226,19 +315,20 @@ Namespace TablesDdl
 
       Sub ApplyOp(pOp As TDdlOp)
          If pOp.Kind = _ddlCreateTable Then
+            me.EnsureSchema(pOp.SchemaName)
             If Trim(pOp.SqlText) <> "" Then
                TSql.ExecScript(pOp.SqlText)
             End If
          ElseIf pOp.Kind = _ddlDropTable Then
-            me.DropTable(pOp.TableName)
+            me.DropTable(pOp.SchemaName, pOp.TableName)
          ElseIf pOp.Kind = _ddlAddColumn Then
-            TSql.ExecScript(TSql.Dialect().SqlAddColumn(pOp.TableName, pOp.FieldDef))
+            TSql.ExecScript(TSql.Dialect().SqlAddColumn(pOp.TableName, pOp.FieldDef, pOp.SchemaName))
          ElseIf pOp.Kind = _ddlDropColumn Then
-            me.DropColumn(pOp.TableName, pOp.ColumnName)
+            me.DropColumn(pOp.SchemaName, pOp.TableName, pOp.ColumnName)
          ElseIf pOp.Kind = _ddlRenameColumn Then
-            me.RenameColumn(pOp.TableName, pOp.ColumnName, pOp.ColumnNameTo)
+            me.RenameColumn(pOp.SchemaName, pOp.TableName, pOp.ColumnName, pOp.ColumnNameTo)
          ElseIf pOp.Kind = _ddlAlterColumn Then
-            me.AlterColumn(pOp.TableName, pOp.FieldDef, pOp.AlterMode)
+            me.AlterColumn(pOp.SchemaName, pOp.TableName, pOp.FieldDef, pOp.AlterMode)
          ElseIf pOp.Kind = _ddlEnsureSequence Then
             TSql.ExecScript(TSql.Dialect().SqlCreateSequence(pOp.SequenceName))
          ElseIf pOp.Kind = _ddlDropSequence Then

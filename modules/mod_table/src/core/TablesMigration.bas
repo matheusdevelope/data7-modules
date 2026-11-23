@@ -166,9 +166,9 @@ Namespace TablesMigration
          While i >= 0
             Dim op As TDdlOp = ups.Take(i)
             If op.Kind = _ddlCreateTable Then
-               downs.Push(pCtx.Ddl.OpDropTable(op.TableName))
+               downs.Push(pCtx.Ddl.OpDropTable(op.SchemaName, op.TableName))
             ElseIf op.Kind = _ddlAddColumn Then
-               downs.Push(pCtx.Ddl.OpDropColumn(op.TableName, op.ColumnName))
+               downs.Push(pCtx.Ddl.OpDropColumn(op.SchemaName, op.TableName, op.ColumnName))
             End If
             i = i - 1
          End While

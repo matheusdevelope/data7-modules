@@ -1247,6 +1247,7 @@ Namespace TablesField
       Inherits TTObject
 
       Kind As TDdlOpKind
+      SchemaName As String
       TableName As String
       ColumnName As String
       ColumnNameTo As String
@@ -1261,6 +1262,7 @@ Namespace TablesField
       Sub New(pKind As TDdlOpKind)
          MyBase.New()
          me.Kind = pKind
+         me.SchemaName = ""
          me.TableName = ""
          me.ColumnName = ""
          me.ColumnNameTo = ""
@@ -1272,11 +1274,12 @@ Namespace TablesField
       End Sub
 
       Overrides Function GetID() As String
-         GetID = me.Kind.AsString & "|" & me.TableName & "|" & me.ColumnName & "|" & me.SequenceName & "|" & me.ResourceName
+         GetID = me.Kind.AsString & "|" & me.SchemaName & "|" & me.TableName & "|" & me.ColumnName & "|" & me.SequenceName & "|" & me.ResourceName
       End Function
 
       Overrides Function Clone() As TTObject
          Dim n As New TDdlOp(me.Kind)
+         n.SchemaName = me.SchemaName
          n.TableName = me.TableName
          n.ColumnName = me.ColumnName
          n.ColumnNameTo = me.ColumnNameTo

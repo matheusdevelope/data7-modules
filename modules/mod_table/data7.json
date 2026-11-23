@@ -1,11 +1,11 @@
 {
   "nome": "mod_table",
   "language": "Basic",
-  "version": "1.0.0.7",
+  "version": "1.0.0.8",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
-    "versao": "1.0.0.7",
+    "versao": "1.0.0.8",
     "informacoes": "Core para mapear, persistir, migrar e gerar classes de tabelas.\n",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -127,13 +127,13 @@
     },
     "TablesSequence": {
       "nome": "TablesSequence",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
     },
     "TablesSql": {
       "nome": "TablesSql",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{B7E4C1A0-3F52-4D8E-9C11-6A2F8D4E7B90}"
     },
@@ -145,7 +145,7 @@
     },
     "tests": {
       "nome": "tests",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{7C9E4F12-8A3B-4D6E-9F01-2B5C8D7E6A4F}"
     }
