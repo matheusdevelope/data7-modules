@@ -1,11 +1,11 @@
 {
   "nome": "mod_camera",
   "language": "Basic",
-  "version": "1.0.0.1",
+  "version": "1.0.0.2",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Administrador",
-    "versao": "1.0.0.1",
+    "versao": "1.0.0.2",
     "informacoes": "Projeto mod_camera criado no VS Code",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -52,7 +52,7 @@
   },
   "virtualFolders": [
     {
-      "nome": "Unidades (7)",
+      "nome": "Unidades (16)",
       "id": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}",
       "pastaId": "",
       "aberta": "Sim"
@@ -74,6 +74,36 @@
       "id": "{F7F7B9C3-E791-48B1-986B-E969141346B0}",
       "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
       "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{7BC90ABE-55AA-4DB2-87CA-3EFC9702BFA9}",
+      "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{ED3947FA-6571-4285-B3DB-60D3FF6D97D3}",
+      "pastaId": "{7BC90ABE-55AA-4DB2-87CA-3EFC9702BFA9}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{E9C90D22-2CD0-4871-B032-BE94F7FCDEBC}",
+      "pastaId": "{F7F7B9C3-E791-48B1-986B-E969141346B0}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_win_process",
+      "id": "{D2922696-9633-4D5B-8929-8F1B2ABCB517}",
+      "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{339B4EBD-7D2E-406C-8442-138490EF7809}",
+      "pastaId": "{D2922696-9633-4D5B-8929-8F1B2ABCB517}",
+      "aberta": "Nao"
     }
   ],
   "modulesMetadata": {
@@ -85,7 +115,7 @@
     }
   },
   "dependencies": {
-    "mod_portable_exe": "1.0.0.0"
+    "mod_portable_exe": "2.0.0.0"
   },
   "module": {
     "enabled": true,

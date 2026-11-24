@@ -1,6 +1,8 @@
 ﻿Imports Collections
 Imports Forms
 Imports IO
+Imports TPath
+Imports mod_win_process
 Imports mod_portable_exe
 ' Ex:
 ' Imports mod_camera
@@ -39,6 +41,7 @@ Namespace mod_camera
 
       Sub New()
          MyBase.New()
+         me.UseConsole = False
          me.ExeBase64 = me._exeBase64
          me.ExeFileName = "mod_camera_cam_ds.exe"
          me.Width = 1920
@@ -61,7 +64,10 @@ Namespace mod_camera
             Exit Function
          End If
          If me.OutputAsBase64 Or pOutputAsBase64 Then
-            Capture = Replace(Replace(FileToBase64(capturedPath), Char(10), ""), Char(13), "")
+            Dim payload As String = FileToBase64(capturedPath)
+            payload = payload.Replace(Char(10), "")
+            payload = payload.Replace(Char(13), "")
+            Capture = payload
             If me.OutputPath = "" Then
                If File.Exists(capturedPath) Then
                   File.Delete(capturedPath)
@@ -77,7 +83,14 @@ Namespace mod_camera
             ResolveOutputPath = me.OutputPath
             Exit Function
          End If
-         ResolveOutputPath = me.GetTempFilePath("mod_camera_", me.Format)
+         Dim tmp As String = TPath.GetTempFileName()
+         Dim dest As String = TPath.ChangeExtension(tmp, me.Format)
+         If dest <> tmp Then
+            If File.Exists(tmp) Then
+               File.Delete(tmp)
+            End If
+         End If
+         ResolveOutputPath = dest
       End Function
 
       Sub Free()
@@ -167,7 +180,7 @@ Namespace mod_camera
       End Function
 
       Private Function _getCameraList() As StringList
-         _getCameraList = me._config.ExecReadLines("-list")
+         _getCameraList = me._config.CaptureLines("-list")
       End Function
 
       Private Sub _startPreview(pCamIndex As Integer)
@@ -189,7 +202,7 @@ Namespace mod_camera
             If me._config.Mirror Then
                args = args & " -mirror"
             End If
-            me._config.StartProcess(args)
+            me._config.Start(args)
          Catch ex As Exception
             print("Erro ao iniciar câmera: " & ex.Message)
          End Try
@@ -241,7 +254,7 @@ Namespace mod_camera
          If me._config.IsRunning() Then
             Try
                me._config.WriteLine("capture " & savePath)
-               Dim outLine As String = me._config.WaitForOutput("captured:", "erro:")
+               Dim outLine As String = me._config.WaitOutput("captured:", "erro:")
                If InStr(outLine, "captured:") > 0 Then
                   me.ResultPath = savePath
                   me._form.Close()
@@ -259,6 +272,9 @@ Namespace mod_camera
       End Sub
 
       Private Sub _handleClose(pSender As TObject, pAction As TCloseAction)
+         If me._config.IsRunning() Then
+            me._config.WriteLine("exit")
+         End If
          me._config.StopProcess()
       End Sub
 

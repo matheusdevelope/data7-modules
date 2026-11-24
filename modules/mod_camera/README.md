@@ -2,7 +2,7 @@
 
 Opens a DirectShow capture window, lets the user pick a camera, and returns one still image as a file path or as Base64. It does **not** store the photo in a database, upload it, or decide a business filename — that stays in the consumer.
 
-Version `1.0.0.0`. Dependency (`data7.json`): `mod_portable_exe` `1.0.0.0`. `TCamera` inherits `TPortableExe` and ships an embedded `cam_ds.exe` payload (`ExeFileName` = `mod_camera_cam_ds.exe`).
+Version `1.0.0.1`. Dependency (`data7.json`): `mod_portable_exe` `2.0.0.0` (brings `mod_win_process`). `TCamera` inherits `TPortableExe` and ships an embedded `cam_ds.exe` payload (`ExeFileName` = `mod_camera_cam_ds.exe`).
 
 This file is the module contract. Do not open `.bas` files to use the API; open implementation only to confirm a detail that is not stated here.
 
@@ -47,7 +47,7 @@ Companion (not a Data7 unit): `lib/cam_ds.cpp` / `lib/cam_ds.exe` — native hel
 
 Owns capture defaults, materializes the helper via `TPortableExe`, and shows `TFormCamera` until the user captures or closes.
 
-Constructor sets the helper payload and filename, then the capture defaults below. `InstallFolder` is left `""`, so `EnsureExe` writes `AppDir\mod_camera_cam_ds.exe` (see `mod_portable_exe`).
+Constructor sets `UseConsole = False` (stdin/stdout pipes for the helper IPC), the helper payload and filename, then the capture defaults below. `InstallFolder` is left `""`, so `EnsureExe` writes `AppDir\mod_camera_cam_ds.exe` (see `mod_portable_exe`).
 
 #### Properties
 
@@ -61,7 +61,7 @@ Constructor sets the helper payload and filename, then the capture defaults belo
 | `OutputAsBase64` | `Boolean` | `False` | When `True`, `Capture` returns Base64 instead of a path. Combined with the `Capture` argument via `Or`. |
 | `OutputPath` | `String` | `""` | If non-empty, that path is the capture destination. If empty, a temp file is used. |
 
-Inherited from `TPortableExe` and used by this module (full contract is in that dependency): `ExeBase64`, `ExeFileName`, `ExePath`, `EnsureExe`, `IsRunning`, `StartProcess`, `ExecReadLines`, `WriteLine`, `WaitForOutput`, `StopProcess`, `GetTempFilePath`. Constructor assigns `ExeBase64` (embedded PE) and `ExeFileName` = `"mod_camera_cam_ds.exe"`.
+Inherited from `TPortableExe` / `TWinProcess` and used by this module (full contracts in those READMEs): `ExeBase64`, `ExeFileName`, `ExePath`, `EnsureExe`, `UseConsole`, `IsRunning`, `Start`, `CaptureLines`, `WriteLine`, `WaitOutput`, `StopProcess`. Constructor assigns `ExeBase64` (embedded PE) and `ExeFileName` = `"mod_camera_cam_ds.exe"`. On `TPortableExe`, `Start` / `CaptureLines` take **extra args only**.
 
 #### Methods
 
@@ -76,8 +76,9 @@ Function Capture(pOutputAsBase64 As Boolean = False) As String
    ' out: file path, Base64 without CR/LF, or "" if cancelled / failed
 
 Function ResolveOutputPath() As String
-   ' out: OutputPath when <> ""; else GetTempFilePath("mod_camera_", Format)
-   ' example temp: %TEMP%\mod_camera_<GetTempName>.jpg
+   ' out: OutputPath when <> ""
+   ' else TPath.GetTempFileName, ChangeExtension(..., Format), delete the unused .tmp
+   ' example temp: %TEMP%\TMP1234.jpg
 ```
 
 `Capture` does not throw. Helper/IPC failures are `print`ed inside the form; the function still returns `""` if `ResultPath` was never set.
@@ -102,18 +103,18 @@ Function Show() As Boolean
    ' out: always True after the form closes
 ```
 
-On close, `StopProcess()` is called on `pConfig` (stdin `"exit"`).
+On close, stdin `"exit"` is sent if `IsRunning`, then `StopProcess()` (kills the child if it is still alive).
 
 ## Capture flow
 
 1. `Capture` → `EnsureExe` → if `AppDir\mod_camera_cam_ds.exe` is missing, write the embedded Base64 once (no overwrite if the file already exists).
-2. Form `OnShow`: `ExecReadLines("-list")`. Non-empty lines fill the combo. Device index is the integer inside `[` `]` on the selected line; if missing, `0`.
+2. Form `OnShow`: `CaptureLines("-list")`. Non-empty lines fill the combo. Device index is the integer inside `[` `]` on the selected line; if missing, `0`.
 3. List line contract from the helper: `"[%d] %s"` — example: `[0] USB Camera`.
 4. Empty list: combo item `"Nenhuma câmera encontrada"`; preview is not started. Combo change is a no-op while that placeholder is item `0`.
-5. Preview: `StartProcess("-hwnd {preview.Handle} -d {index}"` plus `-w` / `-h` / `-q` / `-mirror` as above`)`. If already `IsRunning`, stdin `change {index}` instead of a new process.
+5. Preview: `Start("-hwnd {preview.Handle} -d {index}"` plus `-w` / `-h` / `-q` / `-mirror` as above`)`. If already `IsRunning`, stdin `change {index}` instead of a new process.
 6. **Config** (running only): stdin `settings`. No-op if the helper is not running. Helper may answer `erro: Esta camera não possui painel nativo de ajustes.`
 7. **Inverter** (running only): flips `TCamera.Mirror`, stdin `mirror 1` or `mirror 0`.
-8. **Capturar** (running only): stdin `capture {ResolveOutputPath()}`, then `WaitForOutput("captured:", "erro:")`.
+8. **Capturar** (running only): stdin `capture {ResolveOutputPath()}`, then `WaitOutput("captured:", "erro:")`.
    - line contains `captured:` → `ResultPath` = save path, form closes.
    - line contains `erro:` → `print("Erro C++: " & line)`, button caption restored to `"Capturar"`.
    - not running / IPC exception / no matching line → `print("Erro ao tentar capturar o frame.")`.
@@ -138,7 +139,7 @@ Class TCameraLoja
 End Class
 ```
 
-To change how the helper is materialized, override `EnsureExe` on a `TCamera` subclass (`TPortableExe` hook: reuse existing `InstalledExePath`, otherwise `Base64ToFile`). This module does not override it.
+To change how the helper is materialized, override `EnsureExe` on a `TCamera` subclass (`TPortableExe` hook: `TryReuseExe` / existing `InstalledExePath`, otherwise `Base64ToFile`). This module does not override it. Preview IPC requires `UseConsole = False` (already set in `TCamera.New`).
 
 Do not subclass `TFormCamera` unless you replace `Capture`; `TCamera` always constructs `TFormCamera` internally.
 
@@ -151,4 +152,5 @@ Do not subclass `TFormCamera` unless you replace `Capture`; `TCamera` always con
 - `Width` / `Height` / `Quality` of `0` or less are omitted from the helper command line; the helper then uses its own defaults.
 - Camera combo values must keep the `[index]` prefix; `_resolveCameraIndex` reads that integer. Lines without brackets become device `0`.
 - The helper is reused from `AppDir\mod_camera_cam_ds.exe` after the first `EnsureExe`; changing the embedded payload in source does not rewrite an already-installed file.
+- Temp files for unnamed output use `TPath.GetTempFileName` (creates a `TMP*.tmp` on disk) then `TPath.ChangeExtension` to `Format`; the unused `.tmp` is deleted.
 - `Principal.bas` exercises path capture with Full HD / quality `100` / `.jpg` / `Mirror = True`. It does not run a test suite.
