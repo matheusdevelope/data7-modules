@@ -1,6 +1,6 @@
 # mod_share_contract
 
-Opens the native Windows Share UI over a consumer form `HWND`, with optional title, message text, and file paths. It does **not** pick the share target, send the payload, or own the calling form — that stays with the consumer. Version `1.0.0.0`. Depends on `mod_portable_exe` `1.0.0.0` and `mod_winapi` `1.0.0.0` (`data7.json`).
+Opens the native Windows Share UI over a consumer form `HWND`, with optional title, message text, and file paths. It does **not** pick the share target, send the payload, or own the calling form — that stays with the consumer. Version `1.0.0.0`. Depends on `mod_portable_exe` `2.0.0.0` (`TWinProcess` execute API) and `mod_winapi` `1.0.0.0` (`data7.json`).
 
 This file is the module contract. Use `TShareContract` from here; do not open `.bas` files to consume the API.
 
@@ -34,7 +34,7 @@ share.Free()
 
 ### `TShareContract`
 
-Opens Windows Share for the current process over a parent window handle. Inherits `TPortableExe` (`mod_portable_exe`) to extract and run the embedded helper `mod_share_contract_winrt.exe`.
+Opens Windows Share for the current process over a parent window handle. Inherits `TPortableExe` (`mod_portable_exe` 2.x), which inherits `TWinProcess`. `Start` receives extra args only; the base prefixes the quoted helper path (`BuildCommand`).
 
 ```basic
 Sub New()
@@ -60,9 +60,9 @@ Sub Share(pParentHandle As Integer)
    ' 1. If not IsSupported → Throw
    ' 2. If pParentHandle = 0 → print requirement, Exit Sub
    ' 3. EnsureExe (extract helper beside the host exe if missing)
-   ' 4. Start helper: -hwnd <handle> [-title "..."] [-text "..."] [-file "..."]*
+   ' 4. Start(args): -hwnd <handle> [-title Quoted] [-text Quoted] [-file Quoted]*
    ' 5. While IsRunning: Sleep(2); Forms.ProcessMessages
-   ' 6. StopProcess("")
+   ' 6. StopProcess()
 
 Sub Free()
    ' Frees Files when Assigned, then the portable-exe base
@@ -94,5 +94,5 @@ Inherit `TShareContract` if the consumer needs extra fields or a wrapper around 
 - Blank `Title` / `Text` / file paths (after `Trim`) are dropped from the command line; they are not sent as empty quotes.
 - The helper is embedded as base64 and written as `mod_share_contract_winrt.exe` beside the host exe on first `EnsureExe` (typical path: `Share` → `EnsureExe`).
 - File share advertises lowercase extensions from the paths (`C:\temp\nfe_123.xml` → `.xml`). Text-only share publishes `Text` as share text.
-- `StopProcess("")` after the wait does not write an `exit` line to the helper stdin; the process is expected to have already quit with the share UI.
+- `StopProcess()` after the wait releases process handles; the helper is expected to have already quit with the share UI (`pKill` default does not terminate a process that already exited).
 - Rebuild of `lib/share_winrt.cpp` is a maintainer step (`lib/readme.txt`); consumers only set `Title` / `Text` / `Files` and call `Share`.

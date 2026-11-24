@@ -48,24 +48,24 @@ Namespace mod_share_contract
          me.EnsureExe()
          Dim args As String = "-hwnd " & CStr(pParentHandle)
          If Trim(me.Title) <> "" Then
-            args = args & " -title " & me.QuoteArg(me.Title)
+            args = args & " -title " & me.Title.Quoted()
          End If
          If Trim(me.Text) <> "" Then
-            args = args & " -text " & me.QuoteArg(me.Text)
+            args = args & " -text " & me.Text.Quoted()
          End If
          For Each filePath As String In me.Files
             If Trim(filePath) <> "" Then
-               args = args & " -file " & me.QuoteArg(filePath)
+               args = args & " -file " & filePath.Quoted()
             End If
          Next
 
-         If me.StartProcess(args) Then
+         If me.Start(args) Then
             While me.IsRunning()
                Sleep(2)
                Forms.ProcessMessages()
             End While
          End If
-         me.StopProcess("")
+         me.StopProcess()
       End Sub
 
       Sub Free()

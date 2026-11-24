@@ -1,11 +1,11 @@
 {
   "nome": "mod_share_contract",
   "language": "Basic",
-  "version": "1.0.0.0",
+  "version": "1.0.0.1",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Administrador",
-    "versao": "1.0.0.0",
+    "versao": "1.0.0.1",
     "informacoes": "Projeto mod_share_contract criado no VS Code",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -52,7 +52,7 @@
   },
   "virtualFolders": [
     {
-      "nome": "Unidades (8)",
+      "nome": "Unidades (17)",
       "id": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}",
       "pastaId": "",
       "aberta": "Sim"
@@ -80,6 +80,36 @@
       "id": "{F1AA7F11-BA58-4527-BDFD-18A50D868C0B}",
       "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
       "aberta": "Nao"
+    },
+    {
+      "nome": "mod_io",
+      "id": "{B80E2A3E-1BDC-489E-AFEE-76FE2268F076}",
+      "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{4BCD36E8-15BE-4869-83FA-AA1D5B1F51FE}",
+      "pastaId": "{B80E2A3E-1BDC-489E-AFEE-76FE2268F076}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{0E0101D1-7D65-4869-A795-9E82E7A9027A}",
+      "pastaId": "{F7F7B9C3-E791-48B1-986B-E969141346B0}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_win_process",
+      "id": "{E33A447D-2C64-42C2-8104-19E896FE200F}",
+      "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{D7702A87-3ECD-4A4E-924E-A4D41F0692B8}",
+      "pastaId": "{E33A447D-2C64-42C2-8104-19E896FE200F}",
+      "aberta": "Nao"
     }
   ],
   "modulesMetadata": {
@@ -91,7 +121,7 @@
     }
   },
   "dependencies": {
-    "mod_portable_exe": "1.0.0.0",
+    "mod_portable_exe": "2.0.0.0",
     "mod_winapi": "1.0.0.0"
   },
   "module": {
