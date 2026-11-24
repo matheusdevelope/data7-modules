@@ -1,11 +1,11 @@
 {
   "nome": "mod_portable_exe",
   "language": "Basic",
-  "version": "1.0.0.0",
+  "version": "2.0.0.0",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Administrador",
-    "versao": "1.0.0.0",
+    "versao": "2.0.0.0",
     "informacoes": "Projeto mod_portable_exe criado no VS Code",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -52,7 +52,7 @@
   },
   "virtualFolders": [
     {
-      "nome": "Unidades (13)",
+      "nome": "Unidades (15)",
       "id": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}",
       "pastaId": "",
       "aberta": "Sim"
@@ -80,18 +80,30 @@
       "id": "{30827F8E-2C53-4783-AD2F-55987067A5A2}",
       "pastaId": "{75526553-399D-4EAB-A732-3D09064EB5D8}",
       "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{377D4359-4F9A-4494-8931-C1670E3CBA40}",
+      "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_win_process",
+      "id": "{B4E7C1A2-9D83-4F0E-8A51-6C2D9E0B7F14}",
+      "pastaId": "{A275CA14-2A01-42E9-AADC-B5586C7DBB65}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{0A28758B-7E09-49A3-ACD7-E0CF736F8DC0}",
+      "pastaId": "{B4E7C1A2-9D83-4F0E-8A51-6C2D9E0B7F14}",
+      "aberta": "Nao"
     }
   ],
   "modulesMetadata": {
     "mod_portable_exe": {
       "nome": "mod_portable_exe",
-      "aberto": true,
-      "ordemAbertura": 0,
-      "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}"
-    },
-    "mod_portable_exe_tests": {
-      "nome": "mod_portable_exe_tests",
-      "aberto": true,
+      "aberto": false,
       "ordemAbertura": 0,
       "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}"
     },
@@ -106,10 +118,17 @@
       "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{248435C9-B8E7-4FB8-AC4D-32C93C0910F4}"
+    },
+    "mod_portable_exe_tests": {
+      "nome": "mod_portable_exe_tests",
+      "aberto": true,
+      "ordemAbertura": 0,
+      "pastaId": "{377D4359-4F9A-4494-8931-C1670E3CBA40}"
     }
   },
   "dependencies": {
-    "mod_io": "1.0.0.0"
+    "mod_io": "1.0.0.0",
+    "mod_win_process": "1.0.0.0"
   },
   "module": {
     "enabled": true,

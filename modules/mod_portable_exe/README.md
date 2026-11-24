@@ -1,8 +1,12 @@
 # mod_portable_exe
 
-Materializes a Windows `.exe` next to the running script (`AppDir[\InstallFolder]\ExeFileName`), reuses it if already present, and runs it (wait, capture stdout, or stdin/stdout IPC). Consumers supply the payload (`ExeBase64`, `DownloadUrl`, `ZipPath` / `ZipBase64`) and the process protocol. This module does not choose which tool to ship, does not implement HTTP servers, and does not parse tool-specific CLI output.
+Materializes a Windows `.exe` next to the running script (`AppDir[\InstallFolder]\ExeFileName`), reuses it if already present, and runs it.
 
-Version `1.0.0.0`. Dependency: `mod_io` `1.0.0.0` (`data7.json`).
+`TPortableExe` **inherits** `TWinProcess` (`mod_win_process`) and only adds payload install (base64 / `UsePath`). `TRemotePortableExe` / `TZipPortableExe` only change how the payload is obtained (HTTP / zip). Consumers supply the payload and the process protocol. This module does not choose which tool to ship, does not implement HTTP servers, and does not parse tool-specific CLI output.
+
+Execute API (`Start`, `Run`, `CaptureLines`, `PullStdOut*`, `WriteLine`, `UseConsole`, `Visible`, `WorkingDir`, `RunAsAdmin`, …) is inherited. On `TPortableExe` those methods take **extra args only** (`BuildCommand` prefixes `ExePath.Quoted()`). For backends, live `\r` progress, UAC, and I/O semantics, read the **`mod_win_process` README**.
+
+Version `1.0.0.0`. Dependencies (`data7.json`): `mod_io` `1.0.0.0`, `mod_win_process` `1.0.0.0`.
 
 This file is the module contract. Do not open `.bas` files to use the API.
 
@@ -24,14 +28,16 @@ End Class
 
 Dim exe As New TMeuRecurso()
 exe.EnsureExe()                          ' write once; later calls reuse the file
-Dim linhas As StringList = exe.ExecReadLines("-list")  ' run, capture non-empty stdout lines
+Dim linhas As StringList = exe.CaptureLines("-list")
 ' ... use linhas ...
 linhas.Free()
-If exe.StartProcess() Then               ' WScript.Exec, stdin/stdout IPC
-   Dim ready As String = exe.WaitForOutput("ready")
+
+exe.UseConsole = False                   ' pipes: stdin + line protocol (see mod_win_process)
+If exe.Start() Then
+   Dim ready As String = exe.WaitOutput("ready")
    exe.WriteLine("ping")
-   Dim pong As String = exe.WaitForOutput("pong")
-   exe.StopProcess()                     ' default stdin line: "exit"
+   Dim pong As String = exe.WaitOutput("pong")
+   exe.StopProcess()
 End If
 exe.Free()
 ```
@@ -45,15 +51,15 @@ exe.Free()
 | `src/mod_zip_exe.bas` | `mod_zip_exe` | `TZipPortableExe` |
 | `src/tests/mod_portable_exe_tests.bas` | `mod_portable_exe_tests` | `TPortableExeSuite` (plus test fixtures) |
 
-Inheritance: `TPortableExe` → `TRemotePortableExe` → `TZipPortableExe`.
+Inheritance: `TWinProcess` (`mod_win_process`) → `TPortableExe` → `TRemotePortableExe` → `TZipPortableExe`.
 
-## Local exe (base64 + process)
+## `TPortableExe`
 
-### `TPortableExe`
+Owns install path and optional base64 materialization. One instance, one child at a time. `Start` / `Run` / `CaptureLines` take **args**, not a full command line. `Run` / `CaptureLines` are not redeclared: they call `Start`, so they also get `EnsureExe` + quoted `ExePath`.
 
-Owns install path, optional base64 materialization, and process I/O.
+`Dispose` (via `Free`) is `TWinProcess.Dispose` (`StopProcess(True)`). Leaving a process running after `Free` is not supported.
 
-#### Properties
+### Properties
 
 | Member | Type | Default | Notes |
 | --- | --- | --- | --- |
@@ -62,7 +68,9 @@ Owns install path, optional base64 materialization, and process I/O.
 | `InstallFolder` | `String` | `""` | Single-segment subfolder of `AppDir`. Empty → file goes in `AppDir` itself. Setter clears cached `ExePath`. |
 | `ExePath` | `String` | `""` | **Get** calls `EnsureExe()` then returns the resolved path. **Set** stores the path without ensuring. |
 
-#### Path helpers
+Inherited execute properties and methods: see `mod_win_process` (`UseConsole`, `Visible`, `WorkingDir`, `RunAsAdmin`, `PullStdOut*`, `ProcessId`, `LastError`, …).
+
+### Path helpers
 
 ```basic
 Function AppDir() As String
@@ -70,28 +78,30 @@ Function AppDir() As String
    ' out: directory of the running script (e.g. C:\Data7\bin)
 
 Function InstalledExePath() As String
-   ' out: AppDir[\InstallFolder]\ExeFileName
+   ' out: TPath.Combine(AppDir, [InstallFolder], ExeFileName)
    '      ExeFileName "" → "portable.exe"
    ' example: C:\Data7\bin\ffmpeg\ffmpeg.exe
 
-Function GetTempFolder() As String
-   ' out: Windows user temp (Scripting.FileSystemObject special folder 2)
-   ' not used as the portable-exe install location
-
-Function GetTempFilePath(pPrefix As String = "", pExtension As String = "") As String
-   ' out: tempFolder\pPrefix + GetTempName + pExtension
-   ' example: GetTempFilePath("pex_test_", ".zip")
+Sub UsePath(pPath As String)
+   ' pin ExePath to an existing file (no base64/download/zip install)
+   ' if pPath is not a file, SearchPathW on PATH (e.g. "dbbackup")
+   ' later Get of ExePath skips EnsureExe materialize
 ```
 
-#### Materialize
+### Materialize
 
 ```basic
 Overridable Sub EnsureExe()
-   ' 1. target = InstalledExePath()
-   ' 2. if file exists → cache ExePath and return (no rewrite)
-   ' 3. EnsureDirectory(parent of target)
-   ' 4. if ExeBase64 <> "" → Base64ToFile(ExeBase64, target)
-   ' 5. cache ExePath even if the file still does not exist
+   ' 1. TryReuseExe: UsePath pin, or existing InstalledExePath → cache and return
+   ' 2. EnsureDirectory(parent of target)
+   ' 3. if ExeBase64 <> "" → Base64ToFile(ExeBase64, target)
+   ' 4. cache ExePath even if the file still does not exist
+
+Protected Function TryReuseExe() As Boolean
+   ' True if UsePath pinned the path, or InstalledExePath already exists
+
+Protected Sub CacheExePath(pPath As String)
+   ' set _exePath without pinning (unlike Set of ExePath)
 
 Protected Sub EnsureDirectory(pFolder As String)
    ' no-op if pFolder = ""
@@ -100,83 +110,27 @@ Protected Sub EnsureDirectory(pFolder As String)
 
 Does not throw when `ExeBase64` is empty. Does not overwrite an existing install.
 
-#### Command line
+### Command line
 
 ```basic
-Function QuoteArg(pValue As String) As String
-   ' out: "pValue"  (always wrapped in ASCII 34)
-   ' example: QuoteArg("ab") → "ab" with quotes
-
 Function BuildCommand(pArgs As String = "") As String
-   ' out: QuoteArg(ExePath) plus " " & pArgs when Trim(pArgs) <> ""
+   ' out: ExePath.Quoted() plus " " & pArgs when Trim(pArgs) <> ""
    ' Get of ExePath triggers EnsureExe
    ' example: "C:\Data7\bin\tool\tool.exe" -list
+
+Overrides Function Start(pCommand As String = "") As Boolean
+   ' MyBase.Start(BuildCommand(pCommand))
+   ' pCommand is extra args, not a full command line
 ```
 
-#### Run (no IPC)
-
-```basic
-Function RunWait(pArgs As String = "") As Integer
-   ' EnsureExe, then WScript.Shell.Run(BuildCommand(pArgs), 0, True)
-   ' out: process exit code
-
-Function ExecReadLines(pArgs As String = "") As StringList
-   ' EnsureExe; run via cmd.exe /s /c "BuildCommand > temp.txt 2>&1"
-   ' skip Trim="" lines; delete temp file
-   ' out: new StringList — caller Free()s it
-```
-
-#### IPC (stdin / stdout)
-
-`IsRunning` is `False` when no process is held; otherwise `WScript.Exec.Status = 0` (running).
-
-```basic
-Function StartProcess(pArgs As String = "") As Boolean
-   ' EnsureExe; WScript.Shell.Exec(BuildCommand(pArgs))
-   ' out: IsRunning()
-
-Function WriteLine(pCommand As String) As Boolean
-   ' out: False if not running; else StdIn.WriteLine, True
-
-Function ReadLine() As String
-   ' out: "" if not running or StdOut.AtEndOfStream; else one line
-
-Function WaitForOutput(pSuccessToken As String, pErrorToken As String = "") As String
-   ' blocking read of StdOut until a line contains pSuccessToken
-   ' if pErrorToken <> "", a line containing it also returns
-   ' out: matching line, or "" if not running / stream ends with no match
-   ' example tokens used by the bundled test exe: "ready", "pong", "echo:"
-
-Sub StopProcess(pExitCommand As String = "exit")
-   ' no-op if no process
-   ' if pExitCommand <> "" writes it to StdIn (errors swallowed)
-   ' drops the process reference (does not wait for exit)
-```
-
-`Dispose` (via `Free`) calls `StopProcess()` with default `"exit"` and releases the shell. Special: leaving a process running after `Free` is not supported.
-
-## Remote download
-
-### `TRemotePortableExe`
+## `TRemotePortableExe`
 
 Inherits `TPortableExe`. Downloads a file with WinHttp when the installed exe is missing.
-
-#### Properties
 
 | Member | Type | Default | Notes |
 | --- | --- | --- | --- |
 | `DownloadUrl` | `String` | `""` | HTTP GET URL. Example: `"https://exemplo.com/ffmpeg.exe"` |
 | `DownloadTimeoutMs` | `Integer` | `8000` | Passed to all four WinHttp timeouts (resolve, connect, send, receive). |
-
-Inherited: `ExeFileName`, `InstallFolder`, `ExePath`, process APIs.
-
-#### Overridable hooks
-
-| Hook | Purpose |
-| --- | --- |
-| `ResolveDownloadPath()` | Destination of the HTTP body. Default: `InstalledExePath()`. |
-| `AfterDownload(pDownloaded, pTarget)` | Post-download. Default: `TFile.Copy` when paths differ (case-insensitive) and `pDownloaded` exists. |
-| `EnsureExe()` | Install-or-reuse (see flow). |
 
 ```basic
 Overridable Function ResolveDownloadPath() As String
@@ -186,12 +140,12 @@ Overridable Sub AfterDownload(pDownloaded As String, pTarget As String)
    ' copy pDownloaded → pTarget when LCase paths differ and source exists
 
 Overrides Sub EnsureExe()
-   ' 1. if InstalledExePath exists → ExePath = target, return
+   ' 1. TryReuseExe (UsePath pin or existing install) → return
    ' 2. if DownloadUrl = "" → Throw "DownloadUrl is empty for " & ExeFileName
    ' 3. ResolveDownloadPath; EnsureDirectory for target and download dirs
    ' 4. DownloadTo(downloaded); AfterDownload(downloaded, target)
    ' 5. if target still missing → Throw "Executable not found after install: " & target
-   ' 6. ExePath = target
+   ' 6. CacheExePath(target)
 
 Protected Sub DownloadTo(pDest As String)
    ' WinHttp.WinHttpRequest.5.1 GET DownloadUrl (synchronous)
@@ -199,13 +153,9 @@ Protected Sub DownloadTo(pDest As String)
    ' ADODB.Stream Type=1 SaveToFile(pDest, 2)
 ```
 
-## Zip extract
-
-### `TZipPortableExe`
+## `TZipPortableExe`
 
 Inherits `TRemotePortableExe`. Obtains a zip, unzips into the install folder, then locates `ExeFileName`.
-
-#### Properties
 
 | Member | Type | Default | Notes |
 | --- | --- | --- | --- |
@@ -215,27 +165,21 @@ Inherits `TRemotePortableExe`. Obtains a zip, unzips into the install folder, th
 | `SearchRecursive` | `Boolean` | `True` | After unzip, search subfolders for `ExeFileName` if it is not at `InstalledExePath`. |
 | `DeleteArchive` | `Boolean` | `True` | Delete the zip **only if this `EnsureExe` created it** (`ZipBase64` write or `DownloadUrl`). An existing `ZipPath` is never deleted. |
 
-Inherited: `DownloadUrl`, `DownloadTimeoutMs`, `ExeFileName`, `InstallFolder`, process APIs.
-
-#### Zip location
-
 ```basic
 Function ResolveZipPath() As String
    ' if ZipPath <> "" → ZipPath
    ' else ResolveDownloadPath()   (AppDir\archive name)
 ```
 
-`ResolveDownloadPath` (override) archive name:
+`ResolveDownloadPath` archive name:
 
 1. `ArchiveName` if not `""`. Example: `"ffmpeg.zip"` → `AppDir\ffmpeg.zip`
 2. else if `InstallFolder` not `""` → `InstallFolder & ".zip"`. Example: `"ffmpeg"` → `AppDir\ffmpeg.zip`
 3. else `ExeFileName` with trailing `.exe` replaced by `.zip`, or `& ".zip"`. Example: `"ffmpeg.exe"` → `AppDir\ffmpeg.zip`
 
-#### Install flow
-
 ```basic
 Overrides Sub EnsureExe()
-   ' 1. if InstalledExePath exists → ExePath = target, return
+   ' 1. TryReuseExe (UsePath pin or existing install) → return
    ' 2. zipPath = ResolveZipPath(); mark not-created
    ' 3. if zipPath missing:
    '      EnsureDirectory(parent)
@@ -245,7 +189,7 @@ Overrides Sub EnsureExe()
    ' 4. if zip still missing → Throw "Zip not found: " & zipPath
    ' 5. EnsureDirectory(parent of target); AfterDownload(zipPath, target)
    ' 6. if target missing → Throw "Executable not found after install: " & target
-   ' 7. ExePath = target
+   ' 7. CacheExePath(target)
 
 Overrides Sub AfterDownload(pDownloaded As String, pTarget As String)
    ' 1. Unzip pDownloaded into ExtractDir(pTarget) via IO.File.ZipFile.Unzip
@@ -261,7 +205,7 @@ Source priority when the zip file is not already on disk: **`ZipBase64` then `Do
 
 ## Extending (Consumer Project)
 
-Inherit the class that matches the payload, set properties in `Sub New`, then call `EnsureExe` / process APIs.
+Inherit the class that matches the payload, set properties in `Sub New`, then call `EnsureExe` / the inherited process APIs.
 
 ```basic
 ' Direct HTTP .exe
@@ -299,17 +243,21 @@ No UI types in this module.
 
 ## Tests
 
-`src/Principal.bas` constructs `TPortableExeSuite` and calls `Run()`.
+`src/Principal.bas` runs `TPortableExeSuite.Run()`.
 
-`TPortableExeSuite.Run()` covers: local migrate to `AppDir\_pex_local`, `QuoteArg` / `BuildCommand`, `RunWait("-list")`, `ExecReadLines("-list")`, IPC (`ready` / `ping` / `echo`), `IsRunning` after stop; remote path helpers, empty `DownloadUrl` throw, cached install + IPC; zip missing-source throw, `ZipPath` extract (archive kept), `ZipBase64` extract (generated zip deleted), `DeleteArchive=False` + `ArchiveName`, cached extract, live `DownloadUrl` `https://curl.se/windows/latest.cgi?p=win64-mingw.zip` locating nested `curl.exe`.
+- **local:** migrate to `AppDir\_pex_local`, `BuildCommand`, `Run` / `CaptureLines` / `Start` + stdout, pipes IPC, inherited `ProcessId` / `CommandLine` / `ProcessKind`, `UsePath` (file and PATH), default `portable.exe`, empty `ExeBase64`, `InstallFolder` change, failed `Start` (`LastError`)
+- **remote:** path helpers, empty `DownloadUrl` throw, cached install + IPC, `UsePath` skip-download
+- **zip:** missing-source throw, `ZipPath` / `ZipBase64` / `DeleteArchive=False`, cached extract, `UsePath` skip-unzip, live `DownloadUrl` `https://curl.se/windows/latest.cgi?p=win64-mingw.zip` locating nested `curl.exe`
+
+Does not click through UAC or open a visible window. Engine-only cases live in `mod_win_process`.
 
 ## Module Notes
 
 - Install is sticky: if `InstalledExePath` already exists, `EnsureExe` does not rewrite, re-download, or re-unzip.
 - Changing `ExeBase64`, `ExeFileName`, or `InstallFolder` clears the cached `ExePath`; the next Get / `EnsureExe` resolves again (still skip-if-exists).
 - `InstallFolder` is one segment only (`"ffmpeg"`, `"_pex_local"`). Nested folders are not created.
-- `ExecReadLines` returns a new `StringList`; the caller must `Free` it. Blank lines are dropped.
+- `CaptureLines` returns a new `StringList`; the caller must `Free` it. Blank lines are dropped.
 - `DeleteArchive` applies only to a zip this instance created in the current `EnsureExe`. A pre-existing `ZipPath` stays on disk even when `DeleteArchive` is `True`.
 - Zip obtain order: existing file at `ResolveZipPath` → else `ZipBase64` → else `DownloadUrl`.
 - `DownloadTimeoutMs` default `8000` is often too low for multi-MB zips; consumers should raise it (tests use `120000` for curl.se).
-- `StopProcess` does not wait for the child to exit; `IsRunning` becomes `False` as soon as the `Exec` object is dropped.
+- `TRemotePortableExe` / `TZipPortableExe` `EnsureExe` must call `TryReuseExe()` so `UsePath` is honored. Cache with `CacheExePath`, not `ExePath =` (that pins).

@@ -1,4 +1,3 @@
-Imports IO
 Imports mod_portable_exe
 
 ' Ex .exe direto:
@@ -50,33 +49,38 @@ Namespace mod_remote_exe
       End Function
 
       Overridable Sub AfterDownload(pDownloaded As String, pTarget As String)
-         If LCase(pDownloaded) <> LCase(pTarget) Then
-            If IO.File.Exists(pDownloaded) Then
+         Dim srcPath As String
+         Dim dstPath As String
+         srcPath = pDownloaded
+         dstPath = pTarget
+         If srcPath.ToLower() <> dstPath.ToLower() Then
+            If TFile.Exists(pDownloaded) Then
                TFile.Copy(pDownloaded, pTarget, True)
             End If
          End If
       End Sub
 
       Overrides Sub EnsureExe()
-         Dim target As String = me.InstalledExePath()
-         If IO.File.Exists(target) Then
-            me.ExePath = target
+         Dim target As String
+         Dim downloaded As String
+         If me.TryReuseExe() Then
             Exit Sub
          End If
+         target = me.InstalledExePath()
          If me._downloadUrl = "" Then
             Throw New Exception("DownloadUrl is empty for " & me.ExeFileName)
          End If
 
-         Dim downloaded As String = me.ResolveDownloadPath()
-         me.EnsureDirectory(IO.File.ExtractDir(target))
-         me.EnsureDirectory(IO.File.ExtractDir(downloaded))
+         downloaded = me.ResolveDownloadPath()
+         me.EnsureDirectory(TPath.GetDirectoryName(target))
+         me.EnsureDirectory(TPath.GetDirectoryName(downloaded))
          me.DownloadTo(downloaded)
          me.AfterDownload(downloaded, target)
 
-         If Not IO.File.Exists(target) Then
+         If Not TFile.Exists(target) Then
             Throw New Exception("Executable not found after install: " & target)
          End If
-         me.ExePath = target
+         me.CacheExePath(target)
       End Sub
 
       Protected Sub DownloadTo(pDest As String)

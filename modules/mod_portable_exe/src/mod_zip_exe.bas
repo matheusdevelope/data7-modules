@@ -99,16 +99,16 @@ Namespace mod_zip_exe
       End Function
 
       Overrides Sub EnsureExe()
-         Dim target As String = me.InstalledExePath()
-         If IO.File.Exists(target) Then
-            me.ExePath = target
+         Dim target As String
+         Dim zipPath As String
+         me._createdArchive = False
+         If me.TryReuseExe() Then
             Exit Sub
          End If
-
-         Dim zipPath As String = me.ResolveZipPath()
-         me._createdArchive = False
-         If Not IO.File.Exists(zipPath) Then
-            me.EnsureDirectory(IO.File.ExtractDir(zipPath))
+         target = me.InstalledExePath()
+         zipPath = me.ResolveZipPath()
+         If Not TFile.Exists(zipPath) Then
+            me.EnsureDirectory(TPath.GetDirectoryName(zipPath))
             If me._zipBase64 <> "" Then
                Base64ToFile(me._zipBase64, zipPath)
                me._createdArchive = True
@@ -120,55 +120,53 @@ Namespace mod_zip_exe
             End If
          End If
 
-         If Not IO.File.Exists(zipPath) Then
+         If Not TFile.Exists(zipPath) Then
             Throw New Exception("Zip not found: " & zipPath)
          End If
 
-         me.EnsureDirectory(IO.File.ExtractDir(target))
+         me.EnsureDirectory(TPath.GetDirectoryName(target))
          me.AfterDownload(zipPath, target)
          me._createdArchive = False
 
-         If Not IO.File.Exists(target) Then
+         If Not TFile.Exists(target) Then
             Throw New Exception("Executable not found after install: " & target)
          End If
-         me.ExePath = target
+         me.CacheExePath(target)
       End Sub
 
       Overrides Function ResolveDownloadPath() As String
-         Dim zipName As String = me._archiveName
+         Dim zipName As String
+         zipName = me._archiveName
          If zipName = "" Then
             If me.InstallFolder <> "" Then
                zipName = me.InstallFolder & ".zip"
             Else
-               zipName = me.ExeFileName
-               If LCase(Right(zipName, 4)) = ".exe" Then
-                  zipName = Left(zipName, Len(zipName) - 4) & ".zip"
-               Else
-                  zipName = zipName & ".zip"
-               End If
+               zipName = TPath.ChangeExtension(me.ExeFileName, ".zip")
             End If
          End If
-         ResolveDownloadPath = me.AppDir() & "\" & zipName
+         ResolveDownloadPath = TPath.Combine(me.AppDir(), zipName)
       End Function
 
       Overrides Sub AfterDownload(pDownloaded As String, pTarget As String)
-         Dim extractDir As String = IO.File.ExtractDir(pTarget)
+         Dim extractDir As String
+         Dim foundPath As String
+         extractDir = TPath.GetDirectoryName(pTarget)
          me.EnsureDirectory(extractDir)
          me.UnzipArchive(pDownloaded, extractDir)
          If me._deleteArchive And me._createdArchive Then
-            If IO.File.Exists(pDownloaded) Then
-               IO.File.Delete(pDownloaded)
+            If TFile.Exists(pDownloaded) Then
+               TFile.Delete(pDownloaded)
             End If
          End If
 
-         If IO.File.Exists(pTarget) Then
+         If TFile.Exists(pTarget) Then
             Exit Sub
          End If
          If Not me._searchRecursive Then
             Exit Sub
          End If
 
-         Dim foundPath As String = me.FindFile(extractDir, me.ExeFileName)
+         foundPath = me.FindFile(extractDir, me.ExeFileName)
          If foundPath = "" Then
             Throw New Exception(me.ExeFileName & " not found after extraction.")
          End If
@@ -183,15 +181,20 @@ Namespace mod_zip_exe
       End Sub
 
       Private Function FindFile(pFolder As String, pName As String) As String
-         Dim files As StringList = TDirectory.GetFiles(pFolder)
+         Dim files As StringList
          Dim dirs As StringList
          Dim i As Integer
          Dim fullPath As String
          Dim nested As String
+         Dim itemName As String
+         Dim wantName As String
+         files = TDirectory.GetFiles(pFolder)
+         wantName = pName.ToLower()
 
          For i = 0 To files.Count - 1
             fullPath = files.Strings(i)
-            If LCase(IO.File.ExtractName(fullPath)) = LCase(pName) Then
+            itemName = TPath.GetFileName(fullPath)
+            If itemName.ToLower() = wantName Then
                files.Free()
                FindFile = fullPath
                Exit Function

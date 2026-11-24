@@ -1,8 +1,6 @@
-Imports Collections
-Imports IO
-Imports mod_tobject
+Imports mod_win_process
 
-' Ex local / base64:
+' Local / base64 payload on top of TWinProcess:
 ' Imports mod_portable_exe
 '
 ' Class TMeuRecurso
@@ -16,19 +14,20 @@ Imports mod_tobject
 '    End Sub
 ' End Class
 '
-' Derivadas: TRemotePortableExe (mod_remote_exe), TZipPortableExe (mod_zip_exe).
+' Payload subclasses: TRemotePortableExe (HTTP), TZipPortableExe (zip).
 
 Namespace mod_portable_exe
 
+   Private Declare Function SearchPathW Lib "kernel32.dll" (ByVal pDir As Long, ByVal pFile As String, ByVal pExt As String, ByVal pBufLen As Long, ByVal pBuf As String, ByVal pFilePart As Long) As Long
+
    Class TPortableExe
-      Inherits TTObject
+      Inherits TWinProcess
 
       Private _exeBase64 As String
       Private _exeFileName As String
       Private _installFolder As String
       Private _exePath As String
-      Private _process As Variant
-      Private _shell As Variant
+      Private _pathPinned As Boolean
 
       Sub New()
          MyBase.New()
@@ -36,6 +35,7 @@ Namespace mod_portable_exe
          me._exeFileName = ""
          me._installFolder = ""
          me._exePath = ""
+         me._pathPinned = False
       End Sub
 
       Property ExeBase64 As String
@@ -45,6 +45,7 @@ Namespace mod_portable_exe
          Set(pValue As String)
             me._exeBase64 = pValue
             me._exePath = ""
+            me._pathPinned = False
          End Set
       End Property
 
@@ -55,6 +56,7 @@ Namespace mod_portable_exe
          Set(pValue As String)
             me._exeFileName = pValue
             me._exePath = ""
+            me._pathPinned = False
          End Set
       End Property
 
@@ -65,6 +67,7 @@ Namespace mod_portable_exe
          Set(pValue As String)
             me._installFolder = pValue
             me._exePath = ""
+            me._pathPinned = False
          End Set
       End Property
 
@@ -75,45 +78,80 @@ Namespace mod_portable_exe
          End Get
          Set(pValue As String)
             me._exePath = pValue
+            me._pathPinned = (Trim(pValue) <> "")
          End Set
       End Property
 
-      Function IsRunning() As Boolean
-         If IsEmpty(me._process) Then
-            IsRunning = False
-            Exit Function
-         End If
-         IsRunning = (me._process.Status = 0)
-      End Function
-
       Function AppDir() As String
-         AppDir = IO.File.ExtractDir(Data7.NomeArquivoExecutavel())
+         AppDir = TPath.GetDirectoryName(Data7.NomeArquivoExecutavel())
       End Function
 
       Function InstalledExePath() As String
-         Dim folder As String = me.AppDir()
-         Dim fileName As String = me._exeFileName
+         Dim folder As String
+         Dim fileName As String
+         folder = me.AppDir()
+         fileName = me._exeFileName
          If me._installFolder <> "" Then
-            folder = folder & "\" & me._installFolder
+            folder = TPath.Combine(folder, me._installFolder)
          End If
          If fileName = "" Then
             fileName = "portable.exe"
          End If
-         InstalledExePath = folder & "\" & fileName
+         InstalledExePath = TPath.Combine(folder, fileName)
       End Function
 
-      Overridable Sub EnsureExe()
-         Dim target As String = me.InstalledExePath()
-         If IO.File.Exists(target) Then
-            me._exePath = target
+      Sub UsePath(pPath As String)
+         Dim raw As String
+         Dim buf As String
+         Dim n As Long
+         raw = Trim(pPath)
+         If raw = "" Then
+            me.ExePath = ""
             Exit Sub
          End If
+         If TFile.Exists(raw) Then
+            me.ExePath = raw
+            Exit Sub
+         End If
+         buf = Space(520)
+         n = SearchPathW(0, raw, ".exe", 520, buf, 0)
+         If n > 0 Then
+            me.ExePath = Left(buf, CInt(n))
+            Exit Sub
+         End If
+         me.ExePath = raw
+      End Sub
 
-         me.EnsureDirectory(IO.File.ExtractDir(target))
+      Protected Function TryReuseExe() As Boolean
+         Dim target As String
+         If me._pathPinned Then
+            TryReuseExe = True
+            Exit Function
+         End If
+         target = me.InstalledExePath()
+         If TFile.Exists(target) Then
+            me.CacheExePath(target)
+            TryReuseExe = True
+            Exit Function
+         End If
+         TryReuseExe = False
+      End Function
+
+      Protected Sub CacheExePath(pPath As String)
+         me._exePath = pPath
+      End Sub
+
+      Overridable Sub EnsureExe()
+         Dim target As String
+         If me.TryReuseExe() Then
+            Exit Sub
+         End If
+         target = me.InstalledExePath()
+         me.EnsureDirectory(TPath.GetDirectoryName(target))
          If me._exeBase64 <> "" Then
             Base64ToFile(me._exeBase64, target)
          End If
-         me._exePath = target
+         me.CacheExePath(target)
       End Sub
 
       Protected Sub EnsureDirectory(pFolder As String)
@@ -125,136 +163,23 @@ Namespace mod_portable_exe
          End If
       End Sub
 
-      Function GetTempFolder() As String
-         Dim fso As Variant = CreateObject("Scripting.FileSystemObject")
-         GetTempFolder = fso.GetSpecialFolder(2)
-         fso = Unassigned
-      End Function
-
-      Function GetTempFilePath(pPrefix As String = "", pExtension As String = "") As String
-         Dim fso As Variant = CreateObject("Scripting.FileSystemObject")
-         Dim tempFolder As String = fso.GetSpecialFolder(2)
-         Dim tempName As String = fso.GetTempName
-         fso = Unassigned
-         GetTempFilePath = tempFolder & "\" & pPrefix & tempName & pExtension
-      End Function
-
-      Function QuoteArg(pValue As String) As String
-         QuoteArg = """" & pValue & """"
-      End Function
-
       Function BuildCommand(pArgs As String = "") As String
-         Dim cmd As String = me.QuoteArg(me.ExePath)
+         Dim exeFile As String
+         Dim cmd As String
+         exeFile = me.ExePath
+         cmd = exeFile.Quoted()
          If Trim(pArgs) <> "" Then
             cmd = cmd & " " & pArgs
          End If
          BuildCommand = cmd
       End Function
 
-      Function RunWait(pArgs As String = "") As Integer
-         me.EnsureExe()
-         If IsEmpty(me._shell) Then
-            me._shell = CreateObject("WScript.Shell")
-         End If
-         RunWait = me._shell.Run(me.BuildCommand(pArgs), 0, True)
+      Overrides Function Start(pCommand As String = "") As Boolean
+         Start = MyBase.Start(me.BuildCommand(pCommand))
       End Function
-
-      Function StartProcess(pArgs As String = "") As Boolean
-         me.EnsureExe()
-         If IsEmpty(me._shell) Then
-            me._shell = CreateObject("WScript.Shell")
-         End If
-         me._process = me._shell.Exec(me.BuildCommand(pArgs))
-         StartProcess = me.IsRunning()
-      End Function
-
-      Function ExecReadLines(pArgs As String = "") As StringList
-         Dim list As New StringList()
-         me.EnsureExe()
-         Dim outFile As String = me.GetTempFilePath("exeout_", ".txt")
-         Dim inner As String = me.BuildCommand(pArgs) & " > " & me.QuoteArg(outFile) & " 2>&1"
-         If IsEmpty(me._shell) Then
-            me._shell = CreateObject("WScript.Shell")
-         End If
-         me._shell.Run("cmd.exe /s /c " & Chr(34) & inner & Chr(34), 0, True)
-         If IO.File.Exists(outFile) Then
-            Dim raw As New StringList()
-            raw.LoadFromFile(outFile)
-            Dim i As Integer
-            For i = 0 To raw.Count - 1
-               Dim line As String = raw.Strings(i)
-               If Trim(line) <> "" Then
-                  list.Add(line)
-               End If
-            Next
-            raw.Free()
-            Try
-               IO.File.Delete(outFile)
-            Catch
-            End Try
-         End If
-         ExecReadLines = list
-      End Function
-
-      Function WriteLine(pCommand As String) As Boolean
-         If Not me.IsRunning() Then
-            WriteLine = False
-            Exit Function
-         End If
-         me._process.StdIn.WriteLine(pCommand)
-         WriteLine = True
-      End Function
-
-      Function ReadLine() As String
-         If Not me.IsRunning() Then
-            ReadLine = ""
-            Exit Function
-         End If
-         If me._process.StdOut.AtEndOfStream Then
-            ReadLine = ""
-            Exit Function
-         End If
-         ReadLine = me._process.StdOut.ReadLine
-      End Function
-
-      Function WaitForOutput(pSuccessToken As String, pErrorToken As String = "") As String
-         If Not me.IsRunning() Then
-            WaitForOutput = ""
-            Exit Function
-         End If
-         While Not me._process.StdOut.AtEndOfStream
-            Dim line As String = me._process.StdOut.ReadLine
-            If pSuccessToken <> "" Then
-               If InStr(line, pSuccessToken) > 0 Then
-                  WaitForOutput = line
-                  Exit Function
-               End If
-            End If
-            If pErrorToken <> "" Then
-               If InStr(line, pErrorToken) > 0 Then
-                  WaitForOutput = line
-                  Exit Function
-               End If
-            End If
-         End While
-         WaitForOutput = ""
-      End Function
-
-      Sub StopProcess(pExitCommand As String = "exit")
-         If Not IsEmpty(me._process) Then
-            Try
-               If pExitCommand <> "" Then
-                  me._process.StdIn.WriteLine(pExitCommand)
-               End If
-            Catch
-            End Try
-            me._process = Unassigned
-         End If
-      End Sub
 
       Overrides Sub Dispose()
-         me.StopProcess()
-         me._shell = Unassigned
+         MyBase.Dispose()
       End Sub
 
       Sub Free()

@@ -72,17 +72,27 @@ Namespace mod_portable_exe_tests
       Sub Run()
          print("=== TPortableExe ===")
          me.TestLocalMigrate()
-         me.TestLocalQuoteArg()
-         me.TestLocalRunWait()
+         me.TestLocalBuildCommand()
+         me.TestLocalRun()
          me.TestLocalList()
+         me.TestLocalHidden()
+         me.TestLocalHiddenIpc()
          me.TestLocalIpc()
          me.TestLocalIsRunningStopped()
+         me.TestLocalEngineIdentity()
+         me.TestLocalUsePath()
+         me.TestLocalUsePathCmd()
+         me.TestLocalDefaultFileName()
+         me.TestLocalEmptyBase64()
+         me.TestLocalInstallFolderChange()
+         me.TestLocalFailedStart()
          me.PrepareZipArtifact()
 
          print("=== TRemotePortableExe ===")
          me.TestRemotePaths()
          me.TestRemoteMissingUrl()
          me.TestRemoteAlreadyInstalled()
+         me.TestRemoteUsePath()
 
          print("=== TZipPortableExe ===")
          me.TestZipMissingSource()
@@ -90,6 +100,7 @@ Namespace mod_portable_exe_tests
          me.TestZipBase64()
          me.TestZipKeepArchive()
          me.TestZipAlreadyInstalled()
+         me.TestZipUsePath()
          me.TestZipDownloadUrl()
 
          me.CleanupInstallFolders()
@@ -114,15 +125,16 @@ Namespace mod_portable_exe_tests
       End Sub
 
       Private Sub CheckIpc(pExe As TPortableExe, pName As String)
-         If Not pExe.StartProcess() Then
-            me.Check(False, pName, "StartProcess")
+         pExe.UseConsole = False
+         If Not pExe.Start() Then
+            me.Check(False, pName, "Start")
             Exit Sub
          End If
-         Dim ready As String = pExe.WaitForOutput("ready")
+         Dim ready As String = pExe.WaitOutput("ready")
          pExe.WriteLine("ping")
-         Dim pong As String = pExe.WaitForOutput("pong")
+         Dim pong As String = pExe.WaitOutput("pong")
          pExe.WriteLine("echo hello-test")
-         Dim echoLine As String = pExe.WaitForOutput("echo:")
+         Dim echoLine As String = pExe.WaitOutput("echo:")
          pExe.StopProcess()
          Dim ok As Boolean = (InStr(ready, "ready") > 0) And (InStr(pong, "pong") > 0) And (InStr(echoLine, "hello-test") > 0)
          me.Check(ok, pName, ready & " | " & pong & " | " & echoLine)
@@ -153,22 +165,159 @@ Namespace mod_portable_exe_tests
          me.Check(LCase(me._sourceExe) = LCase(me._local.InstalledExePath()), "local pasta do programa", me._sourceExe)
       End Sub
 
-      Private Sub TestLocalQuoteArg()
-         Dim quoted As String = me._local.QuoteArg("ab")
-         me.Check(quoted = """ab""", "local QuoteArg", quoted)
-         Dim cmd As String = me._local.BuildCommand("-list")
-         me.Check(InStr(cmd, "-list") > 0, "local BuildCommand", cmd)
+      Private Sub TestLocalBuildCommand()
+         Dim cmd As String
+         cmd = me._local.BuildCommand("-list")
+         me.Check(InStr(cmd, "-list") > 0, "local BuildCommand args", cmd)
+         me.Check(InStr(cmd, """") > 0, "local BuildCommand quoted exe", cmd)
       End Sub
 
-      Private Sub TestLocalRunWait()
-         Dim code As Integer = me._local.RunWait("-list")
-         me.Check(code = 0, "local RunWait -list", CStr(code))
+      Private Sub TestLocalRun()
+         Dim code As Integer = me._local.Run("-list")
+         me.Check(code = 0, "local Run -list", CStr(code))
       End Sub
 
       Private Sub TestLocalList()
-         Dim linhas As StringList = me._local.ExecReadLines("-list")
-         me.Check(linhas.Count = 2, "local ExecReadLines -list", linhas.Text)
+         Dim linhas As StringList = me._local.CaptureLines("-list")
+         me.Check(linhas.Count = 2, "local CaptureLines -list", linhas.Text)
          linhas.Free()
+      End Sub
+
+      Private Sub TestLocalHidden()
+         Dim acc As String
+         Dim chunk As String
+         Dim i As Integer
+         Dim code As Integer
+         Dim started As Boolean
+         Dim lineA As String
+         Dim lineB As String
+         acc = ""
+         me._local.UseConsole = False
+         started = me._local.Start("-list")
+         me.Check(started, "local Start", "")
+         If Not started Then
+            Exit Sub
+         End If
+         chunk = me._local.PullStdOut()
+         If chunk <> "" Then
+            acc = acc & chunk
+         End If
+         i = 0
+         While i < 2000
+            chunk = me._local.PullStdOut()
+            If chunk <> "" Then
+               acc = acc & chunk
+            End If
+            If Not me._local.IsRunning() Then
+               Exit While
+            End If
+            Sleep(10)
+            i = i + 1
+         Wend
+         chunk = me._local.PullStdOut()
+         If chunk <> "" Then
+            acc = acc & chunk
+         End If
+         code = me._local.ExitCode()
+         me.Check(InStr(acc, "item-a") > 0, "local PullStdOut item-a", acc)
+         me.Check(InStr(acc, "item-b") > 0, "local PullStdOut item-b", acc)
+         me.Check(Not me._local.IsRunning(), "local Start IsRunning", "")
+         me.Check(code = 0, "local Start ExitCode", CStr(code))
+         me._local.StopProcess()
+         me.Check(me._local.PullStdOut() = "", "local PullStdOut idle", "")
+
+         started = me._local.Start("-list")
+         me.Check(started, "local Start lines", "")
+         If Not started Then
+            Exit Sub
+         End If
+         lineA = ""
+         lineB = ""
+         i = 0
+         While i < 2000
+            chunk = me._local.PullStdOutLine()
+            If chunk <> "" Then
+               If lineA = "" Then
+                  lineA = chunk
+               Else
+                  If lineB = "" Then
+                     lineB = chunk
+                  End If
+               End If
+            End If
+            If Not me._local.IsRunning() Then
+               If lineB = "" Then
+                  chunk = me._local.PullStdOutLine()
+                  If chunk <> "" Then
+                     If lineA = "" Then
+                        lineA = chunk
+                     Else
+                        lineB = chunk
+                     End If
+                  End If
+               End If
+               Exit While
+            End If
+            Sleep(10)
+            i = i + 1
+         Wend
+         me.Check(InStr(lineA, "item-a") > 0, "local PullStdOutLine item-a", lineA)
+         me.Check(InStr(lineB, "item-b") > 0, "local PullStdOutLine item-b", lineB)
+         me._local.StopProcess()
+         me._local.UseConsole = True
+      End Sub
+
+      Private Sub TestLocalHiddenIpc()
+         Dim chunk As String
+         Dim acc As String
+         Dim i As Integer
+         Dim started As Boolean
+         Dim pingOk As Boolean
+         me._local.UseConsole = False
+         started = me._local.Start()
+         me.Check(started, "local IPC Start", me._local.ProcessKind())
+         If Not started Then
+            me._local.UseConsole = True
+            Exit Sub
+         End If
+         acc = ""
+         i = 0
+         While i < 2000
+            chunk = me._local.PullStdOutLine()
+            If chunk <> "" Then
+               acc = acc & chunk & "|"
+               If InStr(chunk, "ready") > 0 Then
+                  Exit While
+               End If
+            End If
+            If Not me._local.IsRunning() Then
+               Exit While
+            End If
+            Sleep(10)
+            i = i + 1
+         Wend
+         me.Check(InStr(acc, "ready") > 0, "local IPC ready", acc)
+         pingOk = me._local.WriteLine("ping")
+         me.Check(pingOk, "local IPC WriteLine", "")
+         acc = ""
+         i = 0
+         While i < 2000
+            chunk = me._local.PullStdOutLine()
+            If chunk <> "" Then
+               acc = acc & chunk & "|"
+               If InStr(chunk, "pong") > 0 Then
+                  Exit While
+               End If
+            End If
+            If Not me._local.IsRunning() Then
+               Exit While
+            End If
+            Sleep(10)
+            i = i + 1
+         Wend
+         me.Check(InStr(acc, "pong") > 0, "local IPC pong", acc)
+         me._local.StopProcess()
+         me._local.UseConsole = True
       End Sub
 
       Private Sub TestLocalIpc()
@@ -179,12 +328,79 @@ Namespace mod_portable_exe_tests
          me.Check(Not me._local.IsRunning(), "local IsRunning parado", "")
       End Sub
 
+      Private Sub TestLocalEngineIdentity()
+         Dim linhas As StringList
+         linhas = me._local.CaptureLines("-list")
+         me.Check(me._local.ProcessId() > 0, "local ProcessId", CStr(me._local.ProcessId()))
+         me.Check(InStr(me._local.CommandLine(), "portable_test.exe") > 0, "local CommandLine", me._local.CommandLine())
+         me.Check(me._local.ProcessKind() = "pipes", "local ProcessKind", me._local.ProcessKind())
+         linhas.Free()
+      End Sub
+
+      Private Sub TestLocalUsePath()
+         Dim exe As New TPortableExe()
+         Dim code As Integer
+         exe.UsePath(me._sourceExe)
+         me.Check(LCase(exe.ExePath) = LCase(me._sourceExe), "local UsePath arquivo", exe.ExePath)
+         code = exe.Run("-list")
+         me.Check(code = 0, "local UsePath Run", CStr(code))
+         exe.Free()
+      End Sub
+
+      Private Sub TestLocalUsePathCmd()
+         Dim exe As New TPortableExe()
+         Dim linhas As StringList
+         Dim joined As String
+         exe.UsePath("cmd.exe")
+         me.Check(InStr(LCase(exe.ExePath), "cmd.exe") > 0, "local UsePath PATH", exe.ExePath)
+         exe.WorkingDir = "C:\Windows"
+         linhas = exe.CaptureLines("/c cd")
+         joined = LCase(linhas.Text)
+         me.Check(InStr(joined, "c:\windows") > 0, "local UsePath WorkingDir", linhas.Text)
+         linhas.Free()
+         exe.Free()
+      End Sub
+
+      Private Sub TestLocalDefaultFileName()
+         Dim exe As New TPortableExe()
+         me.Check(InStr(LCase(exe.InstalledExePath()), "portable.exe") > 0, "local default ExeFileName", exe.InstalledExePath())
+         exe.Free()
+      End Sub
+
+      Private Sub TestLocalEmptyBase64()
+         Dim exe As New TPortableExe()
+         exe.ExeFileName = "missing_pex.exe"
+         exe.InstallFolder = "_pex_empty"
+         exe.EnsureExe()
+         me.Check(Not IO.File.Exists(exe.ExePath), "local ExeBase64 vazio nao cria", exe.ExePath)
+         exe.Free()
+      End Sub
+
+      Private Sub TestLocalInstallFolderChange()
+         Dim exe As New TPortableTestExe()
+         exe.InstallFolder = "_pex_local2"
+         exe.EnsureExe()
+         me.Check(InStr(LCase(exe.ExePath), "_pex_local2") > 0, "local InstallFolder troca pasta", exe.ExePath)
+         me.Check(IO.File.Exists(exe.ExePath), "local InstallFolder escreve", exe.ExePath)
+         exe.Free()
+      End Sub
+
+      Private Sub TestLocalFailedStart()
+         Dim exe As New TPortableExe()
+         Dim started As Boolean
+         exe.UsePath("no_such_pex_xyz.exe")
+         started = exe.Start()
+         me.Check(Not started, "local Start exe ausente", "")
+         me.Check(exe.LastError() <> 0, "local LastError exe ausente", CStr(exe.LastError()) & " " & exe.LastErrorText())
+         exe.Free()
+      End Sub
+
       Private Sub PrepareZipArtifact()
          If me._sourceExe = "" Then
             me.Check(False, "zip artifact", "exe origem ausente")
             Exit Sub
          End If
-         me._sourceZip = me._local.GetTempFilePath("pex_test_", ".zip")
+         me._sourceZip = TPath.Combine(TPath.GetTempPath(), "pex_test_portable.zip")
          If IO.File.Exists(me._sourceZip) Then
             IO.File.Delete(me._sourceZip)
          End If
@@ -229,6 +445,14 @@ Namespace mod_portable_exe_tests
          remote.EnsureExe()
          me.Check((IO.File.Exists(remote.ExePath) And (LCase(remote.ExePath) = LCase(target))), "remote ja instalado", remote.ExePath)
          me.CheckIpc(remote, "remote IPC")
+         remote.Free()
+      End Sub
+
+      Private Sub TestRemoteUsePath()
+         Dim remote As New TRemoteTestExe()
+         remote.UsePath(me._sourceExe)
+         remote.EnsureExe()
+         me.Check(LCase(remote.ExePath) = LCase(me._sourceExe), "remote UsePath sem download", remote.ExePath)
          remote.Free()
       End Sub
 
@@ -293,6 +517,14 @@ Namespace mod_portable_exe_tests
          zip.Free()
       End Sub
 
+      Private Sub TestZipUsePath()
+         Dim zip As New TZipTestExe()
+         zip.UsePath(me._sourceExe)
+         zip.EnsureExe()
+         me.Check(LCase(zip.ExePath) = LCase(me._sourceExe), "zip UsePath sem unzip", zip.ExePath)
+         zip.Free()
+      End Sub
+
       Private Sub TestZipDownloadUrl()
          Dim zip As New TZipTestExe()
          zip.ExeFileName = "curl.exe"
@@ -314,6 +546,8 @@ Namespace mod_portable_exe_tests
       Private Sub CleanupInstallFolders()
          Dim appDir As String = IO.File.ExtractDir(Data7.NomeArquivoExecutavel())
          me.DeleteFolder(appDir & "\_pex_local")
+         me.DeleteFolder(appDir & "\_pex_local2")
+         me.DeleteFolder(appDir & "\_pex_empty")
          me.DeleteFolder(appDir & "\_pex_remote_miss")
          me.DeleteFolder(appDir & "\_pex_remote_ok")
          me.DeleteFolder(appDir & "\_pex_zip_miss")
