@@ -44,6 +44,48 @@ Namespace configuracao_google_drive
          HasRow = TConfiguracaoGoogleDrive.Exists("")
       End Function
 
+      Shared Function SqlQuote(pValue As String) As String
+         Dim text As String = pValue
+         Dim outText As String = ""
+         Dim i As Integer
+         Dim ch As String
+         For i = 1 To Len(text)
+            ch = Mid(text, i, 1)
+            If ch = "'" Then
+               outText = outText & "''"
+            Else
+               outText = outText & ch
+            End If
+         Next
+         SqlQuote = outText
+      End Function
+
+      Shared Function FindByStoreKey(pKey As String) As TConfiguracaoGoogleDrive
+         Dim key As String = Trim(pKey)
+         If key = "" Then
+            FindByStoreKey = Null
+            Exit Function
+         End If
+         FindByStoreKey = TConfiguracaoGoogleDrive.Find("StoreKey = '" & TConfiguracaoGoogleDrive.SqlQuote(key) & "'")
+      End Function
+
+      Shared Function FindByEmail(pEmail As String) As TConfiguracaoGoogleDrive
+         Dim emailText As String = Trim(pEmail)
+         If emailText = "" Then
+            FindByEmail = Null
+            Exit Function
+         End If
+         FindByEmail = TConfiguracaoGoogleDrive.Find("Email = '" & TConfiguracaoGoogleDrive.SqlQuote(emailText) & "'")
+      End Function
+
+      Shared Function FindByKey(pCod As Integer) As TConfiguracaoGoogleDrive
+         If pCod <= 0 Then
+            FindByKey = Null
+            Exit Function
+         End If
+         FindByKey = TConfiguracaoGoogleDrive.Find("CodConfiguracaoGoogleDrive = " & CStr(pCod))
+      End Function
+
       Shared Function IsSecretName(pName As String) As Boolean
          Dim n As String = UCase(Trim(pName))
          IsSecretName = (n = "CLIENTSECRET") Or (n = "ACCESSTOKEN") Or (n = "REFRESHTOKEN") Or (n = "IDTOKEN")
@@ -265,6 +307,23 @@ Namespace configuracao_google_drive
             me.SetDateTime("ExpiresAt", pValue)
          End Set
       End Property
+
+      Function AccountKey() As String
+         AccountKey = CStr(me.CodConfiguracaoGoogleDrive)
+      End Function
+
+      Function AccountCaption() As String
+         Dim titleText As String
+         titleText = Trim(me.Titulo)
+         If titleText = "" Then
+            titleText = "Google Drive"
+         End If
+         If Trim(me.Email) <> "" Then
+            AccountCaption = titleText & " (" & Trim(me.Email) & ")"
+            Exit Function
+         End If
+         AccountCaption = titleText
+      End Function
 
       Sub Free()
          MyBase.Free()

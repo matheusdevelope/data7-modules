@@ -1,6 +1,7 @@
 Imports TFile
 Imports TPath
 Imports TDirectory
+Imports Collections
 Imports mod_tobject
 Imports google_auth
 Imports google_auth_config
@@ -23,44 +24,51 @@ Namespace google_drive_sql_stores
          Migrate = applied
       End Function
 
+      Shared Function ListConnections() As TTList<TConfiguracaoGoogleDrive>
+         GoogleDriveSqlStores.Migrate()
+         ListConnections = TConfiguracaoGoogleDrive.Fetch("", "Titulo")
+      End Function
+
       Shared Function Connect(pTitulo As String = "Google Drive", pInteractive As Boolean = True) As GoogleAuthService
-         Dim cfg As GoogleAuthConfig = GoogleDriveSqlStores.ResolveConfig()
-         cfg.Scopes.Add("openid")
-         cfg.Scopes.Add("email")
-         cfg.Scopes.Add("profile")
-         cfg.Scopes.Add(GoogleDriveScopes.Drive())
-         cfg.Prompt = "consent"
-         If cfg.CallbackPort <= 0 Then
-            cfg.CallbackPort = 8085
-         End If
-         If Trim(cfg.RedirectUri) = "" Then
-            cfg.RedirectUri = "http://localhost:8085/"
-         End If
-         Dim titleValue As String = Trim(pTitulo)
+         Dim cfg As GoogleAuthConfig
+         cfg = GoogleDriveSqlStores.ResolveConfig()
+         Connect = GoogleDriveSqlStores.RunConnect(cfg, pTitulo, pInteractive, False)
+      End Function
+
+      Shared Function ConnectKey(pCod As Integer, pTitulo As String = "", pInteractive As Boolean = True) As GoogleAuthService
+         Dim cfg As GoogleAuthConfig
+         Dim titleValue As String
+         titleValue = Trim(pTitulo)
+         cfg = GoogleDriveSqlStores.ConfigOfKey(pCod)
          If titleValue = "" Then
             titleValue = "Google Drive"
          End If
-         Dim tokenStore As GoogleTokenStore = GoogleDriveSqlStores.Open(cfg, titleValue)
-         Dim auth As GoogleAuthService = Null
-         Try
-            auth = GoogleAuthConnect.Run(cfg, tokenStore, True, pInteractive, "Conexão Google Drive")
-         Catch ex As Exception
-            tokenStore.Free()
-            GoogleDriveSqlStores.DropConfig(cfg)
-            Throw New Exception(ex._GetMessage())
-         End Try
-         Connect = auth
+         ConnectKey = GoogleDriveSqlStores.RunConnect(cfg, titleValue, pInteractive, False)
       End Function
 
-      Shared Function Open(pConfig As GoogleAuthConfig = Null, pTitulo As String = "") As GoogleTokenStore
+      Shared Function Add(pTitulo As String = "Google Drive", pInteractive As Boolean = True) As GoogleAuthService
+         Dim cfg As GoogleAuthConfig
+         cfg = GoogleDriveSqlStores.ResolveConfig()
+         cfg.AccountId = ""
+         Add = GoogleDriveSqlStores.RunConnect(cfg, pTitulo, pInteractive, True)
+      End Function
+
+      Shared Function Open(pConfig As GoogleAuthConfig = Null, pTitulo As String = "", pInsertNew As Boolean = False) As GoogleTokenStore
+         Dim row As TConfiguracaoGoogleDrive
+         Dim titleValue As String
+         Dim boundCod As Integer
+         boundCod = 0
+         titleValue = Trim(pTitulo)
+         If titleValue = "" Then
+            titleValue = "Google Drive"
+         End If
          If Assigned(pConfig) Then
-            Dim row As TConfiguracaoGoogleDrive = TConfiguracaoGoogleDrive.CurrentRow()
+            row = Null
+            If Not pInsertNew Then
+               row = TConfiguracaoGoogleDrive.FindByStoreKey(pConfig.StoreKey())
+            End If
             If Not Assigned(row) Then
                row = New TConfiguracaoGoogleDrive()
-               Dim titleValue As String = Trim(pTitulo)
-               If titleValue = "" Then
-                  titleValue = "Google Drive"
-               End If
                row.Titulo = titleValue
                row.Ativo = True
                GoogleDriveTokenMapper.ApplyConfig(row, pConfig)
@@ -72,31 +80,38 @@ Namespace google_drive_sql_stores
                GoogleDriveTokenMapper.ApplyConfig(row, pConfig)
                row.Update()
             End If
+            boundCod = row.CodConfiguracaoGoogleDrive
             row.Free()
-         Else
-            If Not TConfiguracaoGoogleDrive.HasRow() Then
-               Throw New Exception("Google Drive configuration not found.")
-            End If
          End If
-         Open = New GoogleDriveTokenStoreSql(pConfig)
+         Open = New GoogleDriveTokenStoreSql(pConfig, boundCod)
       End Function
 
       Shared Function ConfigOf() As GoogleAuthConfig
-         Dim row As TConfiguracaoGoogleDrive = TConfiguracaoGoogleDrive.CurrentRow()
-         If Not Assigned(row) Then
-            Throw New Exception("Google Drive configuration not found.")
-         End If
-         If Trim(row.ClientId) = "" Then
-            row.Free()
-            Throw New Exception("Google Drive configuration is missing OAuth client credentials.")
-         End If
-         Dim cfg As GoogleAuthConfig = GoogleDriveTokenMapper.ToConfig(row)
-         row.Free()
-         ConfigOf = cfg
+         Dim row As TConfiguracaoGoogleDrive
+         row = TConfiguracaoGoogleDrive.CurrentRow()
+         ConfigOf = GoogleDriveSqlStores.ConfigFromRow(row, True)
       End Function
 
-      Shared Sub ApplyProfile(pEmail As String, pName As String)
-         Dim row As TConfiguracaoGoogleDrive = TConfiguracaoGoogleDrive.CurrentRow()
+      Shared Function ConfigOfKey(pCod As Integer) As GoogleAuthConfig
+         Dim row As TConfiguracaoGoogleDrive
+         row = TConfiguracaoGoogleDrive.FindByKey(pCod)
+         ConfigOfKey = GoogleDriveSqlStores.ConfigFromRow(row, True)
+      End Function
+
+      Shared Sub ApplyProfile(pEmail As String, pName As String, pCod As Integer = 0)
+         Dim row As TConfiguracaoGoogleDrive
+         row = Null
+         If pCod > 0 Then
+            row = TConfiguracaoGoogleDrive.FindByKey(pCod)
+         End If
+         If Not Assigned(row) Then
+            If Trim(pEmail) <> "" Then
+               row = TConfiguracaoGoogleDrive.FindByEmail(pEmail)
+            End If
+         End If
+         If Not Assigned(row) Then
+            row = TConfiguracaoGoogleDrive.CurrentRow()
+         End If
          If Not Assigned(row) Then
             Throw New Exception("Google Drive configuration not found.")
          End If
@@ -106,22 +121,28 @@ Namespace google_drive_sql_stores
          If Trim(pName) <> "" Then
             row.Nome = Trim(pName)
          End If
+         If (Trim(row.ClientId) <> "") And (Trim(row.Email) <> "") Then
+            row.StoreKey = Trim(row.ClientId) & "|" & Trim(row.Email)
+         End If
          row.Update()
          row.Free()
       End Sub
 
       Shared Function ResolveConfig() As GoogleAuthConfig
-         Dim row As TConfiguracaoGoogleDrive = TConfiguracaoGoogleDrive.CurrentRow()
+         Dim row As TConfiguracaoGoogleDrive
+         Dim fromRow As GoogleAuthConfig
+         Dim fromFile As GoogleAuthConfig
+         row = TConfiguracaoGoogleDrive.CurrentRow()
          If Assigned(row) Then
             If Trim(row.ClientId) <> "" Then
-               Dim fromRow As GoogleAuthConfig = GoogleDriveTokenMapper.ToConfig(row)
+               fromRow = GoogleDriveTokenMapper.ToConfig(row)
                row.Free()
                ResolveConfig = fromRow
                Exit Function
             End If
             row.Free()
          End If
-         Dim fromFile As GoogleAuthConfig = GoogleDriveSqlStores.LoadOauthFileIfComplete()
+         fromFile = GoogleDriveSqlStores.LoadOauthFileIfComplete()
          If Assigned(fromFile) Then
             ResolveConfig = fromFile
             Exit Function
@@ -130,12 +151,14 @@ Namespace google_drive_sql_stores
       End Function
 
       Shared Function LoadOauthFileIfComplete() As GoogleAuthConfig
-         Dim cfgPath As String = GoogleDriveSqlStores.OauthFilePath()
+         Dim cfgPath As String
+         Dim loaded As GoogleAuthConfig
+         cfgPath = GoogleDriveSqlStores.OauthFilePath()
          If Trim(cfgPath) = "" Then
             LoadOauthFileIfComplete = Null
             Exit Function
          End If
-         Dim loaded As GoogleAuthConfig = GoogleAuthConfig.FromFile(cfgPath)
+         loaded = GoogleAuthConfig.FromFile(cfgPath)
          If Not loaded.HasClientCredentials() Then
             GoogleDriveSqlStores.DropConfig(loaded)
             LoadOauthFileIfComplete = Null
@@ -145,8 +168,10 @@ Namespace google_drive_sql_stores
       End Function
 
       Shared Function OauthFilePath() As String
-         Dim folder As String = TDirectory.GetCurrentDirectory()
-         Dim cfgPath As String = "google-oauth.json"
+         Dim folder As String
+         Dim cfgPath As String
+         folder = TDirectory.GetCurrentDirectory()
+         cfgPath = "google-oauth.json"
          If Trim(folder) <> "" Then
             cfgPath = TPath.Combine(folder, "google-oauth.json")
          End If
@@ -170,6 +195,64 @@ Namespace google_drive_sql_stores
          pCfg.ConsentKind = Null
          pCfg.Free()
       End Sub
+
+      Shared Function RunConnect(pConfig As GoogleAuthConfig, pTitulo As String, pInteractive As Boolean, pInsertNew As Boolean) As GoogleAuthService
+         Dim cfg As GoogleAuthConfig
+         Dim titleValue As String
+         Dim tokenStore As GoogleTokenStore
+         Dim auth As GoogleAuthService
+         cfg = pConfig
+         GoogleDriveSqlStores.ApplyDriveScopes(cfg)
+         titleValue = Trim(pTitulo)
+         If titleValue = "" Then
+            titleValue = "Google Drive"
+         End If
+         tokenStore = GoogleDriveSqlStores.Open(cfg, titleValue, pInsertNew)
+         auth = Null
+         Try
+            auth = GoogleAuthConnect.Run(cfg, tokenStore, True, pInteractive, "Conexão Google Drive")
+         Catch ex As Exception
+            tokenStore.Free()
+            GoogleDriveSqlStores.DropConfig(cfg)
+            Throw New Exception(ex._GetMessage())
+         End Try
+         RunConnect = auth
+      End Function
+
+      Shared Sub ApplyDriveScopes(pConfig As GoogleAuthConfig)
+         If Not Assigned(pConfig) Then
+            Exit Sub
+         End If
+         pConfig.Scopes.Add("openid")
+         pConfig.Scopes.Add("email")
+         pConfig.Scopes.Add("profile")
+         pConfig.Scopes.Add(GoogleDriveScopes.Drive())
+         pConfig.Prompt = "consent"
+         If pConfig.CallbackPort <= 0 Then
+            pConfig.CallbackPort = 8085
+         End If
+         If Trim(pConfig.RedirectUri) = "" Then
+            pConfig.RedirectUri = "http://localhost:8085/"
+         End If
+      End Sub
+
+      Shared Function ConfigFromRow(pRow As TConfiguracaoGoogleDrive, pFreeRow As Boolean) As GoogleAuthConfig
+         Dim cfg As GoogleAuthConfig
+         If Not Assigned(pRow) Then
+            Throw New Exception("Google Drive configuration not found.")
+         End If
+         If Trim(pRow.ClientId) = "" Then
+            If pFreeRow Then
+               pRow.Free()
+            End If
+            Throw New Exception("Google Drive configuration is missing OAuth client credentials.")
+         End If
+         cfg = GoogleDriveTokenMapper.ToConfig(pRow)
+         If pFreeRow Then
+            pRow.Free()
+         End If
+         ConfigFromRow = cfg
+      End Function
 
       Sub New()
          MyBase.New()

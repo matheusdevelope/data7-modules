@@ -75,13 +75,15 @@ Namespace google_drive_store_sql_tests
             me.CleanupRows()
             me.TestMapperRoundtrip()
             me.TestJwtProfile()
-            me.TestOpenRequiresRow()
+            me.TestOpenWithoutRow()
             me.TestMigrateAndCrud()
             me.TestConfigOf()
             me.TestEncryptionAtRest()
             me.TestClearKeepsCadastro()
             me.TestAuthInjection()
             me.TestConnectReusesSqlStore()
+            me.TestTwoKeysAndList()
+            me.TestAddDoesNotReplace()
          Catch ex As Exception
             me.AssertTrue(False, "suite aborted: " & ex._GetMessage())
          End Try
@@ -233,17 +235,15 @@ Namespace google_drive_store_sql_tests
          row.Free()
       End Sub
 
-      Sub TestOpenRequiresRow()
-         print("-- open requires row")
+      Sub TestOpenWithoutRow()
+         print("-- open without row")
          GoogleDriveSqlStores.Migrate()
-         Dim threw As Boolean = False
-         Try
-            Dim missing As GoogleTokenStore = GoogleDriveSqlStores.Open()
-            missing.Free()
-         Catch ex As Exception
-            threw = InStr(ex._GetMessage(), "not found") > 0
-         End Try
-         me.AssertTrue(threw, "open missing row throws")
+         Dim tokenStore As GoogleTokenStore
+         Dim loaded As GoogleTokenSet
+         tokenStore = GoogleDriveSqlStores.Open()
+         loaded = tokenStore.Load("missing-key")
+         me.AssertTrue(Not Assigned(loaded), "load unknown key is null")
+         tokenStore.Free()
       End Sub
 
       Sub TestMigrateAndCrud()
@@ -350,6 +350,103 @@ Namespace google_drive_store_sql_tests
          auth.Free()
          GoogleDriveSqlStores.DropConfig(connectedCfg)
          tokens.Free()
+         cfg.Free()
+      End Sub
+
+      Sub TestTwoKeysAndList()
+         print("-- two keys and list")
+         Dim cfgA As GoogleAuthConfig
+         Dim cfgB As GoogleAuthConfig
+         Dim tokenStoreA As GoogleTokenStore
+         Dim tokenStoreB As GoogleTokenStore
+         Dim unboundStore As GoogleTokenStore
+         Dim tokensA As GoogleTokenSet
+         Dim tokensB As GoogleTokenSet
+         Dim loadedA As GoogleTokenSet
+         Dim loadedB As GoogleTokenSet
+         Dim listing[] As TConfiguracaoGoogleDrive
+         Dim rowA As TConfiguracaoGoogleDrive
+         Dim rowB As TConfiguracaoGoogleDrive
+         Dim rebuilt As GoogleAuthConfig
+         GoogleDriveSqlStores.Migrate()
+         me.CleanupRows()
+         cfgA = me.SampleConfig()
+         cfgA.AccountId = "ada@example.com"
+         cfgB = me.SampleConfig()
+         cfgB.AccountId = "grace@example.com"
+         tokenStoreA = GoogleDriveSqlStores.Open(cfgA, "Ada")
+         tokensA = me.SampleTokens()
+         tokensA.AccessToken = "ya29.ada"
+         tokenStoreA.Save(cfgA.StoreKey(), tokensA)
+         tokenStoreB = GoogleDriveSqlStores.Open(cfgB, "Grace")
+         tokensB = me.SampleTokens()
+         tokensB.AccessToken = "ya29.grace"
+         tokenStoreB.Save(cfgB.StoreKey(), tokensB)
+         loadedA = tokenStoreA.Load(cfgA.StoreKey())
+         loadedB = tokenStoreB.Load(cfgB.StoreKey())
+         me.AssertEq(loadedA.AccessToken, "ya29.ada", "load ada by key")
+         me.AssertEq(loadedB.AccessToken, "ya29.grace", "load grace by key")
+         loadedA.Free()
+         unboundStore = GoogleDriveSqlStores.Open()
+         loadedA = unboundStore.Load(cfgA.StoreKey())
+         me.AssertEq(loadedA.AccessToken, "ya29.ada", "unbound store loads ada by key")
+         rowA = TConfiguracaoGoogleDrive.FindByStoreKey(cfgA.StoreKey())
+         rowB = TConfiguracaoGoogleDrive.FindByStoreKey(cfgB.StoreKey())
+         me.AssertTrue(Assigned(rowA) And Assigned(rowB), "two rows")
+         rebuilt = GoogleDriveSqlStores.ConfigOfKey(rowA.CodConfiguracaoGoogleDrive)
+         me.AssertEq(rebuilt.Credentials.ClientId, cfgA.Credentials.ClientId, "config of ada key")
+         me.AssertTrue(rowA.CodConfiguracaoGoogleDrive <> rowB.CodConfiguracaoGoogleDrive, "distinct pks")
+         me.AssertEq(rowA.Titulo, "Ada", "ada titulo")
+         me.AssertEq(rowB.Titulo, "Grace", "grace titulo")
+         listing = GoogleDriveSqlStores.ListConnections()
+         me.AssertTrue(listing.Length = 2, "list two connections")
+         tokenStoreA.Clear(cfgA.StoreKey())
+         me.AssertTrue(Not tokenStoreA.Exists(cfgA.StoreKey()), "ada cleared")
+         me.AssertTrue(tokenStoreB.Exists(cfgB.StoreKey()), "grace kept after ada clear")
+         listing.Free()
+         rowA.Free()
+         rowB.Free()
+         rebuilt.Free()
+         loadedA.Free()
+         loadedB.Free()
+         tokensA.Free()
+         tokensB.Free()
+         unboundStore.Free()
+         tokenStoreA.Free()
+         tokenStoreB.Free()
+         cfgA.Free()
+         cfgB.Free()
+      End Sub
+
+      Sub TestAddDoesNotReplace()
+         print("-- add does not replace")
+         Dim cfg As GoogleAuthConfig
+         Dim firstStore As GoogleTokenStore
+         Dim addedStore As GoogleTokenStore
+         Dim tokens As GoogleTokenSet
+         Dim listing[] As TConfiguracaoGoogleDrive
+         Dim firstRow As TConfiguracaoGoogleDrive
+         Dim firstKey As String
+         GoogleDriveSqlStores.Migrate()
+         me.CleanupRows()
+         cfg = me.SampleConfig()
+         cfg.AccountId = "first@example.com"
+         firstKey = cfg.StoreKey()
+         firstStore = GoogleDriveSqlStores.Open(cfg, "First")
+         tokens = me.SampleTokens()
+         tokens.AccessToken = "ya29.first"
+         firstStore.Save(firstKey, tokens)
+         cfg.AccountId = ""
+         addedStore = GoogleDriveSqlStores.Open(cfg, "Second", True)
+         firstRow = TConfiguracaoGoogleDrive.FindByStoreKey(firstKey)
+         me.AssertEq(firstRow.AccessToken, "ya29.first", "first tokens kept")
+         listing = GoogleDriveSqlStores.ListConnections()
+         me.AssertTrue(listing.Length = 2, "add inserted second row")
+         listing.Free()
+         firstRow.Free()
+         tokens.Free()
+         addedStore.Free()
+         firstStore.Free()
          cfg.Free()
       End Sub
 

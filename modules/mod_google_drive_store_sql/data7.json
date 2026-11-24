@@ -1,11 +1,11 @@
 {
   "nome": "mod_google_drive_store_sql",
   "language": "Basic",
-  "version": "1.0.0.0",
+  "version": "1.0.0.1",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
-    "versao": "1.0.0.0",
+    "versao": "1.0.0.1",
     "informacoes": "Projeto mod_google_drive_store_sql criado no VS Code",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -52,7 +52,7 @@
   },
   "virtualFolders": [
     {
-      "nome": "Unidades (150)",
+      "nome": "Unidades (152)",
       "id": "{953AADCF-D441-4A28-8E4D-16FB0E6B3592}",
       "pastaId": "",
       "aberta": "Sim"
@@ -428,6 +428,18 @@
       "id": "{D19C93CA-01AE-4866-9E58-48EBF7CCFC5B}",
       "pastaId": "{953AADCF-D441-4A28-8E4D-16FB0E6B3592}",
       "aberta": "Nao"
+    },
+    {
+      "nome": "mod_win_process",
+      "id": "{7AD5BDA6-721C-44D7-89A6-DA815CA99A3C}",
+      "pastaId": "{54FEE98A-4993-4947-B35E-95F235930FF7}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{F90A2305-51EA-492E-950D-5CFB2C440987}",
+      "pastaId": "{7AD5BDA6-721C-44D7-89A6-DA815CA99A3C}",
+      "aberta": "Nao"
     }
   ],
   "modulesMetadata": {
@@ -457,15 +469,9 @@
     },
     "configuracao_google_drive": {
       "nome": "configuracao_google_drive",
-      "aberto": true,
-      "ordemAbertura": 0,
-      "pastaId": "{462C8DEF-BC37-49AD-ADC5-0818D91F837D}"
-    },
-    "google_drive_store_sql_live": {
-      "nome": "google_drive_store_sql_live",
       "aberto": false,
       "ordemAbertura": 0,
-      "pastaId": "{D19C93CA-01AE-4866-9E58-48EBF7CCFC5B}"
+      "pastaId": "{462C8DEF-BC37-49AD-ADC5-0818D91F837D}"
     },
     "google_drive_store_sql_tests": {
       "nome": "google_drive_store_sql_tests",
@@ -476,8 +482,8 @@
   },
   "dependencies": {
     "mod_google_drive": "1.0.0.0",
-    "mod_table": "1.0.0.7",
-    "mod_google_auth": "1.0.0.1"
+    "mod_table": "1.0.0.8",
+    "mod_google_auth": "1.0.0.2"
   },
   "module": {
     "enabled": true,
