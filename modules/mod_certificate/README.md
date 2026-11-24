@@ -4,7 +4,7 @@ Windows client-certificate wrapper around `certutil.exe`. It reads PFX/CER dumps
 
 This module does **not** send HTTP, does **not** pick a client certificate inside WinHTTP, and does **not** manage Active Directory Certificate Services (backup, revoke, enrollment). The consumer owns mTLS, passwords, and whether a PFX stays in the store after use.
 
-Version `1.0.0.0`. Depends on `mod_portable_exe` `1.0.0.0` (`data7.json`).
+Version `1.0.0.0`. Depends on `mod_portable_exe` `2.0.0.0` (`data7.json`; brings `mod_win_process` and `mod_io`).
 
 This file is the module contract. Consume the API from here. Do not open `.bas` files unless a detail is missing from this document.
 
@@ -159,10 +159,11 @@ Function Prefix(pLocation As TCertLocation, pArgs As String) As String
    ' LocationFlag + " " + pArgs, or just trimmed pArgs when the flag is empty.
 
 Function Exec(pArgs As String) As StringList
-   ' certutil pArgs, stdout+stderr lines (blank lines dropped). Caller owns the list.
+   ' CaptureLines(pArgs): extra args only; TPortableExe prefixes quoted ExePath.
+   ' stdout+stderr, blank lines dropped. Caller owns the list.
 
 Function ExecCode(pArgs As String) As Integer
-   ' Raw process exit code.
+   ' Run(pArgs): extra args only. Process exit code (1 if Start failed).
 
 Function ExecChecked(pArgs As String, pError As String) As Integer
    ' Throws pError when exit code <> 0.
@@ -182,7 +183,7 @@ Function MergePfx(pInFiles As String, pOutFile As String, pPass As String) As In
    ' -MergePFX. pInFiles is the certutil comma-separated PFX list.
 ```
 
-**Overridable hook:** `EnsureExe` — resolves `certutil.exe` under `%SystemRoot%\System32` and assigns `ExePath`.
+**Overridable hook:** `EnsureExe` — resolves `%SystemRoot%\System32\certutil.exe` and pins it with `UsePath` (no base64 install). Do not call `MyBase.EnsureExe` (that would look for `AppDir\portable.exe`).
 
 **Throws:**
 
@@ -435,7 +436,7 @@ There is no UI and no type registry.
 
 - Subclass `TCertificate` to add domain fields; call `Load`/`ApplyDump` then read `Locator`.
 - Subclass `TCertificateStore` to pin a store (`New TCertificateStore(TCertLocation.LocalMachine(), TCertStoreName.TrustedPeople)`).
-- Subclass `TCertUtil` only to replace `EnsureExe` (custom `certutil` path). Consumers should still go through `Instance()` unless they construct their own runner.
+- Subclass `TCertUtil` only to replace `EnsureExe` (custom `certutil` path via `UsePath`). Consumers should still go through `Instance()` unless they construct their own runner.
 
 ```bas
 Class TPixCertificate
@@ -458,5 +459,6 @@ End Class
 - Dates use `0` as “unknown”; `IsExpired`/`IsNotYetValid` are False in that case; `IsValid` requires a real `DateEnd`.
 - Thumbprints are uppercase SHA1 hex (40 chars). `NormalizeHash` stops at the first non-hex so dump noise is not appended.
 - `EnumStores` uses `StringList.NameValueSeparator = "="` (`store.Values("My")` → `Pessoal`).
-- `TCertUtil.Instance` is a process singleton; `Dispose` of that instance clears it.
+- `TCertUtil` inherits `TPortableExe` (`TWinProcess`). `Exec`/`ExecCode` pass **args only** (`CaptureLines`/`Run`); `ExecReadLines`/`RunWait` no longer exist on the parent.
+- `TCertUtil.Instance` is a process singleton; `Dispose` of that instance clears it. Do not `Free` the singleton.
 - `src/Principal.bas` enumerates CurrentUser stores, lists `My` and `Root`, and `FindByName("Autoridade Certificadora Raiz Brasileira v5")`.

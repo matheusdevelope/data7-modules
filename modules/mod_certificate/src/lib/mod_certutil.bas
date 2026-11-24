@@ -25,12 +25,12 @@ Namespace mod_certutil
       Overrides Sub EnsureExe()
          If _certUtilPath <> "" Then
             If IO.File.Exists(_certUtilPath) Then
-               me.ExePath = _certUtilPath
+               me.UsePath(_certUtilPath)
                Exit Sub
             End If
          End If
          _certUtilPath = me.ResolveCertUtil()
-         me.ExePath = _certUtilPath
+         me.UsePath(_certUtilPath)
       End Sub
 
       Private Function ResolveCertUtil() As String
@@ -75,15 +75,15 @@ Namespace mod_certutil
       End Function
 
       Function Exec(pArgs As String) As StringList
-         Exec = me.ExecReadLines(pArgs)
+         Exec = me.CaptureLines(pArgs)
       End Function
 
       Function ExecCode(pArgs As String) As Integer
-         ExecCode = me.RunWait(pArgs)
+         ExecCode = me.Run(pArgs)
       End Function
 
       Function ExecChecked(pArgs As String, pError As String) As Integer
-         Dim result As Integer = me.RunWait(pArgs)
+         Dim result As Integer = me.Run(pArgs)
          If result <> 0 Then
             Throw New Exception(pError)
          End If
