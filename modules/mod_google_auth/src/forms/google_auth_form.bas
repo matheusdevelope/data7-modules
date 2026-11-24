@@ -369,7 +369,7 @@ Namespace google_auth_form
 
       Private Sub ShowAlert(pText As String)
          If me.IsHeadless() Then
-            print(pText)
+            'print(pText)
             Exit Sub
          End If
          Forms.MessageBox.Show(pText)
@@ -474,7 +474,7 @@ Namespace google_auth_form
             End If
             me._sessionResult.Succeeded = False
             me._sessionResult.ErrorMessage = ex._GetMessage()
-            print("Google auth error: " & ex._GetMessage())
+            'print("Google auth error: " & ex._GetMessage())
          End Try
       End Sub
 
@@ -514,7 +514,7 @@ Namespace google_auth_form
                recovered = me.TryCompleteFromPastedUrl()
             Catch extractEx As Exception
                me.SetStatus("Status: erro ao extrair da URL")
-               print("Google auth extract error: " & extractEx._GetMessage())
+               'print("Google auth extract error: " & extractEx._GetMessage())
                me.ShowAlert("Não foi possível extrair o token da URL." & CHAR(13) & extractEx._GetMessage())
                me.CaptureError(extractEx._GetMessage())
                recovered = True
@@ -530,7 +530,7 @@ Namespace google_auth_form
             End If
             If Not recovered Then
                me.SetStatus("Status: erro")
-               print("Google auth error: " & ex._GetMessage())
+               'print("Google auth error: " & ex._GetMessage())
                me.ShowAlert("Não foi possível autorizar." & CHAR(13) & ex._GetMessage())
                me.CaptureError(ex._GetMessage())
             End If
@@ -575,7 +575,7 @@ Namespace google_auth_form
             me.PersistAndShowUser()
          Catch ex As Exception
             me.SetStatus("Status: erro")
-            print("Google auth extract error: " & ex._GetMessage())
+            'print("Google auth extract error: " & ex._GetMessage())
             me.ShowAlert("Não foi possível extrair o token da URL." & CHAR(13) & ex._GetMessage())
             me.CaptureError(ex._GetMessage())
          End Try
@@ -590,7 +590,7 @@ Namespace google_auth_form
             me.ShowUserInfo()
          Catch ex As Exception
             me.SetStatus("Status: erro")
-            print("Google verify error: " & ex._GetMessage())
+            'print("Google verify error: " & ex._GetMessage())
             me.ShowAlert("Não foi possível verificar o token." & CHAR(13) & ex._GetMessage())
          End Try
       End Sub
@@ -637,10 +637,10 @@ Namespace google_auth_form
             me._sessionResult.Email = email
             me._sessionResult.Name = name
             me.SetStatus("Status: autorizado — " & Trim(name & " " & email))
-            print("Google userinfo OK: " & Trim(name & " " & email))
+            'print("Google userinfo OK: " & Trim(name & " " & email))
          Else
             me.SetStatus("Status: token obtido, mas userinfo falhou (" & CStr(res.Status) & ")")
-            print("Google userinfo failed: " & res.Body.AsText)
+            'print("Google userinfo failed: " & res.Body.AsText)
          End If
          res.Free()
          apiClient.Free()

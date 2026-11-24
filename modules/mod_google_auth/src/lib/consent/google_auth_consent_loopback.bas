@@ -34,7 +34,7 @@ Namespace google_auth_consent_loopback
             me._callback = Null
          End If
          me._callback = New HttpCallback()
-         print("Google OAuth URL: " & pAuthUrl)
+         ' print("Google OAuth URL: " & pAuthUrl)
          WinAPI.Execute(pAuthUrl, "", False, SW_SHOWNORMAL)
          me._callback.Start(me._port, False)
          If me._cancelled Then

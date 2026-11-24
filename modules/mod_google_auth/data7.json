@@ -1,11 +1,11 @@
 {
   "nome": "mod_google_auth",
   "language": "Basic",
-  "version": "1.0.0.1",
+  "version": "1.0.0.2",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Administrador",
-    "versao": "1.0.0.1",
+    "versao": "1.0.0.2",
     "informacoes": "Google OAuth 2.0 authentication module (user consent, token refresh, pluggable stores)",
     "codEmpresa": 1,
     "codFilial": 1,
