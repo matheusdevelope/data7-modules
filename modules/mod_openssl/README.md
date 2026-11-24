@@ -2,7 +2,7 @@
 
 Windows helper that installs a portable `openssl.exe` from a zip and runs PKCS#12 export plus raw OpenSSL CLI. It does not generate certificates, parse PEM/CRT/KEY contents, choose a PFX password policy, or keep auto-created export files after `Dispose` — that stays in the consumer.
 
-Version: `1.0.0.0`. Dependencies (`data7.json`): `mod_portable_exe` `1.0.0.0` (brings `TZipPortableExe` / `TRemotePortableExe` / `TPortableExe`, and transitively `mod_io`).
+Version: `1.0.0.0`. Dependencies (`data7.json`): `mod_portable_exe` `2.0.0.0`, `mod_win_process` `1.0.0.0` (`TZipPortableExe` / `TRemotePortableExe` / `TPortableExe` inherit `TWinProcess`; transitively `mod_io`).
 
 This file is the contract for agents. Do not open the `.bas` files to use the module; open implementation only to fix an internal bug.
 
@@ -40,15 +40,15 @@ Empty `pOutput` (`""` after `Trim`) writes a temp file and tracks it for `Dispos
 |---|---|---|
 | `src/mod_openssl.bas` | `mod_openssl` | `OpenSSL` |
 
-`src/Principal.bas` declares no namespace: it is the demo entrypoint (`New OpenSSL` → `ToString` → `Free`). There is no `TXxxxTests.RunAll` in this module. Vendored `data7_modules/` are the `mod_portable_exe` / `mod_io` / core dependencies, not this module's public surface.
+`src/Principal.bas` declares no namespace: it is the demo entrypoint (`New OpenSSL` → `ToString` → `Free`). There is no `TXxxxTests.RunAll` in this module. Vendored `data7_modules/` are dependencies, not this module's public surface.
 
-`OpenSSL` inherits `TZipPortableExe` → `TRemotePortableExe` → `TPortableExe`. Inherited members below are on the `OpenSSL` instance.
+`OpenSSL` inherits `TZipPortableExe` → `TRemotePortableExe` → `TPortableExe` → `TWinProcess`. CLI capture used by `Execute` is a composed `TWinProcess` (`CaptureLines` + `BuildCommand`), not `me.CaptureLines`.
 
 ---
 
 ## OpenSSL (portable CLI + PKCS#12)
 
-Installs `openssl.exe` next to the Data7 executable, then wraps `pkcs12` export and arbitrary OpenSSL arguments. Combined stdout+stderr of the last CLI run is `LastOutput`.
+Installs `openssl.exe` next to the Data7 executable, then wraps `pkcs12` export and arbitrary OpenSSL arguments. Combined non-blank stdout+stderr of the last CLI run is `LastOutput`.
 
 ### Constructor defaults
 
@@ -65,14 +65,14 @@ Installs `openssl.exe` next to the Data7 executable, then wraps `pkcs12` export 
 | `ZipBase64` | `""` |
 | `LastOutput` | `""` until a CLI run |
 
-Install path: `AppDir() & "\openssl\openssl.exe"`. Archive download path when `ZipPath` is `""`: `AppDir() & "\OpenSSL.zip"`.
+Install path: `TPath.Combine(AppDir(), "openssl", "openssl.exe")`. Archive download path when `ZipPath` is `""`: `TPath.Combine(AppDir(), "OpenSSL.zip")`.
 
 ### Own members
 
 | Member | In / out |
 |---|---|
 | `Path` | get-only alias of `ExePath` (triggers `EnsureExe`) |
-| `LastOutput` | get-only; last CLI stdout+stderr (`""` if the capture file was missing) |
+| `LastOutput` | get-only; last CLI stdout+stderr joined by `StringList.Text` (`""` before any run / failed start) |
 
 ```bas
 Function Version() As String
@@ -81,14 +81,14 @@ End Function
 
 Function ExportCrt(pPfx As String, pPass As String, pOutput As String = "") As String
    ' in: existing PFX; password written to a temp passin file (not argv)
-   ' in: pOutput "" / blank → GetTempFilePath("crt", ".crt") and TrackTemp
+   ' in: pOutput "" / blank → temp "*.crt" and TrackTemp
    ' out: output path
    ' flags: -clcerts -nokeys
 End Function
 
 Function ExportKey(pPfx As String, pPass As String, pOutput As String = "") As String
    ' in: same PFX/password/output rules as ExportCrt
-   ' in: pOutput "" / blank → GetTempFilePath("key", ".key") and TrackTemp
+   ' in: pOutput "" / blank → temp "*.key" and TrackTemp
    ' out: output path
    ' flags: -nocerts -nodes
 End Function
@@ -104,15 +104,15 @@ Sub TrackTemp(pPath As String)
 End Sub
 ```
 
-`ToString` (special): `BuildLogger("OpenSSL")` with `Path` = `InstalledExePath()` — does **not** call `EnsureExe`, so it can report a path that is not installed yet. `Dispose` (special): `CleanTemps` then parent `Dispose` (`StopProcess`). `Free` has no extra semantics.
+`ToString` (special): `BuildLogger("OpenSSL")` with `Path` = `InstalledExePath()` — does **not** call `EnsureExe`, so it can report a path that is not installed yet. `Dispose` (special): `CleanTemps` then parent `Dispose` (`TWinProcess.StopProcess(True)`). `Free` has no extra semantics.
 
 Does not return `NULL`. `Path` / `LastOutput` / export results are strings.
 
 ### PKCS#12 phase order
 
-1. `IO.File.Exists(pPfx)` — else throw `Exception("PFX not found: " & pPfx)`.
+1. `TFile.Exists(pPfx)` — else throw `Exception("PFX not found: " & pPfx)`.
 2. `Trim(pOutput)`; if `""`, temp path + `autoOut`.
-3. Write `pPass` to a temp secret file (`GetTempFilePath("ossp", ".tmp")`).
+3. Write `pPass` to a temp secret file (`TPath.GetTempFileName` renamed with prefix `ossp` and `.tmp`) via `Scripting.FileSystemObject.CreateTextFile` (overwrite).
 4. `pkcs12 -in "<pfx>" <flags> -passin "file:<secret>" -out "<out>"` (paths via `ArgQuote`: wrap in `"` and double embedded `"`).
 5. If exit code `<> 0`, retry the same command with ` -legacy`.
 6. Always delete the secret file (including after a caught exception; the original message is rethrown).
@@ -123,23 +123,31 @@ Does not return `NULL`. `Path` / `LastOutput` / export results are strings.
 
 `Execute` does **not** retry `-legacy`. It throws `Exception("openssl failed (" & CStr(code) & "): " & LastOutput)`.
 
-CLI capture: hidden `WScript.Shell.Run` of `cmd /c <BuildCommand(Trim(pArgs))> > "<temp>" 2>&1`, then read/delete the temp (`GetTempFilePath("ossl", ".txt")`).
+CLI capture:
+
+1. `BuildCommand(Trim(pArgs))` → `ExePath.Quoted()` plus args (`EnsureExe` on get of `ExePath`).
+2. `TWinProcess.CaptureLines` (pipes, `UseConsole=False` for the spawn).
+3. `LastOutput` = `StringList.Text` (blank lines dropped).
+4. Exit code = `TWinProcess.ExitCode()`; if `< 0` (start failed / unknown) treat as `1`.
+
+Temp export paths: `TPath.GetTempFileName()` creates a real `TMP*.tmp`, then rename to `pPrefix & nameWithoutExt & pExt` (examples: `crtTMP1234.crt`, `keyTMP1234.key`). Empty `GetTempFileName` → throw `Exception("Could not create temp file")`.
 
 ### Install / zip resolution (first `Path` / CLI)
 
 `EnsureExe` (`TZipPortableExe`):
 
-1. If `InstalledExePath()` already exists → `ExePath =` that path; stop. A prior `ExePath` Set is overwritten.
-2. Zip = `ZipPath` if `<> ""`, else `ResolveDownloadPath()` (`AppDir() & "\" & ArchiveName`, here `OpenSSL.zip`).
+1. `TryReuseExe`: `UsePath` / `ExePath` Set pin, or existing `InstalledExePath` → cache and stop.
+2. Zip = `ZipPath` if `<> ""`, else `ResolveDownloadPath()` (`TPath.Combine(AppDir(), ArchiveName)`, here `OpenSSL.zip`).
 3. If the zip is missing: write `ZipBase64`, else `DownloadTo` `DownloadUrl`, else throw `Exception("No zip source for openssl.exe: set ZipPath, ZipBase64 or DownloadUrl")`.
 4. Zip still missing → `Exception("Zip not found: " & zipPath)`.
 5. `AfterDownload`: unzip into the install folder; if `DeleteArchive` and this run created the archive, delete the zip.
 6. If `openssl.exe` is not at the target and `SearchRecursive` is `True`, find `openssl.exe` by name (case-insensitive) under the extract tree and `TFile.Copy` onto the target. `SearchRecursive = False` skips the search.
 7. Target still missing → `Exception("Executable not found after install: " & target)` or `Exception("openssl.exe not found after extraction.")`.
+8. `CacheExePath(target)` (does not pin; unlike Set of `ExePath`).
 
 HTTP download (`WinHttp.WinHttpRequest.5.1`): `GET`, all four timeouts = `DownloadTimeoutMs`. Status `<> 200` → `Exception("Error downloading openssl.exe: " & Status)`. File overwrite mode `2`.
 
-`ResolveDownloadPath` fallback if `ArchiveName` were `""`: `InstallFolder & ".zip"`, else `ExeFileName` with `.exe` replaced by `.zip` (or `.zip` appended).
+`ResolveDownloadPath` fallback if `ArchiveName` were `""`: `InstallFolder & ".zip"`, else `TPath.ChangeExtension(ExeFileName, ".zip")`.
 
 ### Inherited properties (consumer may override)
 
@@ -152,72 +160,44 @@ HTTP download (`WinHttp.WinHttpRequest.5.1`): `GET`, all four timeouts = `Downlo
 | `DeleteArchive` | delete zip only when this run created it (`ZipBase64` or download) |
 | `DownloadUrl` | zip URL |
 | `DownloadTimeoutMs` | WinHTTP timeouts (ms) |
-| `ExeFileName` / `InstallFolder` | `InstalledExePath`; Set clears cached `ExePath` |
+| `ExeFileName` / `InstallFolder` | `InstalledExePath`; Set clears cached `ExePath` and the `UsePath` pin |
 | `ExeBase64` | unused by zip `EnsureExe` (plain `TPortableExe` only) |
-| `ExePath` | get runs `EnsureExe`; set stores a path until the next get |
+| `ExePath` | get runs `EnsureExe`; set **pins** the path (`TryReuseExe` skips download) |
 
 ### Inherited helpers on the instance
 
 ```bas
 Function AppDir() As String
-   ' out: directory of Data7.NomeArquivoExecutavel()
+   ' out: TPath.GetDirectoryName(Data7.NomeArquivoExecutavel())
 End Function
 
 Function InstalledExePath() As String
-   ' out: AppDir[\InstallFolder]\ExeFileName ; empty ExeFileName → "portable.exe"
+   ' out: TPath.Combine(AppDir, [InstallFolder], ExeFileName)
+   '      empty ExeFileName → "portable.exe"
 End Function
 
-Function GetTempFolder() As String
-   ' out: Scripting.FileSystemObject special folder 2 (TEMP)
-End Function
-
-Function GetTempFilePath(pPrefix As String = "", pExtension As String = "") As String
-   ' out: TEMP & "\" & pPrefix & FSO.GetTempName & pExtension
-End Function
-
-Function QuoteArg(pValue As String) As String
-   ' out: "value" — does not double inner quotes (unlike PKCS#12 ArgQuote)
-End Function
-
-Function BuildCommand(pArgs As String = "") As String
-   ' out: QuoteArg(ExePath) [& " " & pArgs]
-End Function
+Sub UsePath(pPath As String)
+   ' pin ExePath to an existing file, or SearchPathW on PATH (e.g. "openssl")
+   ' "" clears the pin
+End Sub
 
 Sub EnsureExe()
+   ' zip install if not reused / pinned
 End Sub
 
-Function RunWait(pArgs As String = "") As Integer
-   ' out: WScript.Shell.Run exit code; window 0, wait True
+Function BuildCommand(pArgs As String = "") As String
+   ' out: ExePath.Quoted() [& " " & pArgs]
 End Function
 
-Function StartProcess(pArgs As String = "") As Boolean
-   ' out: IsRunning after Shell.Exec
+Overrides Function Start(pCommand As String = "") As Boolean
+   ' in: extra openssl args, not a full command line
+   ' MyBase.Start(BuildCommand(pCommand))
 End Function
-
-Function IsRunning() As Boolean
-   ' out: False if no process or Status <> 0
-End Function
-
-Function ExecReadLines(pArgs As String = "") As Collections.StringList
-   ' out: consumer-owned list of non-blank stdout+stderr lines
-End Function
-
-Function WriteLine(pCommand As String) As Boolean
-   ' out: False if not running
-End Function
-
-Function ReadLine() As String
-   ' out: "" if not running or AtEndOfStream
-End Function
-
-Function WaitForOutput(pSuccessToken As String, pErrorToken As String = "") As String
-   ' out: first StdOut line containing either token, or ""
-End Function
-
-Sub StopProcess(pExitCommand As String = "exit")
-   ' in: "" skips StdIn; errors ignored
-End Sub
 ```
+
+Live process I/O (`Run`, `CaptureLines`, `PullStdOut*`, `WriteLine`, `WaitOutput`, `UseConsole`, `Visible`, `WorkingDir`, `RunAsAdmin`, `ProcessId`, `LastError`, `StopProcess(pKill As Boolean = True)`) is `TWinProcess`. Prefer `Execute` / `Version` / `ExportCrt` / `ExportKey` for this module. For backends and UAC, read the `mod_win_process` contract.
+
+There is no `GetTempFilePath`, `QuoteArg`, `RunWait`, `StartProcess`, or `ExecReadLines` on `TPortableExe` 2.x.
 
 ### Throws / NULL / no-op
 
@@ -227,12 +207,11 @@ End Sub
 | `pkcs12` non-zero after `-legacy` | throw `openssl pkcs12 failed: ` + `LastOutput` |
 | `pkcs12` did not create the out file | throw `openssl pkcs12 did not write: …` |
 | `Execute` non-zero | throw `openssl failed (N): ` + `LastOutput` |
+| Temp name API failed | throw `Could not create temp file` |
 | No zip source | throw `No zip source for openssl.exe: set ZipPath, ZipBase64 or DownloadUrl` |
 | HTTP not 200 | throw `Error downloading openssl.exe: ` + status |
 | `TrackTemp("")` | no-op |
-| `LastOutput` before any CLI / missing capture file | `""` |
-| `ReadLine` / `WaitForOutput` when not running | `""` |
-| `WriteLine` when not running | `False` |
+| `LastOutput` before any CLI / failed start | `""` |
 | `ToString` before install | no throw; path may not exist yet |
 
 ---
@@ -250,30 +229,38 @@ Class TPinnedOpenSSL
    Sub New()
       MyBase.New()
       me.ZipPath = "C:\Tools\OpenSSL.zip"   ' local zip; skip GitHub
-      me.DeleteArchive = False              ' keep the zip when this run did not create it anyway
+      me.DeleteArchive = False
    End Sub
 End Class
+```
+
+To use an already-installed binary instead of the zip:
+
+```bas
+_ossl.UsePath("openssl")    ' PATH search
+' or _ossl.UsePath("C:\Program Files\OpenSSL-Win64\bin\openssl.exe")
 ```
 
 Overridable hooks (no bodies here):
 
 | Hook | Purpose |
 |---|---|
-| `EnsureExe` | install `openssl.exe` if `InstalledExePath` is missing |
+| `EnsureExe` | install `openssl.exe` if not reused / pinned |
 | `ResolveDownloadPath` | zip (or download) destination when `ZipPath` is `""` |
 | `AfterDownload` | unzip, optional recursive find, optional zip delete |
+| `Start` | prefix extra args with quoted `ExePath` |
 | `ToString` | logger line with `InstalledExePath` |
-| `Dispose` | delete `TrackTemp` files, then stop the inherited process |
+| `Dispose` | delete `TrackTemp` files, then `StopProcess(True)` |
 
 ---
 
 ## Module Notes
 
 - Constructor pins the GitHub zip URL, `120000` ms timeout, folder `openssl`, exe `openssl.exe`, archive `OpenSSL.zip`, `SearchRecursive = True`.
-- First `Path` / `Execute` / `Version` / `Export*` get runs zip `EnsureExe`; `ToString` does not.
-- PKCS#12 password is a `file:` passin temp, never a command-line `-passin pass:`; the file is deleted even on failure.
+- First `Path` / `Execute` / `Version` / `Export*` get runs zip `EnsureExe`; `ToString` does not. `UsePath` / Set of `ExePath` pins and skips zip install.
+- PKCS#12 password is a `file:` passin temp (FSO text, not UTF-8 `TFile.WriteAllText`), never `-passin pass:`; the file is deleted even on failure.
 - Failed `pkcs12` is retried once with ` -legacy`; `Execute` is not.
 - `pOutput = ""` → temp + `TrackTemp`; an explicit output path is never deleted by this module.
-- `LastOutput` is combined stdout+stderr of the last `RunOpenSsl`; `Version` trims it, `Execute` does not.
-- `Dispose`/`Free` deletes tracked temps then `StopProcess`; passin and CLI-capture temps are deleted immediately, not at `Dispose`.
-- `QuoteArg` (command line) does not escape inner quotes; PKCS#12 paths use `ArgQuote`, which doubles them.
+- `Execute` runs a fresh `TWinProcess.CaptureLines(BuildCommand(...))`; blank lines are dropped from `LastOutput`. `Version` trims it, `Execute` does not. Failed start (`ExitCode < 0`) is reported as `1`.
+- `Dispose`/`Free` deletes tracked temps then parent `StopProcess(True)`; passin temps are deleted immediately, not at `Dispose`.
+- PKCS#12 paths use `ArgQuote` (double embedded `"`). The exe path in `BuildCommand` uses `String.Quoted()`.

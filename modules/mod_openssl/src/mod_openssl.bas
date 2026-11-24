@@ -1,5 +1,5 @@
 Imports Collections
-Imports IO
+Imports mod_win_process
 Imports mod_zip_exe
 
 Namespace mod_openssl
@@ -46,19 +46,24 @@ Namespace mod_openssl
       End Function
 
       Private Function ExportPkcs12(pPfx As String, pPass As String, pOutput As String, pPrefix As String, pExt As String, pFlags As String) As String
-         If Not IO.File.Exists(pPfx) Then
+         Dim autoOut As Boolean
+         Dim outPath As String
+         Dim passFile As String
+         Dim args As String
+         Dim code As Integer
+         If Not TFile.Exists(pPfx) Then
             Throw New Exception("PFX not found: " & pPfx)
          End If
-         Dim autoOut As Boolean = False
-         Dim outPath As String = Trim(pOutput)
+         autoOut = False
+         outPath = Trim(pOutput)
          If outPath = "" Then
             outPath = me.GetTempFilePath(pPrefix, pExt)
             autoOut = True
          End If
 
-         Dim passFile As String = me.WriteSecretFile(pPass)
-         Dim args As String = "pkcs12 -in " & me.ArgQuote(pPfx) & " " & pFlags & " -passin " & me.ArgQuote("file:" & passFile) & " -out " & me.ArgQuote(outPath)
-         Dim code As Integer = -1
+         passFile = me.WriteSecretFile(pPass)
+         args = "pkcs12 -in " & me.ArgQuote(pPfx) & " " & pFlags & " -passin " & me.ArgQuote("file:" & passFile) & " -out " & me.ArgQuote(outPath)
+         code = -1
          Try
             code = me.RunOpenSsl(args)
             If code <> 0 Then
@@ -73,7 +78,7 @@ Namespace mod_openssl
          If code <> 0 Then
             Throw New Exception("openssl pkcs12 failed: " & me._lastOutput)
          End If
-         If Not IO.File.Exists(outPath) Then
+         If Not TFile.Exists(outPath) Then
             Throw New Exception("openssl pkcs12 did not write: " & outPath)
          End If
          If autoOut Then
@@ -83,7 +88,8 @@ Namespace mod_openssl
       End Function
 
       Function Execute(pArgs As String) As String
-         Dim code As Integer = me.RunOpenSsl(pArgs)
+         Dim code As Integer
+         code = me.RunOpenSsl(pArgs)
          If code <> 0 Then
             Throw New Exception("openssl failed (" & CStr(code) & "): " & me._lastOutput)
          End If
@@ -91,36 +97,54 @@ Namespace mod_openssl
       End Function
 
       Private Function RunOpenSsl(pArgs As String) As Integer
-         Dim outFile As String = me.GetTempFilePath("ossl", ".txt")
-         Dim wsh As Variant = CreateObject("WScript.Shell")
-         Dim cmd As String = "cmd /c " & me.BuildCommand(Trim(pArgs)) & " > " & me.QuoteArg(outFile) & " 2>&1"
-         Dim result As Integer = wsh.Run(cmd, 0, True)
-         wsh = Unassigned
-         me._lastOutput = me.ReadTextFile(outFile)
-         me.DeleteQuiet(outFile)
-         RunOpenSsl = result
+         Dim job As TWinProcess
+         Dim lines As StringList
+         Dim code As Integer
+         job = New TWinProcess()
+         lines = job.CaptureLines(me.BuildCommand(Trim(pArgs)))
+         me._lastOutput = lines.Text
+         lines.Free()
+         code = job.ExitCode()
+         job.Free()
+         If code < 0 Then
+            code = 1
+         End If
+         RunOpenSsl = code
+      End Function
+
+      Private Function GetTempFilePath(pPrefix As String, pExt As String) As String
+         Dim createdFile As String
+         Dim destFile As String
+         Dim destName As String
+         Dim folderName As String
+         createdFile = TPath.GetTempFileName()
+         If createdFile = "" Then
+            Throw New Exception("Could not create temp file")
+         End If
+         folderName = TPath.GetDirectoryName(createdFile)
+         destName = pPrefix & TPath.GetFileNameWithoutExtension(createdFile) & pExt
+         destFile = TPath.Combine(folderName, destName)
+         If destFile <> createdFile Then
+            If TFile.Exists(destFile) Then
+               TFile.Delete(destFile)
+            End If
+            TFile.Move(createdFile, destFile)
+         End If
+         GetTempFilePath = destFile
       End Function
 
       Private Function WriteSecretFile(pSecret As String) As String
-         Dim secretPath As String = me.GetTempFilePath("ossp", ".tmp")
-         Dim fso As Variant = CreateObject("Scripting.FileSystemObject")
-         Dim ts As Variant = fso.CreateTextFile(secretPath, True)
+         Dim secretPath As String
+         Dim fso As Variant
+         Dim ts As Variant
+         secretPath = me.GetTempFilePath("ossp", ".tmp")
+         fso = CreateObject("Scripting.FileSystemObject")
+         ts = fso.CreateTextFile(secretPath, True)
          ts.Write(pSecret)
          ts.Close()
          ts = Unassigned
          fso = Unassigned
          WriteSecretFile = secretPath
-      End Function
-
-      Private Function ReadTextFile(pPath As String) As String
-         If Not IO.File.Exists(pPath) Then
-            ReadTextFile = ""
-            Exit Function
-         End If
-         Dim lines As New StringList()
-         lines.LoadFromFile(pPath)
-         ReadTextFile = lines.Text
-         lines.Free()
       End Function
 
       Private Function ArgQuote(pValue As String) As String
@@ -137,9 +161,9 @@ Namespace mod_openssl
          If pPath = "" Then
             Exit Sub
          End If
-         If IO.File.Exists(pPath) Then
+         If TFile.Exists(pPath) Then
             Try
-               IO.File.Delete(pPath)
+               TFile.Delete(pPath)
             Catch
             End Try
          End If
