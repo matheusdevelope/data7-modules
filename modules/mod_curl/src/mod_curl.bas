@@ -1,6 +1,7 @@
 
 Imports IO
 Imports Collections
+Imports TPath
 Imports mod_zip_exe
 
 Namespace mod_curl
@@ -37,6 +38,7 @@ Namespace mod_curl
          me.ExeFileName = "curl.exe"
          me.ArchiveName = "curl.zip"
          me.SearchRecursive = True
+         me.UseConsole = False
          me._headers = New StringList()
          me._formParts = New StringList()
          me._extraOptions = New StringList()
@@ -186,7 +188,7 @@ Namespace mod_curl
             me.TrackTemp(me._tempOutput)
          End If
 
-         Dim code As Integer = me.RunWait(me.BuildCurlArgs())
+         Dim code As Integer = me.Run(me.BuildCurlArgs())
          If code <> 0 Then
             Dim errText As String = me.ReadTextFile(me._tempStderr)
             Throw New Exception("curl failed (" & CStr(code) & "): " & errText)
@@ -280,6 +282,26 @@ Namespace mod_curl
 
       Private Function ArgQuote(pValue As String) As String
          ArgQuote = pValue.Quoted()
+      End Function
+
+      Private Function GetTempFilePath(pPrefix As String, pExtension As String) As String
+         Dim created As String
+         Dim dest As String
+         Dim baseName As String
+         created = TPath.GetTempFileName()
+         If created = "" Then
+            GetTempFilePath = ""
+            Exit Function
+         End If
+         baseName = TPath.GetFileNameWithoutExtension(created)
+         dest = TPath.Combine(TPath.GetDirectoryName(created), pPrefix & baseName & pExtension)
+         If IO.File.Exists(created) Then
+            Try
+               IO.File.Delete(created)
+            Catch
+            End Try
+         End If
+         GetTempFilePath = dest
       End Function
 
       Private Sub WriteUtf8NoBom(pPath As String, pText As String)

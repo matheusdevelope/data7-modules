@@ -2,7 +2,7 @@
 
 HTTP client that shells out to a portable `curl.exe`. It builds the argv, runs curl, and returns a parsed `CurlOutput`. It does not interpret HTTP status as success or failure, does not parse JSON/XML, and does not decide retry, proxy, or TLS policy — that stays in the consumer.
 
-Version: `1.0.0.0`. Dependencies (`data7.json`): `mod_portable_exe` `1.0.0.0` (transitively `mod_io`).
+Version: `1.0.0.0`. Dependencies (`data7.json`): `mod_portable_exe` `2.0.0.0` (transitively `mod_io`, `mod_win_process`).
 
 This file is the contract for agents. Do not open the `.bas` files to use the module; open implementation only to fix an internal bug.
 
@@ -62,6 +62,7 @@ Constructor defaults (this class plus the values it writes onto the base):
 | `ExeFileName` | `curl.exe` |
 | `ArchiveName` | `curl.zip` |
 | `SearchRecursive` | `True` |
+| `UseConsole` | `False` (`TWinProcess`: hidden pipes, not a live console scrape) |
 
 Installed exe path: `{AppDir}\curl\curl.exe`.
 
@@ -121,7 +122,8 @@ Function Exec() As CurlOutput
    ' out: always a CurlOutput on curl.exe exit 0; never NULL
    ' 1. temp dump-header curlh*.txt and stderr curle*.txt (always tracked)
    ' 2. body = Output if set, else temp curlo*.bin (tracked only when Output = "")
-   ' 3. RunWait(built argv); exit <> 0 → Throw before parse / before CleanTemps
+   ' 3. Run(built argv) — extra args only; Start prefixes quoted ExePath
+   '    exit <> 0 (or Start failed → 1) → Throw before parse / before CleanTemps
    ' 4. New CurlOutput(headerFile, bodyFile)
    ' 5. delete owned temps (body file kept when Output was set)
 End Function
@@ -166,7 +168,7 @@ Conditional:
 | `TimeoutMs = 0`, `Insecure = False`, empty cert/key/pass/headers/forms/options | corresponding flags omitted |
 | first `Exec` when `{AppDir}\curl\curl.exe` is missing | inherited installer: download zip from `DownloadUrl`, extract, locate `curl.exe` |
 
-Inherited installer throws (via `RunWait` → `EnsureExe`) when there is no zip source, the zip is missing, the download is not HTTP 200, or `curl.exe` is not found after extract.
+Inherited installer throws (via `Run` → `Start` → `ExePath`/`EnsureExe`) when there is no zip source, the zip is missing, the download is not HTTP 200, or `curl.exe` is not found after extract. `Run` is `TWinProcess.Run`: hidden pipes, extra args only.
 
 ---
 
@@ -221,7 +223,7 @@ Missing `bodyFile` is a no-op for both body loaders (no throw). `ContentLength` 
 
 There is no `Add` / `Make` / `MakeByName` catalog and no UI.
 
-Instantiate `Curl` and call `Exec`. To pin a binary or change install layout, set the inherited installer properties before the first `Exec`:
+Instantiate `Curl` and call `Exec`. To pin a binary or change install layout, set the inherited installer properties before the first `Exec` (or call `UsePath` to skip the zip download):
 
 ```bas
 Class TPinnedCurl
@@ -233,6 +235,7 @@ Class TPinnedCurl
       me.InstallFolder = "curl"
       me.ExeFileName = "curl.exe"
       me.ArchiveName = "curl.zip"
+      ' or me.UsePath("C:\Tools\curl.exe")   ' existing file, or a name on PATH
    End Sub
 End Class
 ```
@@ -241,9 +244,10 @@ Inherited overridables (from `TZipPortableExe` / `TRemotePortableExe` / `TPortab
 
 | Hook | Purpose |
 |---|---|
-| `EnsureExe` | resolve or install `curl.exe` before `RunWait` |
+| `EnsureExe` | resolve or install `curl.exe` before `Run`/`Start` |
 | `ResolveDownloadPath` | zip destination (this module uses `ArchiveName` under `AppDir`) |
 | `AfterDownload` | unzip, optional archive delete, recursive search for `ExeFileName` |
+| `Start` | inherited execute: extra args only; `BuildCommand` prefixes quoted `ExePath` |
 
 TLS, retries, JSON mapping, and treating `StatusCode >= 400` as an error stay in the consumer.
 
@@ -257,5 +261,6 @@ TLS, retries, JSON mapping, and treating `StatusCode >= 400` as an error stay in
 - `Pass` is not placed on the argv; it goes through a temp `--config` line `pass = "..."`. `Dispose` clears `Pass`.
 - `TimeoutMs` is ms in the API and seconds on the argv (`Int` division, min 1 when `TimeoutMs > 0`).
 - Redirects: `-L` with max 10; parsed headers/status are the last `HTTP/` block only.
+- `Exec` calls inherited `Run` (`mod_win_process` via `TPortableExe`): extra args, hidden pipes. `UseConsole` is `False`. `GetTempFilePath` is private here (`TPath.GetTempFileName`); it is not on `TPortableExe`.
 - HTTP error statuses are success for this module. Only a non-zero curl.exe exit throws.
 - Canonical demo: `src/Principal.bas`. There is no `TXxxTests.RunAll` suite.
