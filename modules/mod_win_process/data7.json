@@ -1,0 +1,99 @@
+{
+  "nome": "mod_win_process",
+  "language": "Basic",
+  "version": "1.0.0.0",
+  "targetPlatform": "Default",
+  "opcoes": {
+    "autor": "Administrador",
+    "versao": "1.0.0.0",
+    "informacoes": "Windows child-process engine (hidden/visible, stdin/stdout/stderr, live console scrape, UAC)",
+    "codEmpresa": 1,
+    "codFilial": 1,
+    "nomeUsuario": "Administrador",
+    "preScript": "",
+    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+  },
+  "build": {
+    "optimization": {
+      "sourceMap": false,
+      "minify": {
+        "enabled": true,
+        "stripComments": true,
+        "collapseWhitespace": true
+      },
+      "prune": {
+        "enabled": true,
+        "report": false,
+        "strategy": "principal-closure",
+        "alwaysInclude": [],
+        "remove": {
+          "namespaces": true,
+          "classes": true,
+          "structures": true,
+          "enums": true,
+          "delegates": true,
+          "methods": true,
+          "declareMethods": true,
+          "fields": true,
+          "properties": true,
+          "consts": true,
+          "variables": true,
+          "unusedImports": true,
+          "localVariables": true
+        }
+      },
+      "uglify": {
+        "enabled": false
+      }
+    }
+  },
+  "stackTrace": {
+    "enabled": false
+  },
+  "virtualFolders": [
+    {
+      "nome": "Unidades (7)",
+      "id": "{7C3E1A90-2B4D-4F6A-8C1E-9D0B5A4F3E21}",
+      "pastaId": "",
+      "aberta": "Sim"
+    },
+    {
+      "nome": "data7_modules",
+      "id": "{3F8A2C10-6D91-4B7E-A2C4-1E5F8D9B0A33}",
+      "pastaId": "{7C3E1A90-2B4D-4F6A-8C1E-9D0B5A4F3E21}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "core_modules",
+      "id": "{9B1D4E70-8C2A-4F53-91E6-2A7C5D4B8F10}",
+      "pastaId": "{3F8A2C10-6D91-4B7E-A2C4-1E5F8D9B0A33}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{E2A6C8D0-1F3B-4A79-B5D2-6C9E0F1A2B44}",
+      "pastaId": "{7C3E1A90-2B4D-4F6A-8C1E-9D0B5A4F3E21}",
+      "aberta": "Nao"
+    }
+  ],
+  "modulesMetadata": {
+    "mod_win_process": {
+      "nome": "mod_win_process",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{7C3E1A90-2B4D-4F6A-8C1E-9D0B5A4F3E21}"
+    },
+    "mod_win_process_tests": {
+      "nome": "mod_win_process_tests",
+      "aberto": false,
+      "ordemAbertura": 0,
+      "pastaId": "{E2A6C8D0-1F3B-4A79-B5D2-6C9E0F1A2B44}"
+    }
+  },
+  "dependencies": {},
+  "module": {
+    "enabled": true,
+    "name": "mod_win_process",
+    "publisher": "matheusdevelope"
+  }
+}
