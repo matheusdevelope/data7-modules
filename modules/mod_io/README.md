@@ -1,6 +1,6 @@
 # mod_io
 
-Windows disk I/O and native dialogs for Data7: paths, files, directories, and file/folder pickers. It does not validate business rules, create directory trees, list recursively, or pick an encoding — that stays in the consumer.
+Windows disk I/O and native dialogs for Data7: paths, files, directories, and file/folder pickers. It does not validate business rules or pick an encoding — that stays in the consumer. Directory trees and recursive listings are opt-in (`EnsureDirectory` / `pRecursive`).
 
 Version: `1.0.0.0`. Dependencies (`data7.json`): none.
 
@@ -57,7 +57,7 @@ The module replaces each `|` with a null and double-null-terminates the list.
 
 ```bas
 Function OpenFile(Title As String, Filter As String, InitialDir As String) As String
-   ' in: title, filter, initial folder
+   ' in: title, filter, initial folder (start location only — navigation is not locked)
    ' out: single path, or "" if cancelled
    ' requires existing file and folder; hides "read-only"
 End Function
@@ -79,10 +79,20 @@ Function SaveFile(Title As String, Filter As String, InitialDir As String, DefEx
    ' prompts on overwrite; requires an existing folder
 End Function
 
-Function SelectFolder(Title As String, pInitialDir As String = "") As String
-   ' in: Title = BrowseForFolder text; pInitialDir default ""
-   ' out: folder.Self.Path, or "" if cancelled / failed
+Function SelectFolder(Title As String, pInitialDir As String = "", pLockRoot As Boolean = False) As String
+   ' in: Title = dialog text
+   ' in: pInitialDir optional start folder ("" = no start folder)
+   ' in: pLockRoot False (default) = browse the whole machine, starting at pInitialDir when set
+   ' in: pLockRoot True = pInitialDir becomes the tree root; the user cannot leave it
+   ' out: chosen folder, or "" if cancelled / failed
 End Function
+```
+
+`pInitialDir` is a start folder, not a cage, unless `pLockRoot` is True:
+
+```bas
+Dim _free As String = TDialogs.SelectFolder("Select backup folder", "C:\Data7\Backup")
+Dim _root As String = TDialogs.SelectFolder("Select backup folder", "C:\Data7\Backup", True)
 ```
 
 Does not return `NULL`. `OpenFiles` never returns a null list.
@@ -106,11 +116,13 @@ Function Delete(Path As String) As Boolean
    ' out: IO.File.Delete result
 End Function
 
-Sub Copy(Source As String, Dest As String, Overwrite As Boolean)
+Sub Copy(Source As String, Dest As String, Overwrite As Boolean, pEnsureDirectory As Boolean = False)
    ' Overwrite=True allows replacing Dest; False fails if Dest already exists
+   ' pEnsureDirectory True → create Dest's parent folders if missing
 End Sub
 
-Sub Move(Source As String, Dest As String)
+Sub Move(Source As String, Dest As String, pEnsureDirectory As Boolean = False)
+   ' pEnsureDirectory True → create Dest's parent folders if missing
 End Sub
 
 Function Exists(Path As String) As Boolean
@@ -138,8 +150,9 @@ Function ReadAllText(Path As String) As String
    ' out: full UTF-8 contents
 End Function
 
-Sub WriteAllText(Path As String, Contents As String)
+Sub WriteAllText(Path As String, Contents As String, pEnsureDirectory As Boolean = False)
    ' create or overwrite UTF-8
+   ' pEnsureDirectory True → create Path's parent folders if missing
 End Sub
 
 Sub AppendAllText(Path As String, Contents As String)
@@ -150,16 +163,18 @@ Function ReadAllLines(Path As String) As Variant
    ' always throws Exception("Not implemented")
 End Function
 
-Sub WriteAllLines(Path As String, Contents As Variant)
+Sub WriteAllLines(Path As String, Contents As Variant, pEnsureDirectory As Boolean = False)
    ' Join(Contents, Chr(13)+Chr(10)) then WriteAllText
+   ' pEnsureDirectory True → create Path's parent folders if missing
 End Sub
 
 Function ReadAllBytes(Path As String) As Variant
    ' out: raw bytes from ADODB.Stream
 End Function
 
-Sub WriteAllBytes(Path As String, Bytes As Variant)
+Sub WriteAllBytes(Path As String, Bytes As Variant, pEnsureDirectory As Boolean = False)
    ' overwrite binary
+   ' pEnsureDirectory True → create Path's parent folders if missing
 End Sub
 
 Function CreateText(Path As String) As Variant
@@ -336,11 +351,16 @@ End Function
 
 ## Directory (`TDirectory`)
 
-Folders and **non-recursive** listings (immediate children). `GetFiles` / `GetDirectories` / `GetFileSystemEntries` use `Shell.Application` on the absolute path; a missing folder returns an empty `StringList` (never `NULL`). The consumer owns the list.
+Immediate children by default; pass `pRecursive=True` to walk every subfolder. Non-recursive listings use `Shell.Application` on the absolute path; recursive listings use `Scripting.FileSystemObject`. A missing folder returns an empty `StringList` (never `NULL`). The consumer owns the list.
 
 ```bas
-Sub CreateDirectory(Path As String)
-   ' one level; missing parents are not created; API return ignored
+Sub CreateDirectory(Path As String, pRecursive As Boolean = False)
+   ' False (default) = one level; missing parents are not created; API return ignored
+   ' True = create Path and every missing parent (no-op if Path already exists)
+End Sub
+
+Sub EnsureDirectory(Path As String)
+   ' CreateDirectory(Path, True) — point at the final folder; intermediates are created
 End Sub
 
 Function Exists(Path As String) As Boolean
@@ -378,16 +398,16 @@ Function GetLogicalDrives() As Collections.StringList
    ' items such as "C:\"; empty list if the API returns nothing
 End Function
 
-Function GetFiles(Path As String) As Collections.StringList
-   ' children that are not folders
+Function GetFiles(Path As String, pRecursive As Boolean = False) As Collections.StringList
+   ' files; False = immediate children; True = all nested files
 End Function
 
-Function GetDirectories(Path As String) As Collections.StringList
-   ' children that are folders
+Function GetDirectories(Path As String, pRecursive As Boolean = False) As Collections.StringList
+   ' folders; False = immediate children; True = all nested folders
 End Function
 
-Function GetFileSystemEntries(Path As String) As Collections.StringList
-   ' all children (file and folder)
+Function GetFileSystemEntries(Path As String, pRecursive As Boolean = False) As Collections.StringList
+   ' files and folders; False = immediate children; True = entire tree under Path
 End Function
 
 Function GetCreationTime(Path As String) As String
@@ -422,6 +442,9 @@ There are no public classes to inherit and no `Add` / `Make` / `MakeByName` cata
 - Text is UTF-8; `WriteAllText` / `WriteAllBytes` / `WriteAllLines` overwrite. `AppendAllText` requires the file to already exist.
 - `ReadAllLines` throws. `CreateText` does not return a stream and ignores `Path`.
 - `GetTempFileName` creates the file on disk (prefix `TMP`).
-- `CreateDirectory` does not create intermediates. `IsEmpty` is `True` for a missing folder.
+- `CreateDirectory` without `pRecursive` does not create intermediates. `EnsureDirectory` does. `IsEmpty` is `True` for a missing folder.
 - `GetExtensionByMagicBytes` / `GetExtensionByBase64` do not distinguish `.docx`/`.xlsx` from `.zip`.
+- `SelectFolder` default is a free picker (`pLockRoot=False`): `pInitialDir` is the start folder. `pLockRoot=True` pins the tree to that path.
+- `GetFiles` / `GetDirectories` / `GetFileSystemEntries` are immediate children unless `pRecursive=True`.
+- `CreateDirectory` is one level unless `pRecursive=True`. `EnsureDirectory` always creates the full chain. `TFile.WriteAllText` / `WriteAllBytes` / `Copy` / `Move` create parents only when `pEnsureDirectory=True`.
 - Canonical demo: `src/Principal.bas` (filter `"Arquivos de Texto (*.txt)|*.txt"`). There is no `TXxxTests.RunAll` suite.

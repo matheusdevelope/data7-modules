@@ -35,6 +35,100 @@ Namespace TDialogs
     Private Const OFN_ALLOWMULTISELECT = &H200
     Private Const OFN_EXPLORER         = &H80000
 
+    Private Const BIF_RETURNONLYFSDIRS = &H1
+    Private Const BIF_NEWDIALOGSTYLE   = &H40
+    Private Const BFFM_INITIALIZED     = 1
+    Private Const BFFM_SETSELECTIONW   = &H467
+    Private Const BFFM_SETEXPANDED     = &H46A
+
+    Private Structure BROWSEINFO
+        hwndOwner As Integer
+        pidlRoot As Integer
+        pszDisplayName As String
+        lpszTitle As String
+        ulFlags As Integer
+        lpfn As Integer
+        lParam As Integer
+        iImage As Integer
+    End Structure
+
+    Private Declare Function SHBrowseForFolderW Lib "shell32.dll" (ByRef lpbi As BROWSEINFO) As Integer
+    Private Declare Function SHGetPathFromIDListW Lib "shell32.dll" (pidl As Integer, pszPath As String) As Integer
+    Private Declare Sub CoTaskMemFree Lib "ole32.dll" (pv As Integer)
+    Private Declare Function SendMessageW Lib "user32.dll" (hWnd As Integer, Msg As Integer, wParam As Integer, ByVal lParam As String) As Integer
+
+    Private Dim _folderStartDir As String
+
+    Private Function FolderBrowseCallback(hwnd As Integer, uMsg As Integer, lParam As Integer, lpData As Integer) As Integer
+        If uMsg = BFFM_INITIALIZED Then
+            If _folderStartDir <> "" Then
+                SendMessageW(hwnd, BFFM_SETSELECTIONW, 1, _folderStartDir)
+                SendMessageW(hwnd, BFFM_SETEXPANDED, 1, _folderStartDir)
+            End If
+        End If
+        FolderBrowseCallback = 0
+    End Function
+
+    Private Function ReadPidlPath(pidl As Integer) As String
+        Dim pathBuf As String = Space(4096)
+        Dim nullIndex As Integer
+        ReadPidlPath = ""
+        If pidl = 0 Then
+            Exit Function
+        End If
+        If SHGetPathFromIDListW(pidl, pathBuf) = 0 Then
+            Exit Function
+        End If
+        nullIndex = pathBuf.IndexOf(Chr(0))
+        If nullIndex >= 0 Then
+            ReadPidlPath = pathBuf.Left(nullIndex).Trim()
+            Exit Function
+        End If
+        ReadPidlPath = pathBuf.Trim()
+    End Function
+
+    Private Function SelectFolderFree(Title As String, pInitialDir As String) As String
+        Dim bi As BROWSEINFO
+        Dim displayName As String = Space(1024)
+        Dim pidl As Integer
+        Dim outPath As String = ""
+
+        _folderStartDir = Trim(pInitialDir)
+        bi.hwndOwner = 0
+        bi.pidlRoot = 0
+        bi.pszDisplayName = displayName
+        bi.lpszTitle = Title
+        bi.ulFlags = BIF_RETURNONLYFSDIRS Or BIF_NEWDIALOGSTYLE
+        bi.lParam = 0
+        bi.iImage = 0
+        bi.lpfn = AddressOf FolderBrowseCallback
+
+        pidl = SHBrowseForFolderW(bi)
+        If pidl <> 0 Then
+            outPath = ReadPidlPath(pidl)
+            CoTaskMemFree(pidl)
+        End If
+
+        _folderStartDir = ""
+        SelectFolderFree = outPath
+    End Function
+
+    Private Function SelectFolderLocked(Title As String, pRootDir As String) As String
+        Dim shellApp As Variant = CreateObject("Shell.Application")
+        Dim folderFlags As Integer = BIF_RETURNONLYFSDIRS Or BIF_NEWDIALOGSTYLE
+        Dim folder As Variant = shellApp.BrowseForFolder(0, Title, folderFlags, pRootDir)
+        Dim outPath As String = ""
+
+        Try
+            outPath = folder.Self.Path
+        Catch ex As Exception
+            outPath = ""
+        End Try
+
+        shellApp = Unassigned
+        SelectFolderLocked = outPath
+    End Function
+
     Function OpenFile(Title As String, Filter As String, InitialDir As String) As String
         Dim ofn As OPENFILENAME
         Dim buffer As String = Space(4096)
@@ -203,19 +297,12 @@ Namespace TDialogs
         SaveFile = ""
     End Function
 
-    Function SelectFolder(Title As String, pInitialDir As String = "") As String
-        Dim shellApp As Variant = CreateObject("Shell.Application")
-        Dim folder As Variant = shellApp.BrowseForFolder(0, Title, 65, pInitialDir)
-        Dim outPath As String = ""
-
-        Try
-            outPath = folder.Self.Path
-        Catch ex As Exception
-            outPath = ""
-        End Try
-
-        shellApp = Unassigned
-        SelectFolder = outPath
+    Function SelectFolder(Title As String, pInitialDir As String = "", pLockRoot As Boolean = False) As String
+        If pLockRoot Then
+            SelectFolder = SelectFolderLocked(Title, pInitialDir)
+            Exit Function
+        End If
+        SelectFolder = SelectFolderFree(Title, pInitialDir)
     End Function
 
 End Namespace

@@ -1,11 +1,11 @@
 {
   "nome": "mod_io",
   "language": "Basic",
-  "version": "1.0.0.0",
+  "version": "1.0.0.1",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Administrador",
-    "versao": "1.0.0.0",
+    "versao": "1.0.0.1",
     "informacoes": "Projeto criado para oferecer funcionalidades de IO para o projeto",
     "codEmpresa": 1,
     "codFilial": 1,

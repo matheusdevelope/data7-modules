@@ -14,11 +14,24 @@ Namespace TFile
         Delete = IO.File.Delete(Path)
     End Function
 
-    Sub Copy(Source As String, Dest As String, Overwrite As Boolean)
+    Private Sub EnsureFileDirectory(Path As String)
+        Dim dirName As String = TPath.GetDirectoryName(Path)
+        If dirName <> "" Then
+            TDirectory.CreateDirectory(dirName, True)
+        End If
+    End Sub
+
+    Sub Copy(Source As String, Dest As String, Overwrite As Boolean, pEnsureDirectory As Boolean = False)
+        If pEnsureDirectory Then
+            EnsureFileDirectory(Dest)
+        End If
         CopyFileW(Source, Dest, Not Overwrite)
     End Sub
 
-    Sub Move(Source As String, Dest As String)
+    Sub Move(Source As String, Dest As String, pEnsureDirectory As Boolean = False)
+        If pEnsureDirectory Then
+            EnsureFileDirectory(Dest)
+        End If
         MoveFileW(Source, Dest)
     End Sub
 
@@ -56,8 +69,11 @@ Namespace TFile
         ReadAllText = content
     End Function
 
-    Sub WriteAllText(Path As String, Contents As String)
+    Sub WriteAllText(Path As String, Contents As String, pEnsureDirectory As Boolean = False)
         Dim stream As Variant
+        If pEnsureDirectory Then
+            EnsureFileDirectory(Path)
+        End If
         stream = CreateObject("ADODB.Stream")
         stream.Type = 2
         stream.Charset = "utf-8"
@@ -79,9 +95,9 @@ Namespace TFile
         Throw New Exception("Not implemented")
     End Function
 
-    Sub WriteAllLines(Path As String, Contents As Variant)
+    Sub WriteAllLines(Path As String, Contents As Variant, pEnsureDirectory As Boolean = False)
         Dim text As String = Join(Contents, Chr(13) + Chr(10))
-        WriteAllText(Path, text)
+        WriteAllText(Path, text, pEnsureDirectory)
     End Sub
 
     Function ReadAllBytes(Path As String) As Variant
@@ -93,8 +109,12 @@ Namespace TFile
         stream = Unassigned
     End Function
 
-    Sub WriteAllBytes(Path As String, Bytes As Variant)
-        Dim stream As Variant = CreateObject("ADODB.Stream")
+    Sub WriteAllBytes(Path As String, Bytes As Variant, pEnsureDirectory As Boolean = False)
+        Dim stream As Variant
+        If pEnsureDirectory Then
+            EnsureFileDirectory(Path)
+        End If
+        stream = CreateObject("ADODB.Stream")
         stream.Open()
         stream.Write(Bytes)
         stream.SaveToFile(Path, 2)

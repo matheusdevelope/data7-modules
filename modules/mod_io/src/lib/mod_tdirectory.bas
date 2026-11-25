@@ -7,8 +7,49 @@ Namespace TDirectory
     Private Declare Function SetFileAttributesW Lib "kernel32.dll" (lpFileName As String, dwFileAttributes As Integer) As Boolean
     Private Declare Function GetLogicalDriveStringsW Lib "kernel32.dll" (nBufferLength As Integer, lpBuffer As String) As Integer
 
-    Sub CreateDirectory(Path As String)
-        CreateDirectoryW(Path, 0)
+    Private Function NormalizeFolderPath(Path As String) As String
+        Dim folderPath As String = Trim(Path).Replace("/", "\")
+        Dim lastChar As String
+        If folderPath = "" Then
+            NormalizeFolderPath = ""
+            Exit Function
+        End If
+        lastChar = Mid(folderPath, Len(folderPath), 1)
+        If lastChar = "\" Then
+            If Len(folderPath) = 3 And InStr(folderPath, ":") = 2 Then
+                NormalizeFolderPath = folderPath
+                Exit Function
+            End If
+            folderPath = folderPath.Left(Len(folderPath) - 1)
+        End If
+        NormalizeFolderPath = folderPath
+    End Function
+
+    Sub CreateDirectory(Path As String, pRecursive As Boolean = False)
+        Dim folderPath As String
+        Dim parentPath As String
+        If Not pRecursive Then
+            CreateDirectoryW(Path, 0)
+            Exit Sub
+        End If
+        folderPath = NormalizeFolderPath(Path)
+        If folderPath = "" Then
+            Exit Sub
+        End If
+        If Exists(folderPath) Then
+            Exit Sub
+        End If
+        parentPath = GetParent(folderPath)
+        If parentPath <> "" Then
+            If Not Exists(parentPath) Then
+                CreateDirectory(parentPath, True)
+            End If
+        End If
+        CreateDirectoryW(folderPath, 0)
+    End Sub
+
+    Sub EnsureDirectory(Path As String)
+        CreateDirectory(Path, True)
     End Sub
 
     Function Exists(Path As String) As Boolean
@@ -95,88 +136,99 @@ Namespace TDirectory
 
 
 
-    Function GetFiles(Path As String) As Collections.StringList
+    Private Sub AppendFolderListing(pFolder As Variant, pList As Collections.StringList, pIncludeFiles As Boolean, pIncludeDirs As Boolean, pRecursive As Boolean)
+        Dim filesCol As Variant
+        Dim dirsCol As Variant
+        Dim child As Variant
+        Dim i As Integer
+        Dim n As Integer
+
+        If pIncludeFiles Then
+            filesCol = pFolder.Files
+            n = filesCol.Count
+            For i = 1 To n
+                pList.Add(filesCol.Item(i).Path)
+            Next
+        End If
+
+        dirsCol = pFolder.SubFolders
+        n = dirsCol.Count
+        For i = 1 To n
+            child = dirsCol.Item(i)
+            If pIncludeDirs Then
+                pList.Add(child.Path)
+            End If
+            If pRecursive Then
+                AppendFolderListing(child, pList, pIncludeFiles, pIncludeDirs, True)
+            End If
+        Next
+
+        filesCol = Unassigned
+        dirsCol = Unassigned
+        child = Unassigned
+    End Sub
+
+    Private Function ListFolder(Path As String, pIncludeFiles As Boolean, pIncludeDirs As Boolean, pRecursive As Boolean) As Collections.StringList
         Dim lista As New Collections.StringList()
         Dim fso As Variant = CreateObject("Scripting.FileSystemObject")
+        Dim folder As Variant
+        Dim absPath As String
+        Dim shellApp As Variant
+        Dim items As Variant
+        Dim i As Integer
+        Dim count As Integer
+        Dim itemPath As String
 
         If Not fso.FolderExists(Path) Then
-            GetFiles = lista
+            fso = Unassigned
+            ListFolder = lista
             Exit Function
         End If
 
-        Dim absPath As String = fso.GetAbsolutePathName(Path)
+        If pRecursive Then
+            folder = fso.GetFolder(Path)
+            AppendFolderListing(folder, lista, pIncludeFiles, pIncludeDirs, True)
+            folder = Unassigned
+            fso = Unassigned
+            ListFolder = lista
+            Exit Function
+        End If
 
-        Dim shellApp As Variant = CreateObject("Shell.Application")
-        Dim folder As Variant = shellApp.Namespace(absPath)
-
-        Dim items As Variant = folder.Items
-        Dim i As Integer, count As Integer = items.Count
-
+        absPath = fso.GetAbsolutePathName(Path)
+        shellApp = CreateObject("Shell.Application")
+        folder = shellApp.Namespace(absPath)
+        items = folder.Items
+        count = items.Count
         For i = 0 To count - 1
-            Dim itemPath As String = items.Item(i).Path
-            If Not fso.FolderExists(itemPath) Then
+            itemPath = items.Item(i).Path
+            If pIncludeFiles And pIncludeDirs Then
                 lista.Add(itemPath)
+            ElseIf pIncludeFiles Then
+                If Not fso.FolderExists(itemPath) Then
+                    lista.Add(itemPath)
+                End If
+            ElseIf pIncludeDirs Then
+                If fso.FolderExists(itemPath) Then
+                    lista.Add(itemPath)
+                End If
             End If
         Next
 
         shellApp = Unassigned
         fso = Unassigned
-        GetFiles = lista
+        ListFolder = lista
     End Function
 
-    Function GetDirectories(Path As String) As Collections.StringList
-        Dim lista As New Collections.StringList()
-        Dim fso As Variant = CreateObject("Scripting.FileSystemObject")
-
-        If Not fso.FolderExists(Path) Then
-            GetDirectories = lista
-            Exit Function
-        End If
-
-        Dim absPath As String = fso.GetAbsolutePathName(Path)
-
-        Dim shellApp As Variant = CreateObject("Shell.Application")
-        Dim folder As Variant = shellApp.Namespace(absPath)
-
-        Dim items As Variant = folder.Items
-        Dim i As Integer, count As Integer = items.Count
-
-        For i = 0 To count - 1
-            Dim itemPath As String = items.Item(i).Path
-            If fso.FolderExists(itemPath) Then
-                lista.Add(itemPath)
-            End If
-        Next
-
-        shellApp = Unassigned
-        fso = Unassigned
-        GetDirectories = lista
+    Function GetFiles(Path As String, pRecursive As Boolean = False) As Collections.StringList
+        GetFiles = ListFolder(Path, True, False, pRecursive)
     End Function
 
-    Function GetFileSystemEntries(Path As String) As Collections.StringList
-        Dim lista As New Collections.StringList()
-        Dim fso As Variant = CreateObject("Scripting.FileSystemObject")
+    Function GetDirectories(Path As String, pRecursive As Boolean = False) As Collections.StringList
+        GetDirectories = ListFolder(Path, False, True, pRecursive)
+    End Function
 
-        If Not fso.FolderExists(Path) Then
-            GetFileSystemEntries = lista
-            Exit Function
-        End If
-
-        Dim absPath As String = fso.GetAbsolutePathName(Path)
-
-        Dim shellApp As Variant = CreateObject("Shell.Application")
-        Dim folder As Variant = shellApp.Namespace(absPath)
-
-        Dim items As Variant = folder.Items
-        Dim i As Integer, count As Integer = items.Count
-
-        For i = 0 To count - 1
-            lista.Add(items.Item(i).Path)
-        Next
-
-        shellApp = Unassigned
-        fso = Unassigned
-        GetFileSystemEntries = lista
+    Function GetFileSystemEntries(Path As String, pRecursive As Boolean = False) As Collections.StringList
+        GetFileSystemEntries = ListFolder(Path, True, True, pRecursive)
     End Function
 
 
