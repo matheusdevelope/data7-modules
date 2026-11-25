@@ -81,14 +81,13 @@ End Function
 
 Function SelectFolder(Title As String, pInitialDir As String = "", pLockRoot As Boolean = False) As String
    ' in: Title = dialog text
-   ' in: pInitialDir optional start folder ("" = no start folder)
-   ' in: pLockRoot False (default) = browse the whole machine, starting at pInitialDir when set
-   ' in: pLockRoot True = pInitialDir becomes the tree root; the user cannot leave it
+   ' in: pLockRoot False (default) = browse the whole machine (pInitialDir is not a cage)
+   ' in: pLockRoot True = pInitialDir is the tree root; the user cannot leave it
    ' out: chosen folder, or "" if cancelled / failed
 End Function
 ```
 
-`pInitialDir` is a start folder, not a cage, unless `pLockRoot` is True:
+Default is a free picker. Data7 cannot install a Win32 browse callback, so free mode does not pre-select `pInitialDir`; it only avoids locking. Pass `pLockRoot=True` when the start path must also be the root:
 
 ```bas
 Dim _free As String = TDialogs.SelectFolder("Select backup folder", "C:\Data7\Backup")
@@ -444,7 +443,7 @@ There are no public classes to inherit and no `Add` / `Make` / `MakeByName` cata
 - `GetTempFileName` creates the file on disk (prefix `TMP`).
 - `CreateDirectory` without `pRecursive` does not create intermediates. `EnsureDirectory` does. `IsEmpty` is `True` for a missing folder.
 - `GetExtensionByMagicBytes` / `GetExtensionByBase64` do not distinguish `.docx`/`.xlsx` from `.zip`.
-- `SelectFolder` default is a free picker (`pLockRoot=False`): `pInitialDir` is the start folder. `pLockRoot=True` pins the tree to that path.
+- `SelectFolder` default is a free picker (`pLockRoot=False`). `pLockRoot=True` pins the tree to `pInitialDir`.
 - `GetFiles` / `GetDirectories` / `GetFileSystemEntries` are immediate children unless `pRecursive=True`.
 - `CreateDirectory` is one level unless `pRecursive=True`. `EnsureDirectory` always creates the full chain. `TFile.WriteAllText` / `WriteAllBytes` / `Copy` / `Move` create parents only when `pEnsureDirectory=True`.
 - Canonical demo: `src/Principal.bas` (filter `"Arquivos de Texto (*.txt)|*.txt"`). There is no `TXxxTests.RunAll` suite.
