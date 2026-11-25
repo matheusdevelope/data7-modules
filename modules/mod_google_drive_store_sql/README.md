@@ -33,7 +33,7 @@ Dim driveService As GoogleDriveService = GoogleDriveService.Load(auth)
 Dim authNew As GoogleAuthService = GoogleDriveSqlStores.Add("Google Drive")
 ```
 
-`Connect()` without a key still resolves the first configuration row (or `google-oauth.json`) and is the compatibility entry. Prefer `ConnectKey` / `Add` when the UI lists accounts.
+There is no `Connect()` without a PK. List accounts with `ListConnections`, open one with `ConnectKey(cod)`, or insert with `Add()`.
 
 Do not name variables `store` or `drive`.
 
@@ -65,21 +65,17 @@ Shared Function ListConnections() As TTList<TConfiguracaoGoogleDrive>
    ' combo value: row.AccountKey() = CodConfiguracaoGoogleDrive
    ' combo caption: row.AccountCaption() ("Titulo (Email)")
 
-Shared Function Connect(pTitulo As String = "Google Drive", pInteractive As Boolean = True) As GoogleAuthService
-   ' ResolveConfig (first SQL row, else google-oauth.json, else empty) + Drive scope
-   ' Open(cfg, titulo) + GoogleAuthConnect.Run
-
 Shared Function ConnectKey(pCod As Integer, pTitulo As String = "", pInteractive As Boolean = True) As GoogleAuthService
-   ' ConfigOfKey(pCod) + Open + GoogleAuthConnect.Run
+   ' ConfigOfKey(pCod) + Open(..., pCod) bound to that PK (does not insert)
 
 Shared Function Add(pTitulo As String = "Google Drive", pInteractive As Boolean = True) As GoogleAuthService
    ' copies ClientId/secret from ResolveConfig, AccountId empty, Open(..., pInsertNew=True)
-   ' does not Clear or Update an existing account row
+   ' if OAuth fails, deletes the new row when it still has no tokens
 
-Shared Function Open(pConfig As GoogleAuthConfig = Null, pTitulo As String = "", pInsertNew As Boolean = False) As GoogleTokenStore
-   ' no config: unbound store (Load/Save/Clear use pKey; missing key returns Null)
-   ' with config, pInsertNew False: FindByStoreKey then update, or insert if missing
-   ' with config, pInsertNew True: always insert a new row and bind the store to that PK
+Shared Function Open(pConfig As GoogleAuthConfig = Null, pTitulo As String = "", pInsertNew As Boolean = False, pCod As Integer = 0) As GoogleDriveTokenStoreSql
+   ' pCod > 0: FindByKey and bind; throws if missing
+   ' pInsertNew True: always insert a new row and bind the store to that PK
+   ' otherwise FindByStoreKey and update; do not insert a shell row
 
 Shared Function ConfigOf() As GoogleAuthConfig
    ' first row (CurrentRow); throws if missing or ClientId empty
@@ -144,5 +140,5 @@ Global table (no `CodEmpresa`) in schema `Customizado`. Sequence `Customizado.Co
 - Call `Migrate()` once at ERP startup. History is `_developer_table_migrations`.
 - Do not log access tokens, refresh tokens, or client secrets.
 - Do not wrap this store in `GoogleTokenStoreEncrypted`.
-- There is no UI in this module. `Connect` / `ConnectKey` / `Add` delegate consent to `mod_google_auth` `GoogleAuthConnect.Run`.
-- Live: `GoogleDriveStoreSqlLive.Run()` migrates, then `GoogleDriveSqlStores.Connect()` (silent when the first SQL row has tokens; locked form when JSON/SQL has Client ID+secret; editable otherwise). Then it lists files in Drive folder `mod_google_drive`. Optional `google-drive-live.json`: `connection_title`, `folder_name`, `folder_id`.
+- There is no UI in this module. `ConnectKey` / `Add` delegate consent to `mod_google_auth` `GoogleAuthConnect.Run`.
+- Live: `GoogleDriveStoreSqlLive.Run()` migrates, then `ConnectKey` on the first saved row or `Add()` if none. Then it lists files in Drive folder `mod_google_drive`. Optional `google-drive-live.json`: `connection_title`, `folder_name`, `folder_id`.

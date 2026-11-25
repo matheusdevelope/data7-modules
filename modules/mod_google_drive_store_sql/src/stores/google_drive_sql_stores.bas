@@ -29,12 +29,6 @@ Namespace google_drive_sql_stores
          ListConnections = TConfiguracaoGoogleDrive.Fetch("", "Titulo")
       End Function
 
-      Shared Function Connect(pTitulo As String = "Google Drive", pInteractive As Boolean = True) As GoogleAuthService
-         Dim cfg As GoogleAuthConfig
-         cfg = GoogleDriveSqlStores.ResolveConfig()
-         Connect = GoogleDriveSqlStores.RunConnect(cfg, pTitulo, pInteractive, False)
-      End Function
-
       Shared Function ConnectKey(pCod As Integer, pTitulo As String = "", pInteractive As Boolean = True) As GoogleAuthService
          Dim cfg As GoogleAuthConfig
          Dim titleValue As String
@@ -43,7 +37,7 @@ Namespace google_drive_sql_stores
          If titleValue = "" Then
             titleValue = "Google Drive"
          End If
-         ConnectKey = GoogleDriveSqlStores.RunConnect(cfg, titleValue, pInteractive, False)
+         ConnectKey = GoogleDriveSqlStores.RunConnect(cfg, titleValue, pInteractive, False, pCod)
       End Function
 
       Shared Function Add(pTitulo As String = "Google Drive", pInteractive As Boolean = True) As GoogleAuthService
@@ -53,7 +47,7 @@ Namespace google_drive_sql_stores
          Add = GoogleDriveSqlStores.RunConnect(cfg, pTitulo, pInteractive, True)
       End Function
 
-      Shared Function Open(pConfig As GoogleAuthConfig = Null, pTitulo As String = "", pInsertNew As Boolean = False) As GoogleTokenStore
+      Shared Function Open(pConfig As GoogleAuthConfig = Null, pTitulo As String = "", pInsertNew As Boolean = False, pCod As Integer = 0) As GoogleDriveTokenStoreSql
          Dim row As TConfiguracaoGoogleDrive
          Dim titleValue As String
          Dim boundCod As Integer
@@ -62,12 +56,30 @@ Namespace google_drive_sql_stores
          If titleValue = "" Then
             titleValue = "Google Drive"
          End If
-         If Assigned(pConfig) Then
-            row = Null
+         row = Null
+         If pCod > 0 Then
+            row = TConfiguracaoGoogleDrive.FindByKey(pCod)
+            If Not Assigned(row) Then
+               Throw New Exception("Google Drive configuration not found.")
+            End If
+            If Assigned(pConfig) Then
+               If Trim(pTitulo) <> "" Then
+                  row.Titulo = Trim(pTitulo)
+               End If
+               GoogleDriveTokenMapper.ApplyConfig(row, pConfig)
+               row.Update()
+            End If
+            boundCod = row.CodConfiguracaoGoogleDrive
+            row.Free()
+         ElseIf Assigned(pConfig) Then
             If Not pInsertNew Then
                row = TConfiguracaoGoogleDrive.FindByStoreKey(pConfig.StoreKey())
             End If
             If Not Assigned(row) Then
+               If Not pInsertNew Then
+                  Open = New GoogleDriveTokenStoreSql(pConfig, 0)
+                  Exit Function
+               End If
                row = New TConfiguracaoGoogleDrive()
                row.Titulo = titleValue
                row.Ativo = True
@@ -196,28 +208,51 @@ Namespace google_drive_sql_stores
          pCfg.Free()
       End Sub
 
-      Shared Function RunConnect(pConfig As GoogleAuthConfig, pTitulo As String, pInteractive As Boolean, pInsertNew As Boolean) As GoogleAuthService
+      Shared Function RunConnect(pConfig As GoogleAuthConfig, pTitulo As String, pInteractive As Boolean, pInsertNew As Boolean, pCod As Integer = 0) As GoogleAuthService
          Dim cfg As GoogleAuthConfig
          Dim titleValue As String
-         Dim tokenStore As GoogleTokenStore
+         Dim tokenStore As GoogleDriveTokenStoreSql
          Dim auth As GoogleAuthService
+         Dim boundCod As Integer
+         boundCod = 0
          cfg = pConfig
          GoogleDriveSqlStores.ApplyDriveScopes(cfg)
          titleValue = Trim(pTitulo)
          If titleValue = "" Then
             titleValue = "Google Drive"
          End If
-         tokenStore = GoogleDriveSqlStores.Open(cfg, titleValue, pInsertNew)
+         tokenStore = GoogleDriveSqlStores.Open(cfg, titleValue, pInsertNew, pCod)
+         If Assigned(tokenStore) Then
+            boundCod = tokenStore.BoundCod()
+         End If
          auth = Null
          Try
             auth = GoogleAuthConnect.Run(cfg, tokenStore, True, pInteractive, "Conexão Google Drive")
          Catch ex As Exception
+            If pInsertNew Then
+               GoogleDriveSqlStores.DiscardIncomplete(boundCod)
+            End If
             tokenStore.Free()
             GoogleDriveSqlStores.DropConfig(cfg)
             Throw New Exception(ex._GetMessage())
          End Try
          RunConnect = auth
       End Function
+
+      Shared Sub DiscardIncomplete(pCod As Integer)
+         Dim row As TConfiguracaoGoogleDrive
+         If pCod <= 0 Then
+            Exit Sub
+         End If
+         row = TConfiguracaoGoogleDrive.FindByKey(pCod)
+         If Not Assigned(row) Then
+            Exit Sub
+         End If
+         If Not row.HasTokens() Then
+            row.Delete()
+         End If
+         row.Free()
+      End Sub
 
       Shared Sub ApplyDriveScopes(pConfig As GoogleAuthConfig)
          If Not Assigned(pConfig) Then

@@ -58,9 +58,27 @@ Namespace google_drive_store_sql_live
             liveCfg.Free()
          End If
          Dim auth As GoogleAuthService = Null
+         Dim rows[] As TConfiguracaoGoogleDrive
+         Dim i As Integer
+         Dim row As TConfiguracaoGoogleDrive
+         Dim connectCod As Integer
+         connectCod = 0
          Try
-            me.LogLine("Connect: SQL + GoogleAuthConnect (formulario so se faltar token/credencial).")
-            auth = GoogleDriveSqlStores.Connect(titleValue)
+            me.LogLine("ConnectKey/Add: SQL + GoogleAuthConnect (formulario so se faltar token/credencial).")
+            rows = GoogleDriveSqlStores.ListConnections()
+            For i = 0 To rows.Length - 1
+               row = rows[i]
+               If row.HasTokens() Then
+                  connectCod = row.CodConfiguracaoGoogleDrive
+                  Exit For
+               End If
+            Next
+            rows.Free()
+            If connectCod > 0 Then
+               auth = GoogleDriveSqlStores.ConnectKey(connectCod, titleValue)
+            Else
+               auth = GoogleDriveSqlStores.Add(titleValue)
+            End If
          Catch ex As Exception
             me.LogLine("Connect falhou: " & ex._GetMessage())
             Exit Sub
@@ -82,7 +100,7 @@ Namespace google_drive_store_sql_live
          me.LogLine("Conta: " & info.DriveUser.DisplayName & " <" & info.DriveUser.EmailAddress & ">")
          GoogleDriveSqlStores.ApplyProfile(info.DriveUser.EmailAddress, info.DriveUser.DisplayName)
          info.Free()
-         Dim row As TConfiguracaoGoogleDrive = TConfiguracaoGoogleDrive.CurrentRow()
+         row = TConfiguracaoGoogleDrive.CurrentRow()
          If Assigned(row) Then
             me.LogLine("Linha SQL: Titulo=" & row.Titulo & " Email=" & row.Email & " hasRefresh=" & CStr(Trim(row.RefreshToken) <> ""))
             row.Free()

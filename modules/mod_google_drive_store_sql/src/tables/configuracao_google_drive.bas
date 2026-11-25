@@ -308,6 +308,10 @@ Namespace configuracao_google_drive
          End Set
       End Property
 
+      Function HasTokens() As Boolean
+         HasTokens = (Trim(me.AccessToken) <> "") Or (Trim(me.RefreshToken) <> "")
+      End Function
+
       Function AccountKey() As String
          AccountKey = CStr(me.CodConfiguracaoGoogleDrive)
       End Function

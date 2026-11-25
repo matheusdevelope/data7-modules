@@ -1,11 +1,11 @@
 {
   "nome": "mod_google_drive_store_sql",
   "language": "Basic",
-  "version": "1.0.0.1",
+  "version": "1.0.0.2",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus",
-    "versao": "1.0.0.1",
+    "versao": "1.0.0.2",
     "informacoes": "Projeto mod_google_drive_store_sql criado no VS Code",
     "codEmpresa": 1,
     "codFilial": 1,
@@ -457,7 +457,7 @@
     },
     "google_drive_sql_stores": {
       "nome": "google_drive_sql_stores",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{40713F29-5EC2-46C7-BD9D-EF57013753D7}"
     },
