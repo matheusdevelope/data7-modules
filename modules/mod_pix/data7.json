@@ -1,17 +1,17 @@
 {
   "nome": "mod_pix",
   "language": "Basic",
-  "version": "1.0.2.0",
+  "version": "1.0.2.1",
   "targetPlatform": "Default",
   "opcoes": {
     "autor": "Matheus Teixeira - Unidade Sinop",
-    "versao": "1.0.2.0",
+    "versao": "1.0.2.1",
     "informacoes": "Módulo PIX\n\n13/12/2012: Adicionado suporte ao client http CURL, pois em servidores antigos, não é possível fazer requisições HTTPS, tem falha ao criar o canal seguro, nesses casos, é necessário informar o cliente CURL no parametro Customizado_Projeto_ClientePadraoModuloHttp, dessa forma o developer vai efetuar as requisições através do curl, que possui suporte ao TLS/SSL.",
     "codEmpresa": 1,
     "codFilial": 1,
     "nomeUsuario": "Administrador",
     "preScript": "",
-    "identificacaoBancoDados": "C8B7BB68-6D98-44C1-9D37-3456E62FA3C0"
+    "identificacaoBancoDados": "17016A66-EE65-43AA-9503-56D6D7D76083"
   },
   "build": {
     "optimization": {
@@ -52,7 +52,7 @@
   },
   "virtualFolders": [
     {
-      "nome": "Unidades (100)",
+      "nome": "Unidades (119)",
       "id": "{950D3D8B-6A30-4EDB-88FC-728B9E185850}",
       "pastaId": "",
       "aberta": "Sim"
@@ -326,6 +326,54 @@
       "id": "{4369CE77-E2A5-4F68-9B9C-A1F4CBB3195A}",
       "pastaId": "{AAC0F4BA-009F-4EE7-A026-02D6EAB50121}",
       "aberta": "Nao"
+    },
+    {
+      "nome": "mod_data7_utils",
+      "id": "{26205838-8C8E-4BAD-8A69-ED1C3082EC7C}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "lib",
+      "id": "{D8306A5D-0763-444F-9D9C-D461B3F341C1}",
+      "pastaId": "{26205838-8C8E-4BAD-8A69-ED1C3082EC7C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "runtime",
+      "id": "{98AB95A5-ABA0-4891-987D-AB1F859827D8}",
+      "pastaId": "{D8306A5D-0763-444F-9D9C-D461B3F341C1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "socket",
+      "id": "{899A7773-F32F-4010-A7B4-688ED3953D05}",
+      "pastaId": "{D8306A5D-0763-444F-9D9C-D461B3F341C1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "stream",
+      "id": "{A91C9EBC-A968-454C-8FE5-049FE8CDC3A8}",
+      "pastaId": "{D8306A5D-0763-444F-9D9C-D461B3F341C1}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{A36253AF-3968-4E17-A068-ECDAD92F38D6}",
+      "pastaId": "{26205838-8C8E-4BAD-8A69-ED1C3082EC7C}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "mod_win_process",
+      "id": "{029598B6-8F11-4B80-AC75-1B4600839E86}",
+      "pastaId": "{98946CED-ABA6-4A79-8757-F849785F29A4}",
+      "aberta": "Nao"
+    },
+    {
+      "nome": "tests",
+      "id": "{D6029E4D-B93C-4AC2-A244-2CE01A76E619}",
+      "pastaId": "{029598B6-8F11-4B80-AC75-1B4600839E86}",
+      "aberta": "Nao"
     }
   ],
   "modulesMetadata": {
@@ -353,15 +401,9 @@
       "ordemAbertura": 0,
       "pastaId": "{9E06E656-499B-4A47-9E0B-284D6521C7AC}"
     },
-    "mod_pix_erp": {
-      "nome": "mod_pix_erp",
-      "aberto": false,
-      "ordemAbertura": 0,
-      "pastaId": "{5799C77E-1AA8-4C9C-9627-A7A50AAFEEBD}"
-    },
     "mod_pix_http": {
       "nome": "mod_pix_http",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{335D9DA4-EB8B-4DFE-B884-C6EBEC78CF67}"
     },
@@ -565,15 +607,9 @@
     },
     "mod_pix_validation": {
       "nome": "mod_pix_validation",
-      "aberto": false,
+      "aberto": true,
       "ordemAbertura": 0,
       "pastaId": "{A391CFBA-5D5A-4097-B456-E5B8A8CCDE58}"
-    },
-    "mod_pix_live_tests": {
-      "nome": "mod_pix_live_tests",
-      "aberto": false,
-      "ordemAbertura": 0,
-      "pastaId": "{9F213D16-B3A1-4925-8D66-505524F2F56C}"
     },
     "mod_pix_tests": {
       "nome": "mod_pix_tests",
@@ -583,8 +619,8 @@
     }
   },
   "dependencies": {
-    "mod_http": "2.0",
-    "mod_table": "1.0.0.6",
+    "mod_http": "2.1.3.0",
+    "mod_table": "1.0.0.8",
     "mod_validators": "1.0.0.0"
   },
   "module": {

@@ -191,7 +191,7 @@ Namespace mod_pix_http
       End Function
 
       Shared Function DownloadToFile(pUrl As String, pPath As String) As String
-         Dim client As HttpClient = Http.Create(Http.DefaultTransport())
+         Dim client As HttpClient = Http.FromTransport(Http.DefaultTransport())
          client.Certificate.Use = False
          Dim response As HttpResponse
          Dim _ret As String
@@ -261,7 +261,7 @@ Namespace mod_pix_http
 
       Overridable Sub LoadToken()
          me.LoadCertificate()
-         Dim httpToken As HttpClient = Http.Create(Http.DefaultTransport())
+         Dim httpToken As HttpClient = Http.FromTransport(Http.DefaultTransport())
          httpToken.Timeout = me._config.Timeout
          httpToken.ContentType = "application/x-www-form-urlencoded"
          httpToken.Accept = "application/json"
